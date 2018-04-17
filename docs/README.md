@@ -1,61 +1,26 @@
-# tsar is...
-- snippet-based information managment system  
-- editable, searchable, and browsable
-- encourages storing information as examples rather than specifications
-- a key component of a broader personal knowledge management system
+<!-- # Screen shots/ Demo -->
 
-# How is it different/better than other snippet managers or information management tools?
-- tsar is designed to be an extension of your memory.  Specifically, the interface is designed to be the *fastest* method of storing and retrieving information in a terminal environment, erasing the barrier between thought and digitally stored information.
+# Introducing TSAR: the Textual Storage And Retrieval utility
+Tsar is a productivity tool somewhere between a snippet manager and a digital extension of your memory.  It is designed to help you retrieve relevant information snippets *as quickly as possible* from a terminal.  \n\nTsar currently uses search-as-you-type record query; future versions will include sorting, filtering, and record association functionality.  Many additional enhancements are also planned.\n\nSome suggested use cases:\n- a searchable journal/diary\n- a snippet manager for code\n- as a repository of code examples or problem-solution pairs\n- anything else stored as records where fast retrieval of previously stored information is a priority.\n\nTo call tsar from terminal:\n- `$tsar` opens the default database (currently this one, but customizable).  `$tsar db_name` will open a database in `./index_files` corresponding to `./config_files/db_name_config.py`.\n\nPress ENTER to return to the search list and read the records that outline the basic useage of tsar.
 
-# Key features
-- Examples are indexed and represented as an association network; tsar supports query-based search and association based browsing.
-- search: 	As you type.  Concise and simple syntax includes wildcard, union, and intersection operations
-- browse: 	Crawl the auto-generated knowledge association network to find related information
-- tags:		Label based organization
+# Compatibility and Support
+tsar is currently in early Beta, running on macos; Linux support coming soon.
 
-# Feature wishlist
-- a browsing function: automate an underlying association network of examples
-- optimized search through meta information: date added, previous search/result pairs, etc.
-- syntax highlighting
-- (live) suggested tags, ala stack overflow
-- variable insertion for code snippets
-- automatically store current example to clipboard (save prior cb contents, auto update with example)
-- meta data: distinguish between knowledge very well known, those currently in process, and those deferred.
-- visualizations of usage statistics: successful searches, distr. of example usage, examples never accessed, etc.
-- stackoverflow API plugin
-- memory retention tools: bring up examples that haven't been looked at in a while
-- export to file format useful for other search tools, e.g. grep/finder
-- shared example files via github
-- X realtime search
-- X fuzzy/stem search
+# Installation
+To install: download the tsar repository to your computer and run `installation.sh`.
 
-# Key considerations
-- What is the *fastest* interface from thought to example?  If it's not faster than Google/Stack Overflow, you fail.
-- What is the *fastest/easiest* method for capture/adding new data?  If it takes too much time to add an example while you work, it's useless.  Maybe two tier system (add information, refine information?)
-- What is the *fastest* way to organize for later retrieval? Compare with wiki/manually generated relational graph... too slow!
+# Getting Started
+- call `tsar` with no arguments to open the default databse (currently set to the introduction/tutorial, but customizable).
+- Generate a custom database by copying `./config_files/default_config.py` to `./config_files/db_name_config.py`, and call `tsar db_name`.  The first use will generate a database index at `./index_files/db_name`
 
-# Data retrieval
-- **search**: fuzzy search of multiple fields, set operations, maybe a "smart ranking" system
-- **tagging**: labels for filtering relevance, live update
-
-# Storage/organization ideas
-- **database with fields**: name, date (timestamp index?), description, tags.
-- **metadata**: access, edit, search histories
-
-- **spatial storage representation**
-	- 3D spatial location is strongly associated with memory; top method used by memorization masters.
-	- 3 dimensions is incapable of representing the multifold connection between concepts and ideas, so it may only be loosely relational, or at least not static
-
-- **temporal storage representation**
-	- every recorded/tagged (stored) by date (for example, the wiki).
-	- naturally unique; there is only one time/day associated with a page you create...
+# How is it different than similar snippet managers or information management tools?
+- tsar is designed to be an extension of your memory.  Specifically, the interface is designed to be the *fastest* method of storing and retrieving information in a terminal environment, erasing the barrier between memory recall and terminal-based recall.
 
 # Similar projects and inspiration
-- bro pages
-- https://github.com/bluenote10/PandasDataFrameGUI
-- [search tool](http://www.voidtools.com/)
-- http://marcusvorwaller.com/blog/2015/12/14/personal-knowledgebases/
+- the aim of tsar is to act as a general purpose extension of your memory.  It's intended to get you from: "what was that command/thing/idea/text/thought" to a textual representation as fast as possible, with some (eventual) additional productivity features.  If you like tsar, you may also be interested in:
+- bro pages: http://bropages.org
+- pandas GUI: https://github.com/bluenote10/PandasDataFrameGUI
+- VoidTools Everything: http://www.voidtools.com/
 - [octotagger](https://github.com/TeamOctoTagger/OctoTagger)
 - [pet](https://github.com/knqyf263)
-- dash (realtime filter, great GUI/keyboard access)
-- thoughts on tagging: https://stackoverflow.com/questions/334183/what-is-the-most-efficient-way-to-store-tags-in-a-database
+- dash: https://kapeli.com/dash
