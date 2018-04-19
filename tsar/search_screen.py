@@ -5,7 +5,7 @@ import config_files.default_config as params
 class Observable_Edit(urwid.Edit):
 
     def __init__(self, *args, **kwargs):
-        #'observer' callback functions:
+        #stores callback function from app; an implementation of the 'observer' pattern
         self._observers = []
         super().__init__(*args, **kwargs)
 
@@ -80,7 +80,6 @@ class SearchScreen(urwid.WidgetWrap):
     def update_records_display(self, results, selected_record):
         """
         Updates screen with list of widgets (results); selected_record will be highlighted if present.
-
         Can be optimized to update the selected_record only as needed.
         """
         preview_field = params.SEARCH_DISPLAY_FIELD

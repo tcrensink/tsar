@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+
+"""
+# !/usr/bin/env python
+"""
 import urwid
 import sys
 import whoosh
@@ -12,7 +15,6 @@ from whoosh import writing
 class App(urwid.WidgetWrap):
 
     """
-    descr.
     """
     def __init__(self,
                  params=None,

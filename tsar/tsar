@@ -3,7 +3,6 @@
 this script is the executable and shell interface, calling the MainLoop() with an App object that contains various Screen objects from tsar 
 """
 import sys
-
 import urwid
 import tsar
 from tsar.app import App
@@ -17,13 +16,14 @@ from whoosh.qparser import MultifieldParser
 from whoosh.qparser import OperatorsPlugin
 from whoosh.searching import Results
 from collections import OrderedDict
-import contextlib
+# import contextlib
 # from pprint import pprint
 import time
 
 # from app import App
 from search_screen import SearchScreen
 from select_screen import SelectScreen
+
 
 def main(input_name):
     # specify project paths and name from user:
