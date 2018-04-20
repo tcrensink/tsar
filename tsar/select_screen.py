@@ -1,4 +1,3 @@
-#%%
 import urwid
 import config_files.default_config as params
 from datetime import datetime
@@ -27,28 +26,6 @@ class SelectScreen(urwid.WidgetWrap):
         self.status_bar = [urwid.Text(''), urwid.Text('')]
         self.footer = urwid.Pile([urwid.Divider(), urwid.Text(('prompt_attr', 'STATUS: '))] + self.status_bar)
         self._w = urwid.Frame(header=self.header, body=self.body, footer=self.footer, focus_part='body')
-
-    # @property
-    # def modified_record_dict(self):
-    #     return self._modified_record_dict
-
-    # @modified_record_dict.setter
-    # def modified_record_dict(self, modified_record_dict):
-    #     """
-    #     when a record_dict is set to a new value, populate the field_data_widgets with new record data.  Record is None for a new/nonexistent record.
-    #     """
-    #     if modified_record_dict is None:
-    #         self._modified_record_dict = {field: '' for field in params.FIELD_NAMES}
-    #         # self.screen_state = 'edit'
-    #     else:
-    #         self._modified_record_dict = modified_record_dict
-
-    #     self.field_data_widgets = {}
-    #     for field in params.FIELD_NAMES:
-    #         if params.FIELD_TYPES[field] in params.EDITABLE_TYPES and self.screen_state == 'edit':
-    #             self.field_data_widgets[field] = urwid.Edit('', str(self.modified_record_dict[field]), multiline=True, allow_tab=True)
-    #         else:
-    #             self.field_data_widgets[field] = urwid.Text(str(self.modified_record_dict[field]))
 
     @property
     def screen_state(self):
@@ -126,12 +103,6 @@ class SelectScreen(urwid.WidgetWrap):
         self.status_bar = [urwid.Text((markup[0], markup[1])) for markup in attr_text_tuples]
         self.footer = urwid.Pile([urwid.Divider(), urwid.Text(('prompt_attr', 'STATUS: '))] + self.status_bar)
         self._w = urwid.Frame(header=self.header, body=self.body, footer=self.footer, focus_part='body')
-
-
-
-
-
-
 
 
 if __name__ == '__main__':

@@ -57,7 +57,7 @@ def add_tutorial_records(search_index):
 
     records = [dict(timestamp=tstamp(),
                     name='Welcome to tsar!  Press RETURN and select "content" to get started...',
-                    content="""Introducing TSAR: the Textual Storage And Retrieval utility.  Tsar is a terminal based snippet manager with features and an interface to help you store and retrieve relevant information *as quickly as possible*.  Tsar currently uses search-as-you-type query, but will eventually include sorting, filtering, and associated record browsing.  Some suggested use cases:\n\n- a searchable, general purpose snippet database for fast recall at the command line\n- a repository of short code snippets or oft-used bash commands that are hard to remember\n- a searchable daily journal/diary\n- ...anything else where fast storage/retrieval of information from terminal is a priority.""",
+                    content="""Introducing TSAR: the Text Storage And Retrieval utility.  Tsar is a terminal based snippet manager with features and an interface to help you store and retrieve relevant information *as quickly as possible*.  Tsar currently uses search-as-you-type query, but will eventually include sorting, filtering, and associated record browsing.  Some suggested use cases:\n\n- a searchable, general purpose snippet database for fast recall at the command line\n- a repository of short code snippets or oft-used bash commands that are hard to remember\n- a searchable daily journal/diary\n- ...anything else where fast storage/retrieval of information from terminal is a priority.""",
                     tags='tutorial'),
                dict(timestamp=tstamp(),
                     name='record 1: Navigation and key commands',
@@ -69,7 +69,21 @@ def add_tutorial_records(search_index):
                     tags='tutorial'),
                dict(timestamp=tstamp(),
                     name='record 3: Search query examples',
-                    content='Add rules to the search herrre ofr',
+                    content="""The Whoosh package powers the search engine.  It has intuitive and highly customizable search syntax.  Below are a few query/result demonstrations.  Custom search syntax will be defined via in db_profile.py in the future.  
+                        
+                        Query string:               Result(s):
+
+                        *                           search for records with any value in default field (name)
+                        *:*                         search for records with any value for any field
+                        tsar                        search for records with 'tsar' in the default field (name)
+                        tsar AND edit*              search for 'tsar' and strings beginning with 'edit'
+                        tsar edit*                  same as tsar AND edit
+                        tsar OR edit                search field 'name' for string 'tsar' or 'edit' OR
+                        tsar OR content:edit        search 'name' field for 'tsar' or 'content' field for 'edit'
+                        NOT search content:edit     all results that have 'search' in contents but not name
+                        example?                    search for string 'example' followed by any (single) letter
+                        5 OR content:to             no matches: common 'stop' words and numbers excluded from matching
+                    """,
                     tags='tutorial'),
                dict(timestamp=tstamp(),
                     name='record 4: Editing records',
@@ -90,58 +104,55 @@ def add_tutorial_records(search_index):
                 dict(timestamp=tstamp(),
                     name='record 8: Feedback',
                     content="""This project is in beta.  If you have a bug report, feature request, or other feedback, please submit it through the GitHub project page.
-
--.......+s:........................................................--:/-::-/:-/
-........hd+......................................................--------------
-.........-.....................................................................
-........-s.............................................omh.......-.............
-......../d.............................................:o+........:---......---
-........yN:............................................./........-/.:.:-.../---
-........................................................y-.......:-.-..:.../...
-........................................................m+.......:-....:.../...
-......+.o.//:..........................................:hs.........::-.:.../.::
-.....+/:d.ssh-.......................................................-/-.../:..
-....++.ho.yd+d...................................................:-..../..-:...
-...o/.oN-.dN-hh......................................+.s.o./.....-.....:-./....
-.:y:.oNo.:NN::Ny....................................y:-h.s/-o.-..--....-:-:....
-oy-.yNy..hMN:.sNs-...............................-:ds.sy./d.-y:/...-:--:-/./.::
-:./mNy..oNMN-.-NNo-/...........................--oNy.-Ns.-Ns.-do/+....//--:/:..
-/dMm/..sNMMd...mMN/-s/.......................//+mNo..hMo..dNs..hd/++-../..:-...
-yh/../mMMMm:..-NMMm..yd/..................-oo/hNm:..oMM/..sMNs..sNh:+s:--./....
--../dMMMMh-...+MMMMo..sNd:............../yy-oNMh...+NMN-../MMNo..+NNo-oy/-:....
-./dMMMMNo.....dMMMMm...yMNo...........:dd:.sNMh...:NMMN....NMMN:../NMd--yh:--:-
-sNMMMMm/.....sMMMMMN-..-NMNy.-.......oNh..oNMN-...dMMMm....hMMMd...oNMd-.oNo...
-yMMMMd-...../NMMMMMm....hMMMs.s-....oNd..-NMMs...:NMMMd....sMMMN:...dMMy..oNy..
-yMMMh......:NMMMMMNo....yMMMN--d-...mN+..+MMN:...+MMMMy....+MMMM+...oMMN-..dN/.
-yMNy......-mMMMMMMh.....dMMMM/.yh../MN-..yMMN....oMMMMy..../NMMMs...:MMM/..oMy.
-yNy.......dMMMMMMd.....:NMMMN-./N:.+MN...hMMN....oMMMMy..../NMMMo.../MMM/..+My.
-yy.......dMMMMMMm-.....hMMMN+..:Mo./MN-..yMMN-.../MMMMh..../MMMM/...oMMN-..sMs.
-o.......dMMMMMMd-.....sMMMNo...+Mo..mMo..:NMM+...-NMMMm....+MMMN....dMMh...mN-.
--......dMMMMMNy......sMMMN+....dN/..+NN-..yMMm....hMMMN-...oMMMo...+NMN-..sMs.-
-.....-dMMMMMm+.....-hMMMd-....hMd....+Nd-..hMMy...:NMMM+...yMMd...-mMN/..sNs...
-....-mMMMMNs......oNMMm+....:dMm:/-...:hm/..yNNo...oNMMh...mMd-...dMm/.-hm/-...
-...:mMMMNy-.....+mMMNs.....sNNy.:y/...../s/../ys:...+yys...ss....+ys-.:s/...:-.
-..:mmmms-.....+dmmms-....omdo-...o.......::-::-:--:--:--:--:--:-::-::-:....../-
----.--.-..-..-..-.--.--.-........m:......::-::-::-::::-::-::-::-:-::-::....../-
---------------------------......:o/......--:--:--:----:--:--:--:-:--:--....../-
--.----------.-------------................-:..:..:..:-.-:..:..:..:-.--......./:
- -----------------`    .--:::::---`    .----:::::::-.`     `-----------..`     
-  osssssssssssssss/   `:ossssss+.       osssssssssssssss-    -+ssssssssssss-   
-  mMN:`-NMMMN-`/MMy  sNMMy:.-sMMMh.     mMm.My.`-mMMMN``   -dMMm/.```:dMMMM/   
-  +o+   dMMMd  `oo/ sMMMd     -///-     :/:`M/   yMMMN    `NMMM+      .MMMM/   
-        hMMMd       hMMMd                  `M/   yMMMN    .MMMM+      .MMMM/   
-        hMMMd       :MMMN`                 `M/   yMMMN     yMMMy`     +MMMM/   
-        hMMMd        .yNMNhssss+-          `M/   yMMMN      /dNMNhhhhmMMMMM/   
-        hMMMd           `----/dMMN+        `M/   yMMMN        -NMMMy``-MMMM/   
-        hMMMd                 .MMMM+       `M:   yMMMN       .mMMMh   .MMMM/   
-        hMMMd       -:::.     .MMMMs       om`   yMMMN      `dMMMd`   .MMMM/   
-        hMMMd       +MMMd`    +MMMm.    -hd.     yMMMN      hMMMm`    .MMMM/   
-        hMMMd        :hNMNhyymMNd+`  +ssdMNssssshMMMMMss.  sMMMm.     .MMMM/   
-        `````           ```````      dMN`````````````/MM/  `````       `````   
-                                     dMN             :MM+                      
-                                     ```             `--`                      
-
-
+                        -.......+s:........................................................--:/-::-/:-/
+                        ........hd+......................................................--------------
+                        .........-.....................................................................
+                        ........-s.............................................omh.......-.............
+                        ......../d.............................................:o+........:---......---
+                        ........yN:............................................./........-/.:.:-.../---
+                        ........................................................y-.......:-.-..:.../...
+                        ........................................................m+.......:-....:.../...
+                        ......+.o.//:..........................................:hs.........::-.:.../.::
+                        .....+/:d.ssh-.......................................................-/-.../:..
+                        ....++.ho.yd+d...................................................:-..../..-:...
+                        ...o/.oN-.dN-hh......................................+.s.o./.....-.....:-./....
+                        .:y:.oNo.:NN::Ny....................................y:-h.s/-o.-..--....-:-:....
+                        oy-.yNy..hMN:.sNs-...............................-:ds.sy./d.-y:/...-:--:-/./.::
+                        :./mNy..oNMN-.-NNo-/...........................--oNy.-Ns.-Ns.-do/+....//--:/:..
+                        /dMm/..sNMMd...mMN/-s/.......................//+mNo..hMo..dNs..hd/++-../..:-...
+                        yh/../mMMMm:..-NMMm..yd/..................-oo/hNm:..oMM/..sMNs..sNh:+s:--./....
+                        -../dMMMMh-...+MMMMo..sNd:............../yy-oNMh...+NMN-../MMNo..+NNo-oy/-:....
+                        ./dMMMMNo.....dMMMMm...yMNo...........:dd:.sNMh...:NMMN....NMMN:../NMd--yh:--:-
+                        sNMMMMm/.....sMMMMMN-..-NMNy.-.......oNh..oNMN-...dMMMm....hMMMd...oNMd-.oNo...
+                        yMMMMd-...../NMMMMMm....hMMMs.s-....oNd..-NMMs...:NMMMd....sMMMN:...dMMy..oNy..
+                        yMMMh......:NMMMMMNo....yMMMN--d-...mN+..+MMN:...+MMMMy....+MMMM+...oMMN-..dN/.
+                        yMNy......-mMMMMMMh.....dMMMM/.yh../MN-..yMMN....oMMMMy..../NMMMs...:MMM/..oMy.
+                        yNy.......dMMMMMMd.....:NMMMN-./N:.+MN...hMMN....oMMMMy..../NMMMo.../MMM/..+My.
+                        yy.......dMMMMMMm-.....hMMMN+..:Mo./MN-..yMMN-.../MMMMh..../MMMM/...oMMN-..sMs.
+                        o.......dMMMMMMd-.....sMMMNo...+Mo..mMo..:NMM+...-NMMMm....+MMMN....dMMh...mN-.
+                        -......dMMMMMNy......sMMMN+....dN/..+NN-..yMMm....hMMMN-...oMMMo...+NMN-..sMs.-
+                        .....-dMMMMMm+.....-hMMMd-....hMd....+Nd-..hMMy...:NMMM+...yMMd...-mMN/..sNs...
+                        ....-mMMMMNs......oNMMm+....:dMm:/-...:hm/..yNNo...oNMMh...mMd-...dMm/.-hm/-...
+                        ...:mMMMNy-.....+mMMNs.....sNNy.:y/...../s/../ys:...+yys...ss....+ys-.:s/...:-.
+                        ..:mmmms-.....+dmmms-....omdo-...o.......::-::-:--:--:--:--:--:-::-::-:....../-
+                        ---.--.-..-..-..-.--.--.-........m:......::-::-::-::::-::-::-::-:-::-::....../-
+                        --------------------------......:o/......--:--:--:----:--:--:--:-:--:--....../-
+                        -.----------.-------------................-:..:..:..:-.-:..:..:..:-.--......./:
+                         -----------------`    .--:::::---`    .----:::::::-.`     `-----------..`     
+                          osssssssssssssss/   `:ossssss+.       osssssssssssssss-    -+ssssssssssss-   
+                          mMN:`-NMMMN-`/MMy  sNMMy:.-sMMMh.     mMm.My.`-mMMMN``   -dMMm/.```:dMMMM/   
+                          +o+   dMMMd  `oo/ sMMMd     -///-     :/:`M/   yMMMN    `NMMM+      .MMMM/   
+                                hMMMd       hMMMd                  `M/   yMMMN    .MMMM+      .MMMM/   
+                                hMMMd       :MMMN`                 `M/   yMMMN     yMMMy`     +MMMM/   
+                                hMMMd        .yNMNhssss+-          `M/   yMMMN      /dNMNhhhhmMMMMM/   
+                                hMMMd           `----/dMMN+        `M/   yMMMN        -NMMMy``-MMMM/   
+                                hMMMd                 .MMMM+       `M:   yMMMN       .mMMMh   .MMMM/   
+                                hMMMd       -:::.     .MMMMs       om`   yMMMN      `dMMMd`   .MMMM/   
+                                hMMMd       +MMMd`    +MMMm.    -hd.     yMMMN      hMMMm`    .MMMM/   
+                                hMMMd        :hNMNhyymMNd+`  +ssdMNssssshMMMMMss.  sMMMm.     .MMMM/   
+                                `````           ```````      dMN`````````````/MM/  `````       `````   
+                                                             dMN             :MM+                      
+                                                             ```             `--`                      
     """, tags='introduction')]
     sys.stdout.write('adding example records...')
     writer = search_index.writer()

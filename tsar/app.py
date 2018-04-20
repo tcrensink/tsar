@@ -178,19 +178,6 @@ class App(urwid.WidgetWrap):
             self._w = active_screen
         except ValueError:
             print('error in active_screen')
-        if active_screen == self.search_screen:
-            #modify search_screen results, etc
-            # self.search_screen.display_query_results(self.results)
-            # self.search_screen.update_records_display(self.results, self.selected_record)
-            # self.search_screen.update_preview(self.results)
-            pass
-        if active_screen == self.select_screen:
-            #update select_screen interface
-            pass
-
-    # @state_history_setter
-    # def state_history(self):
-    #     #record the state history of the app
 
     def keypress(self, size, key):
         """
