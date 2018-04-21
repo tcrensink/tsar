@@ -2,12 +2,13 @@
 
 # TSAR: the Text Storage And Retrieval utility
 Tsar is a terminal based snippet manager/database interface to help you store and retrieve information *as quickly as possible*.  Tsar currently uses search-as-you-type query; sort, filter, and browsing records by similarity will be added in the future.
+![Alt Text](./demo1.gif)
 
 # Compatibility and Support
 Tsar is currently in early beta, running on python 3.x for MacOS.  Support for Linux and backward compatibility for python 2.x is planned for future releases.
 
 # Installation
-clone this repo and add the executable `tsar` to your path variable.
+(available soon) add the standalone executable `tsar` to your path variable
 
 # Getting Started
 The tutorial database walks through basic, operation, and is called without argument:

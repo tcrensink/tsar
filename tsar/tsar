@@ -16,14 +16,11 @@ from whoosh.qparser import MultifieldParser
 from whoosh.qparser import OperatorsPlugin
 from whoosh.searching import Results
 from collections import OrderedDict
-# import contextlib
-# from pprint import pprint
 import time
 
 # from app import App
 from search_screen import SearchScreen
 from select_screen import SelectScreen
-
 
 def main(input_name):
     # specify project paths and name from user:
@@ -58,49 +55,51 @@ def add_tutorial_records(search_index):
     records = [dict(timestamp=tstamp(),
                     name='Welcome to tsar!  Press RETURN and select "content" to get started...',
                     content="""Introducing TSAR: the Text Storage And Retrieval utility.  Tsar is a terminal based snippet manager with features and an interface to help you store and retrieve relevant information *as quickly as possible*.  Tsar currently uses search-as-you-type query, but will eventually include sorting, filtering, and associated record browsing.  Some suggested use cases:\n\n- a searchable, general purpose snippet database for fast recall at the command line\n- a repository of short code snippets or oft-used bash commands that are hard to remember\n- a searchable daily journal/diary\n- ...anything else where fast storage/retrieval of information from terminal is a priority.""",
-                    tags='tutorial'),
+                    tags='tutorial introduction'),
                dict(timestamp=tstamp(),
                     name='record 1: Navigation and key commands',
                     content='RETURN: toggle between "search" and "record details" pages\nUP/DOWN: select different records (search page) or select different record fields (selected record page)\nESC: exit A*\nctrl u: edit current record/save record \nctrl x: cancel edits without saving \nctrl n: create a new record\n\n',
-                    tags='tutorial'),
+                    tags='tutorial keys'),
                dict(timestamp=tstamp(),
                     name='record 2: Searching records',
-                    content='From the search page, enter a query string to live-search matching results in the database.  By default, wildcards "?" and "*" are used for single/multi-character completion.  Also, common "stop" words (at, the, for, etc) are excluded from matching records.  The search syntax is powered by by Whoosh, and can be extensively customized for each database via the database_config.py file.  See the readme and Whoosh documentation (https://whoosh.readthedocs.io/en/latest/) for more details.',
-                    tags='tutorial'),
+                    content=u"""The Whoosh search engine provides powerful and intuitive syntax - for complete details, see the documentation here: http://whoosh.readthedocs.io/en/latest/querylang.html.  While customization will be added to config.py in the future, this outlines the default search functionality.  
+                    """,
+                    tags='tutorial search'),
                dict(timestamp=tstamp(),
                     name='record 3: Search query examples',
-                    content="""The Whoosh package powers the search engine.  It has intuitive and highly customizable search syntax.  Below are a few query/result demonstrations.  Custom search syntax will be defined via in db_profile.py in the future.  
-                        
-                        Query string:               Result(s):
+                    content="""A few notes:\n- Queries search the contents of the 'name' field by default.  Search a different field using syntax `field:query`.\n- Wildcards "?" and "*" exist for single/multi-character completion\n- Common "stop" words (at, the, for, 0-9) are not indexed and don't affect query results\n- Operators AND, OR, and NOT are defined
 
-                        *                           search for records with any value in default field (name)
-                        *:*                         search for records with any value for any field
-                        tsar                        search for records with 'tsar' in the default field (name)
-                        tsar AND edit*              search for 'tsar' and strings beginning with 'edit'
-                        tsar edit*                  same as tsar AND edit
-                        tsar OR edit                search field 'name' for string 'tsar' or 'edit' OR
-                        tsar OR content:edit        search 'name' field for 'tsar' or 'content' field for 'edit'
-                        NOT search content:edit     all results that have 'search' in contents but not name
-                        example?                    search for string 'example' followed by any (single) letter
-                        5 OR content:to             no matches: common 'stop' words and numbers excluded from matching
+Query string:                       Returns all records whose:
+
+*                                   name field contains a value
+key                                 name field includes the string 'key'
+"key commands"                      name includes the phrase 'key commands' (double quotes required)
+"navigation commands"~5             name includes a phrase 'navigation... commands' up to 5 words apart
+new AND (edit* OR mod*) NOT *del    name matches wildcard/boolean query
+content:edit*                       content includes string that begins with 'edit'
+*:*                                 (any field contains a value, all records)
+key OR content:(search OR edit)     name contains 'key' or content contains words 'search' or 'edit'
+example?                            search for string 'example' followed by any (single) letter
+5 OR content:(to this at)           (no matches: these are common "stop" words excluded from matching)
+
                     """,
-                    tags='tutorial'),
+                    tags='tutorial search syntax'),
                dict(timestamp=tstamp(),
                     name='record 4: Editing records',
                     content='press CTRL+U to edit (Update) fields in an existing record if they\'re editable; press CTRL+U again to save edits, or CTRL+X to cancel edits and leave the original record unaffected.',
-                    tags='tutorial'),
+                    tags='tutorial edit keys'),
                dict(timestamp=tstamp(),
                     name='record 5: Creating a record',
                     content='CTRL+N: add a New record.  When you are finished, CTRL+U to Update the record or CTRL+X to cancel.',
-                    tags='tutorial'),
+                    tags='tutorial new keys'),
                dict(timestamp=tstamp(),
                     name='record 6: Deleting a record',
                     content='Warning: this action cannot currently be undone! Press CTRL+D to Delete a record.  Undo is not yet implemented.',
-                    tags='tutorial'),
+                    tags='tutorial delete keys'),
                dict(timestamp=tstamp(),
                     name='record 7: Managing databases',
                     content='Create a new database:\n\n1: Copy the "default_config.py" file to "new_database_config.py".  It can be edited to change the fields, search functionality, and more.\n\n2: From terminal, create a new search index with: tsar new_database, and follow the prompts.  The name of the config file will determine the "command argument" to acess it from the command line.',
-                   tags='introduction'),
+                   tags='tutorial database'),
                 dict(timestamp=tstamp(),
                     name='record 8: Feedback',
                     content="""This project is in beta.  If you have a bug report, feature request, or other feedback, please submit it through the GitHub project page.
@@ -153,7 +152,7 @@ def add_tutorial_records(search_index):
                                 `````           ```````      dMN`````````````/MM/  `````       `````   
                                                              dMN             :MM+                      
                                                              ```             `--`                      
-    """, tags='introduction')]
+    """, tags='tutorial feedback')]
     sys.stdout.write('adding example records...')
     writer = search_index.writer()
     for record in records:
@@ -266,7 +265,6 @@ def handle_user_input(input_name):
                 if input_name.lower() == 'q':
                     clear_screen()
                     sys.exit()
-
 
 if __name__ == '__main__':
 
