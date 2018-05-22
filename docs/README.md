@@ -11,7 +11,7 @@ Tsar is currently in early beta, running on python 3.x for MacOS.  Support for L
 (available soon) add the standalone executable `tsar` to your path variable
 
 # Getting Started
-The tutorial database walks through basic, operation, and is called without argument:
+The tutorial database walks through basic operation, and is called without argument:
 ```bash
 $ tsar
 ```
