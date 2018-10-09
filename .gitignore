@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# sublime project file
+tsar.sublime-project
+tsar.sublime-workspace
+
 # C extensions
 *.so
 
