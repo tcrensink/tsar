@@ -1,26 +1,36 @@
+# V1
+Notes from the first version of TSAR
+
 # Priority stack:
-X add .gif to readme with displayed shortcut keys
-- use PyInstaller to make standalone, portable executable.  Test on different builds.
-- brief code clean up
-- profile performance, prioritize bugs
+- debug/profile laggy UI
+- make a gif for each operation
+- bug prevents adding new database (with zero) records
+- installation:
+    - add .yml/setup.sh for req. install and adding to path
+    - consider PyInstaller(?) to make executables for macos, linux, windows.
+    - verify install process on other machines
+    - consider docker
+- clean up code
+- add documentation
 
 # Bugs:
-- improve scrolling smoothness/selection while holding up/down
+- improve scrolling smoothness/selection while holding up/down keys
 - Search status bar is not updated after a new record is added
-- scrolling goes offscreen for several records
+- scrolling goes offscreen with many records
 - unable to view long records in DISPLAY mode
 - datetime crashes when searched
 - search by tags?
 - different behavior when Updating a new record, depending on last field
 
-# Functionality:
-- sort results (date, alphabetic, top hit)
+# Functionality/UI:
+- improve keys combinations/meta keys for adding/editing records
+- fix tab spacing in Edit widgets
 - copy selected field to clipboard from DISPLAY (ctrl+c)
 - improve messaging on keypresses actions
-- restore default query string with ctrl x
 - clickable links to documents (softlink?) or href for urls
 
-# Features:
+# Features to add:
+- sort results (date, alphabetic, top hit)
 - add help/shortcut keys/syntax examples page
 - major feature: point to folder and index records as files
 - design/implement related record browsing
