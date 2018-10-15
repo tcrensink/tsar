@@ -1,16 +1,55 @@
+#V2 
+This page outlines TSAR's functionality, utility, and distinction from similar existing tools.
+
+
 # Key considerations
 - What is the *fastest* interface from thought to example?  Google/Stack Overflow set par here.
 - What is the *fastest/easiest* method for capture/adding new data?  If it takes too much time to add an example while you work, it's useless.  Maybe two tier system (add information, refine information?)
 - What is the *fastest* way to organize for later retrieval? Compare with wiki/manually generated relational graph... too slow!
 
+
+# Information accessibility and interface properties
+- search: you provide some relatively unique partial content or metadata (time, tag, etc.) and return all matching records.
+
+- browse by semantic similarity: you don't have identifying information for the record you seek, but recall the semantic content.  Provided a list of records, you would be able to determine which records are most related.  TSAR should implement a method for "crawling" a semantic similarity graph to the correct record
+
+- filter: you are certain you have criteria that includes the record you desire, but also contains too many other records.  Iterative filtering or "subtractive querying" is useful for removing undesired records.
+
+- discoverability: there should be contextual hints at the scope and general terrain of records 1) in some semantic vicinity and 2) globally in the database.  This may be some combination of factors, including (but not limited to) a total record count, netword (or other) visualization of the full records, and browsing metadata.
+
+
+# Desired features and use cases
+- (primary) search, browse, filter
+- (primary) fast keyboard-only access for search, browse, add record functionality
+- (primary) semi-automated meta data generation (date, suggested tags), indexing, and semantic indexing (browsing) 
+- (secondary) dairy/log tooling: specific (but definable) formatting for tracking processes through time
+- (secondary) memory integration tools: spaced repetition, review mode
+- (secondary) snippet manager tools: clipboard integration, syntax highlighting, etc.
+- (optional) Local explore: provide search, browse functionality for a given folder
+
+
+# What are the most similar tools that exist, and how is TSAR better?
+I already use X; why should I use TSAR?
+
+Google/bookmarked browser: TSAR is not designed to be an information discoverability tool; the emphasis is fast access to (poorly recalled) managed information, and ultimately integration of that information into your memory.  It is successful insofar as it accesses such information faster/more easily than Google when working in a terminal environment.
+
+Stack Overflow: It may be useful to copy/paste/pull directly from Stack Overflow; they already have a very honed "specific question, specific answer" format.  TSAR allows you to add new and tailor existing documents at-will; it should be faster from command-line environment to access relevant document. 
+
+Snippet manager: TSAR's scope is wider than a snippet manager; however developer tools (syntax highlighting, variable expansion, etc) are planned and would overlap in functionality.
+
+Local wiki: TSAR's command-line access should be faster and break developer workflow less than booting a browser-based wiki, and is not coupled to internet browsing windows.
+
+Local DB (postgres, pandas, etc): the basic funtionality of TSAR could be achieved with a very thin wrapper around a command-line database utility (e.g., psql).  Distinct from performance of search, TSAR provides a faster user experience for the specific task it's designed to do (add new records, retrieve old ones).
+
+Local files + grep: this is in some ways a "poor man's" TSAR.  TSAR aims to improve on this with expanded functionality, human friendly syntax, and iteractive features that iteratively allow you to retrieve information faster than successive grep searches.
+
+
 # Data retrieval
 - **search**: fuzzy search of multiple fields, set operations, maybe a "smart ranking" system
 - **tagging**: labels for filtering relevance, live update
 
-# Storage/organization ideas
-- **database with fields**: name, date (timestamp index?), description, tags.
-- **metadata**: access, edit, search histories
 
+# Storage and representation (see technical outline for more)
 - **spatial storage representation**
 	- 3D spatial location is strongly associated with memory; top method used by memorization masters.
 	- 3 dimensions is incapable of representing the multifold connection between concepts and ideas, so it may only be loosely relational, or at least not static
