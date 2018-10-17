@@ -1,3 +1,12 @@
+# V2: to do for refactored/rewritten version
+X install elasticsearch
+- learn a bit of elasticsearch
+- write an abc searcher class skeleton
+- figure out how to integrate elastic search and searcher class
+- create an environment.yaml, requirements.txt(?), setup.py to generate an environment and start running
+
+
+
 # V1
 Notes from the first version of TSAR
 
