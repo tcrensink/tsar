@@ -1,5 +1,6 @@
 #! /Users/trensink/anaconda3/bin/python
 """
+syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax
 docs: https://elasticsearch-py.readthedocs.io/en/master/
 """
 from elasticsearch import Elasticsearch
@@ -9,6 +10,7 @@ import os
 import subprocess
 from tsar import MODULE_PATH, REPO_PATH
 from tsar.lib import parse
+from pandas.io.json import json_normalize
 
 # elastic search uses 9200 by default
 HOST = 'localhost'
@@ -67,19 +69,19 @@ def es_client(host=HOST, port=PORT):
 
 
 def list_indices(client):
-    """show all indices available to the server
+    """show all indices (indexes) available to the server
     """
     indices = client.indices.get_alias("*")
     return indices
 
 
-
-def query(client, query=dict(match_all=dict())):
-    """using elasticsearch client query, return summary of results in more digestible format
+def results_to_df(results_dict):
     """
-    results = client.search(index="wiki", body=dict(query=query))
-
-    names = {name:name.split('_')[1] if name.startswith('_') else name for name in df.columns}
-
+    """
+    df = json_normalize(results_dict['hits']['hits'], sep='_')
+    names = {name:name.strip('_') for name in df.columns}
     df.rename(columns=names, inplace=True)
-    df = pd.DataFrame(results['hits']['hits'])
+    return df
+
+
+
