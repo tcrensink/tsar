@@ -26,7 +26,7 @@ def gen_docs(path, parser, extension):
             if file.lower().endswith(extension):
                 file_path = os.path.join(root, file)
                 doc = parser(file_path)
-                docs.append(doc)
+                docs.append((file_path, doc))
     return docs
 
 
