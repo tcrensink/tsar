@@ -30,7 +30,6 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 # from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea
 
 from typing import Callable, Dict, Iterable, List, Optional, Pattern, Union
-
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.document import Document
 from tsar.lib import search
@@ -64,7 +63,7 @@ class ElasticSearchCompleter(Completer):
 
         for result in results:
             display_meta = self.meta_dict.get(result, '')
-            yield c(result, -len(query_string), display_meta='(meta) ' + result)
+            yield Completion(result, -len(query_string), display_meta='(meta) ' + result)
             # yield Completion(result, -len(query_string), display_meta=display_meta)
 
 
