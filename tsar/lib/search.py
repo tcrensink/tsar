@@ -4,7 +4,7 @@ syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-ds
 docs: https://elasticsearch-py.readthedocs.io/en/master/
 """
 from elasticsearch import Elasticsearch
-import pandas as pd
+# import pandas as pd
 import requests
 import os
 import subprocess
@@ -84,4 +84,21 @@ def results_to_df(results_dict):
     return df
 
 
+def result_ids(es, query_str=''):
+    results_dict = es.search(q=query_str)
+    df = results_to_df(results_dict)
+    if df.empty:
+        ids = []
+    else:
+        ids = df.id.values
+    return ids
 
+
+def result_preview(es, query_str=''):
+    results_dict = es.search(q=query_str)
+    df = results_to_df(results_dict)    
+    if df.empty:
+        previews = []
+    else:
+        previews = df.source_body.values
+    return previews
