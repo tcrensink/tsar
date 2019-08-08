@@ -1,8 +1,9 @@
 """
+(THIS FILE NOT USED - SEE file_parser.py)
 Elasticsearch ingests json representation of a document. Each parser defines a mapping from a (human) document to json.
 
 Glorious future:
-write function factory for creating custom parsers.
+ABC or function factory for creating custom parsers.
 """
 import os
 import json
