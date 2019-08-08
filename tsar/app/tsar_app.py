@@ -1,0 +1,353 @@
+#!/Users/trensink/anaconda3/envs/tsar/bin/python
+"""
+This file is the tsar script that is called from the command line.
+
+The App class initializes all objects needed for tsar (metadb, elasticsearch client, and file extractor).
+self._parse_command_line_args(), and
+executes an associated method (e.g. self.edit_tsar_file).
+"""
+
+import sys
+import argparse
+import os
+import subprocess
+import shutil
+from tsar import (
+    config,
+    METADB_PATH,
+    CONTENT_FOLDER,
+    REPO_PATH,
+    _TEMP_CONTENT_FOLDER
+)
+from pathlib import Path
+from tsar.lib import (
+    search,
+    metadb,
+    file_parser
+)
+from datetime import datetime
+DEFAULT_DB_PATH = os.path.join(METADB_PATH, 'tsar.pkl')
+DEFAULT_RECORD_TYPE = 'wiki'
+DEFAULT_SEARCH_INDEX = 'wiki'
+
+# "inspecting" a folder uses temporary index, db, content folder:
+_TEMP_SEARCH_INDEX = 'temp_index'
+_TEMP_DB_PATH = os.path.join(METADB_PATH, '.tmp.pkl')
+
+
+def open_file(file_path, editor_path=config.EDITOR):
+    """open file in editor, wait until file (process) is closed.
+    """
+    file_path = file_parser.to_Path(file_path)
+    editor_cmd = '{} -w {}'.format(editor_path, str(file_path))
+    subprocess.Popen(editor_cmd, shell=True).wait()
+
+
+class App(object):
+
+    def __init__(
+        self,
+        record_type=DEFAULT_RECORD_TYPE,
+        db_path=DEFAULT_DB_PATH,
+        index=DEFAULT_SEARCH_INDEX,
+        content_folder=CONTENT_FOLDER
+    ):
+        """initialize:
+        - search client (and specific index)
+        - extractor (file -> metadata)
+        - tsar_db (metadata db)
+        """
+        try:
+            search.test_server()
+        except Exception:
+            search.launch_es_daemon()
+
+        self.record_type = record_type
+        self.db_path = db_path
+        self.index = index
+        self.content_folder = content_folder
+
+        self.tsar_db = metadb.TsarDB(self.db_path)
+        self.extractor = file_parser.Extractor(self.record_type)
+        self.tsar_search = search.TsarSearch(index=self.index)
+
+    def main(self):
+        """The main function that runs the command line supplied command, args, kwargs.
+        """
+        # process command input
+        (func, kwargs) = self._parse_command_line_args()
+
+        print('executing command: `{}`'.format(func.__name__))
+        func(**kwargs)
+        print('exiting tsar')
+
+    def _parse_command_line_args(self):
+        """command line argument parser.  Each command has its own argument parser,
+        and refers to a method by the same name.
+
+        - each separate command uses a subparser to parse the arguments
+        """
+        parser = argparse.ArgumentParser(prog='tsar', description='tsar: the textual search and retrieve engine.  Use one of the following commands:')
+        subparsers = parser.add_subparsers()
+
+        parser_init = subparsers.add_parser('init', help='initialize a new tsar db from files in contents path.')
+        parser_init.set_defaults(func=self.initialize_tsar)
+
+        parser_edit = subparsers.add_parser('edit', help='open file; edit existing and update or create new file/record')
+        parser_edit.add_argument('fname', nargs='?', default=None)
+        parser_edit.set_defaults(func=self.edit_tsar_file)
+
+        parser_search = subparsers.add_parser('query', help="""
+            <query>: search tsar records
+            <num>: open query file result
+            q: quit
+            """)
+        parser_search.set_defaults(func=self.search_records)
+
+        parser_add_new_files = subparsers.add_parser('add', help='add existing files to tsar content (and create associated metadata)')
+        parser_add_new_files.add_argument('source_path', nargs=1, default=None)
+        parser_add_new_files.set_defaults(func=self.add_tsar_files)
+
+        parser_inspect = subparsers.add_parser('inspect', help='search folder contents without creating a permanent tsar repo.')
+        parser_inspect.add_argument('source_path', nargs=1, default=None)
+        parser_inspect.set_defaults(func=self.inspect_folder)
+
+        args = parser.parse_args()
+
+        kwargs = vars(args)
+        try:
+            func = kwargs.pop('func')
+        except KeyError:
+            func = self.search_records
+        #     func = self.edit_tsar_file
+        return (func, kwargs)
+
+    def search_records(self):
+        """search interface for all records in tsar.
+
+        draft query loop:
+        - if query_str == 'q': exit
+        - if query_str can be converted to integer: open associated record
+        - if query cannot be converted to integer: query records with input
+        """
+        prompt_text = "\n**query tsar records**\nenter query string\n(q to quit)\n<number> (to open a result)\n\n"
+        print(prompt_text)
+
+        result_record_ids = []
+        while True:
+            query_str = input('q: ')
+            if query_str == 'q':
+                break
+            try:
+                n = int(query_str)
+                result_id = result_record_ids[n]
+                open_file(result_id, editor_path=config.EDITOR)
+                self._update_record(result_id)
+
+            except (ValueError, IndexError):
+                result_record_ids = self.tsar_search.query_records(query_str, self.tsar_db.df)
+
+                rec_str = "{n} {name}, {summary}"
+                for j, record_id in enumerate(result_record_ids):
+                    record = self.tsar_db.df.loc[record_id]
+                    name = os.path.split(record.name)[1]
+                    print(rec_str.format(n=j, name=name, summary=record.content.partition('\n')[0]))
+                print('\n')
+
+    def edit_tsar_file(self, fname=None):
+        """edit existing (or create new) tsar file in the tsar_content directory
+
+        Given a name, edit a file and create a new associated tsar record.
+        """
+        if self.tsar_db.df is None:
+            raise FileNotFoundError('\nNo database found at {} \nCreate a new db for contents in {} with `tsar init`'.format(self.content_folder, self.db_path))
+        if fname is None:
+            date_str = datetime.utcnow().isoformat(sep='_', timespec='seconds')
+            fname = '-'.join(date_str.split(':')) + '.md'
+        else:
+            fname = fname
+
+        # open path in editor
+        file_path = os.path.join(CONTENT_FOLDER, fname)
+        open_file(file_path, editor_path=config.EDITOR)
+        # update record, index if file exists (may not have been saved):
+        if os.path.exists(file_path):
+            self._update_record(file_path)
+
+    def initialize_tsar(self):
+        """
+        - (leave content alone)
+        - remove metadata if they exist
+        - recreates tsardb from content
+        - recreate index from tsardb
+        - exit with note to user (successful?)
+        """
+        # remove db & search index
+        self.tsar_db.remove_db()
+        self.tsar_db.create_db(schema=self.extractor.schema)
+        self.tsar_search.delete_index()
+        self.tsar_search.create_index()
+        # get relevant files
+        file_paths = file_parser.get_valid_files(self.content_folder, self.extractor.file_extensions)
+
+        # generate records, index entry for each file
+        for path in file_paths:
+            self._update_record(path, write_db=False)
+
+        self.tsar_db.write_db()
+        print('finished generating tsar from {}'.format(self.content_folder))
+
+    def _update_record(self, path, write_db=True):
+        """for record associated with path,
+        - update record in db
+        - update record_id in index
+        """
+        record = self.extractor.generate_record(path)
+        record_id = record[self.extractor.record_id_field]
+        record_type = record['record_type']
+        self.tsar_db.update_record(
+            record=record,
+            record_id=record_id
+        )
+        self.tsar_search.index_record(
+            record,
+            record_id,
+            record_type
+        )
+        if write_db:
+            self.tsar_db.write_db()
+
+    def _add_file(
+        self,
+        source_path,
+        overwrite_existing=False,
+        update_record=True,
+        write_db=True,
+        fname=None,
+        softlink=False
+    ):
+        """add an existing file (not currently in tsar) to tsar_content folder:
+
+        - check that file can successfully be parsed
+        - if so, copy file to self.content_folder/name
+        - optionally update (add) the record in tsar_db
+        - optionally write_db (set to False if adding several files, write once when finished)
+        - returns new path in tsar_content folder if created
+
+        Alternatives to interacting with files in wider filesystem include softlink/hardlink into content_folder, or merely generating metadata without touching source folders.
+        """
+        if fname is None:
+            fname = file_parser.to_Path(source_path).name
+            # fname = os.path.split(source_path)[1]
+        tsar_path = os.path.join(self.content_folder, fname)
+
+        # generate softlink or create hard copies
+        if softlink:
+            cp_fun = os.symlink
+        else:
+            cp_fun = shutil.copy2
+
+        already_exists = os.path.exists(tsar_path)
+        if (overwrite_existing is False) and (already_exists is True):
+            print('file already file already exists: {}'.format(source_path))
+            return None
+
+        # try generating record first; if successful, copy file to content_folder and generate record
+        try:
+            _ = self.extractor.generate_record(source_path)
+            cp_fun(source_path, tsar_path)
+            if update_record:
+                self._update_record(tsar_path, write_db=write_db)
+        except:
+            print('error creating record from {}'.format(source_path))
+            return None
+        return tsar_path
+
+    def add_tsar_files(
+        self,
+        source_path,
+        overwrite_existing=False,
+        update_record=True,
+        write_db=False,
+        fname=None,
+        softlink=False,
+    ):
+        """add a file or folder by copying contents to contents_folder, and updating records
+
+        - if file, accepts fname argument
+        - if folder, default (source file name) is used for contents
+
+        todo:
+        revise to copy source folder structure to avoid name collisions
+        """
+        # generate list of source_paths, enforce default fname if folder
+
+        source_paths = []
+        if os.path.isfile(source_path):
+            source_paths.append(source_path)
+        elif os.path.isdir(source_path):
+            source_paths = file_parser.get_valid_files(source_path, self.extractor.file_extensions)
+        else:
+            raise NameError('{} is neither a file nor folder'.format(source_path))
+
+        for source_path in source_paths:
+            self._add_file(
+                source_path=source_path,
+                overwrite_existing=overwrite_existing,
+                update_record=update_record,
+                write_db=write_db,
+                fname=fname,
+                softlink=softlink,
+            )
+        self.tsar_db.write_db()
+        print('added {} record(s) from {}'.format(len(source_paths), source_path))
+
+    def inspect_folder(
+        self,
+        source_path='.',
+        record_type=DEFAULT_RECORD_TYPE,
+        ):
+        """create a temporary tsar instance for examining folder contents, remove db, index afterwards
+
+        - remap attributes to temp vars
+        - initialize with tmp vars (re)write metadata, index, etc.
+        - symlink files into temp directory
+        - initialize tsar from temp directory (create new db, index, generate records)
+        - run interactive search
+        - clean up (delete index, db, files)
+        """
+
+        # reinit temp vars:
+        self.db_path = _TEMP_DB_PATH
+        self.index = _TEMP_SEARCH_INDEX
+        self.content_folder = _TEMP_CONTENT_FOLDER
+        self.record_type = record_type
+        self.tsar_db = metadb.TsarDB(self.db_path)
+        self.extractor = file_parser.Extractor(self.record_type)
+        self.tsar_search = search.TsarSearch(index=self.index)
+
+        self.initialize_tsar()
+        if not os.path.exists(self.content_folder):
+            os.mkdir(self.content_folder)
+        self.tsar_db = metadb.TsarDB(self.db_path)
+        self.extractor = file_parser.Extractor(self.record_type)
+        self.tsar_search = search.TsarSearch(index=self.index)
+        source_path = str(file_parser.to_Path(source_path[0]))
+        self.add_tsar_files(
+            source_path,
+            overwrite_existing=False,
+            update_record=True,
+            write_db=False,
+            fname=None,
+            softlink=True,
+        )
+        # generates new db, index from self.content_folder
+        self.initialize_tsar()
+        self.search_records()
+        self.tsar_search.delete_index()
+
+
+if __name__ == '__main__':
+
+    app = App()
+    app.main()
