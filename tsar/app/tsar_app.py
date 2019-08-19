@@ -25,7 +25,11 @@ from tsar.lib import (
     metadb,
     file_parser
 )
+from tsar.app import prompt
+from tsar.app.prompt2 import run_query_app
 from datetime import datetime
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.shortcuts import PromptSession
 DEFAULT_DB_PATH = os.path.join(METADB_PATH, 'tsar.pkl')
 DEFAULT_RECORD_TYPE = 'wiki'
 DEFAULT_SEARCH_INDEX = 'wiki'
@@ -129,36 +133,41 @@ class App(object):
 
 
     def search_records(self):
-        """search interface for all records in tsar.
-
-        draft query loop:
-        - if query_str == 'q': exit
-        - if query_str can be converted to integer: open associated record
-        - if query cannot be converted to integer: query records with input
+        """open prompt-toolkit interface for searching/returning records
         """
-        prompt_text = "\n**query tsar records**\nenter query string\n(q to quit)\n<number> (to open a result)\n\n"
-        print(prompt_text)
+        run_query_app(self)
 
-        result_record_ids = []
-        while True:
-            query_str = input('q: ')
-            if query_str == 'q':
-                break
-            try:
-                n = int(query_str)
-                result_id = result_record_ids[n]
-                open_file(result_id, editor_path=config.EDITOR)
-                self._update_record(result_id)
+    # def search_records(self):
+    #     """search interface for all records in tsar.
 
-            except (ValueError, IndexError):
-                result_record_ids = self.tsar_search.query_records(query_str, self.tsar_db.df)
+    #     draft query loop:
+    #     - if query_str == 'q': exit
+    #     - if query_str can be converted to integer: open associated record
+    #     - if query cannot be converted to integer: query records with input
+    #     """
+    #     prompt_text = "\n**query tsar records**\nenter query string\n(q to quit)\n<number> (to open a result)\n\n"
+    #     print(prompt_text)
 
-                rec_str = "{n} {name}, {summary}"
-                for j, record_id in enumerate(result_record_ids):
-                    record = self.tsar_db.df.loc[record_id]
-                    name = os.path.split(record.name)[1]
-                    print(rec_str.format(n=j, name=name, summary=record.content.partition('\n')[0]))
-                print('\n')
+    #     result_record_ids = []
+    #     while True:
+    #         query_str = input('q: ')
+    #         if query_str == 'q':
+    #             break
+    #         try:
+    #             n = int(query_str)
+    #             result_id = result_record_ids[n]
+    #             open_file(result_id, editor_path=config.EDITOR)
+    #             self._update_record(result_id)
+    #         except (ValueError, IndexError):
+    #             result_record_ids = self.tsar_search.query_records(query_str, self.tsar_db.df)
+
+    #             rec_str = "{n} {name}, {summary}"
+    #             for j, record_id in enumerate(result_record_ids):
+    #                 record = self.tsar_db.df.loc[record_id]
+    #                 name = os.path.split(record.name)[1]
+    #                 print(rec_str.format(n=j, name=name, summary=record.content.partition('\n')[0]))
+    #             print('\n')
+
 
     def edit_tsar_file(self, fname=None):
         """edit existing (or create new) tsar file in the tsar_content directory
