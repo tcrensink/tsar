@@ -1,17 +1,17 @@
+#!/usr/bin/env python
 """
 This file tests a search-bar TUI frontend with test data (no elasticsearch integration):
 https://www.youtube.com/watch?v=hJhZhLg3obk
-"""
-#!/usr/bin/env python
-"""
+
 An example of a BufferControl in a full screen layout that offers auto
 completion.
 Important is to make sure that there is a `CompletionsMenu` in the layout,
 otherwise the completions won't be visible.
 """
-
-#!/usr/bin/env python
 import sys
+import os
+import subprocess
+import yaml
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.lexers import PygmentsLexer
@@ -19,14 +19,12 @@ from prompt_toolkit.styles import Style
 from pygments.lexers.sql import SqlLexer
 from prompt_toolkit.key_binding import KeyBindings
 
-import os
-import subprocess
-import yaml
+from tsar import config
 from uuid import uuid4
 from tsar.lib import search, parse
 DOCUMENTS_PATH = '/Users/trensink/git/my_repos/tsar/wiki_documents'
 # DOC_PATH = os.path.join(INDEX_PATH, 'test2.md')
-CONFIG_PATH = '../tsar/config.yaml'
+# CONFIG_PATH = '../tsar/config.yaml'
 EXTENSIONS = ['.md']
 INDEX = 'wiki'
 DOC_TYPES = ['wiki_page']
@@ -49,9 +47,6 @@ def new_doc_path(doc_path=DOCUMENTS_PATH):
     return doc_path
 
 
-# def edit_document():
-
-
 def gen_key_bindings():
 
     bindings = KeyBindings()
@@ -67,7 +62,8 @@ def gen_key_bindings():
 
     @bindings.add('q')
     def _(event):
-        print('goodbye!')
+        " Exit when `q` is pressed. "
+        event.app.exit()
 
     @bindings.add('down')
     def _(event):
@@ -94,9 +90,10 @@ def initialize_search(documents_path=DOCUMENTS_PATH):
 if __name__ == '__main__':
 
     print('getting default programs...')
-    with open(CONFIG_PATH) as fp:
-        editor_dict = yaml.safe_load(fp)
-    editor_cmd = editor_dict['editor']
+    # with open(CONFIG_PATH) as fp:
+    #     editor_dict = yaml.safe_load(fp)
+    # editor_cmd = editor_dict['editor']
+    editor_cmd = config.EDITOR
     es = initialize_search()
     bindings = gen_key_bindings()
     session = PromptSession()
@@ -111,13 +108,9 @@ if __name__ == '__main__':
         except EOFError:
             break  # Control-D pressed.
 
-
-        if input_str == 'q':
-            print('goodbye!')
-            break
         if input_str == 'ls':
             print('listing all existing documents:')
-            display_results(query_str='*')
+            search.display_results(query_str='*')
             continue
         if input_str == '+':
             print('add new document...')
