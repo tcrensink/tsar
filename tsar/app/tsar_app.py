@@ -222,7 +222,6 @@ class App(object):
         """
         if fname is None:
             fname = file_parser.to_Path(source_path).name
-            # fname = os.path.split(source_path)[1]
         tsar_path = os.path.join(self.content_folder, fname)
 
         # generate softlink or create hard copies
@@ -265,7 +264,7 @@ class App(object):
         revise to copy source folder structure to avoid name collisions
         """
         # generate list of source_paths, enforce default fname if folder
-        source_path = source_path[0]
+        # source_path = source_path[0]
         source_paths = []
         if os.path.isfile(source_path):
             source_paths.append(source_path)
@@ -301,6 +300,7 @@ class App(object):
         - clean up (delete index, db, files)
         """
         # reinit temp vars:
+
         self.db_path = _TEMP_DB_PATH
         self.index = _TEMP_SEARCH_INDEX
         self.content_folder = _TEMP_CONTENT_FOLDER

@@ -146,7 +146,6 @@ def results_from_query(
         query_buffer.text,
         tsar_app.tsar_db.df
     )
-
     results_list = []
     rec_str = "{n} {name}, {summary}"
     for j, record_id in enumerate(result_record_ids):
@@ -157,13 +156,16 @@ def results_from_query(
 
     record_selector.update_results(results_list)
 
-
-def preview_from_result_index(
-    tsar_app,
-    record_selector,
-    ):
+def return_preview(
+    record_id,
+    tsar_db,
+):
     """return a preview based on the current result index
     """
+    preview = tsar_db.df.loc[record_id].content
+    return preview
+
+
 
 def run(tsar_app):
     """LAYOUT: define buffers, assign query -> results callback"""
@@ -184,19 +186,32 @@ def run(tsar_app):
         height=12
     )
 
-    # callback to update results from query
+    preview_window = Window(
+        FormattedTextControl('(no record preview yet)'),
+        height=22
+    )
+
+    status_window = Window(
+        FormattedTextControl('{} of {} records'.format(1, tsar_app.tsar_db.df.shape[0])),
+        height=1,
+        style='reverse'
+    )
+
+    line = HorizontalLine()
+
+
+    """ DEFINE CALLBACKS
+    - update results from query
+    - update status bar from query
+    """
     query_window.content.buffer.on_text_changed += partial(
         results_from_query,
         tsar_app=tsar_app,
         record_selector=record_selector,
     )
 
-    preview_window = Window(
-        FormattedTextControl('(no record preview yet)'),
-        height=22
-    )
 
-    line = HorizontalLine()
+    # GENERATE LAYOUT
     layout = Layout(
         HSplit([
             Window(
@@ -209,14 +224,7 @@ def run(tsar_app):
             result_window,
             line,
             preview_window,
-            # Window(
-            #     BufferControl(preview_buffer),
-            # ),
-            Window(
-                FormattedTextControl('no records: {}'.format('N')),
-                height=1,
-                style='reverse'
-            ),
+            status_window
         ])
     )
 
@@ -235,6 +243,7 @@ def run(tsar_app):
         - update selected result (formatted_results.index)
         - update preview
         """
+        import pdb; pdb.set_trace()
         key = event.key_sequence[0].key
         try:
             if key == 'up':
@@ -243,7 +252,10 @@ def run(tsar_app):
                 record_selector.index += 1
         except TypeError:
             record_selector.index = 0
-        # preview_window.content.text = return_preview(formatted_results.index)
+        preview_window.content = return_preview(
+            record_id=tsar_app.tsar_db.df.iloc[record_selector.index],
+            tsar_db=tsar_app.tsar_db,
+        )
 
 
     ### APPLICATION
