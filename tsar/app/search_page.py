@@ -23,6 +23,9 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.widgets import HorizontalLine
 from functools import partial
 from prompt_toolkit.formatted_text import FormattedText
+from tsar.lib import io
+
+
 STYLE = {
     'selected': 'bg:#944288',
     'unselected': 'default'
@@ -157,6 +160,15 @@ class SearchInterface(object):
             self.tsar_app.tsar_db.df.shape[0]
         )
 
+    def open_selected(self):
+        """open selected record
+        """
+        if len(self.results) > 0:
+            record_id = self.results[self.index]
+        else:
+            pass
+        io.open_record(record_id=record_id)
+
 
 def run(tsar_app):
     """start the interactive search page.query
@@ -174,7 +186,6 @@ def run(tsar_app):
 
     result_window = Window(
         search_interface.results_textcontrol,
-        # FormattedTextControl(record_selector.results),
         height=12
     )
     preview_window = Window(
@@ -211,23 +222,25 @@ def run(tsar_app):
 
     @kb.add('c-c')
     def _(event):
-        " Control-c to quit application. "
+        """Control-c to quit application. """
         event.app.exit()
 
     # select result:
     @kb.add('up')
     @kb.add('down')
     def _(event):
-        """change selection based on key presses
-        - update selected result (formatted_results.index)
-        - update preview
-        """
+        """change selection based on key presses"""
         key = event.key_sequence[0].key
         if key == 'up':
             search_interface.index -= 1
         if key == 'down':
             search_interface.index += 1
 
+    @kb.add('enter')
+    def _(event):
+        """open selected record"""
+        # print('(open record on selection)')
+        search_interface.open_selected()
     # APPLICATION
     application = Application(
         layout=layout,

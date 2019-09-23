@@ -12,7 +12,6 @@ import requests
 import os
 import subprocess
 from tsar import MODULE_PATH, REPO_PATH
-from tsar.lib import parse
 from pandas.io.json import json_normalize
 
 # elastic search uses 9200 by default

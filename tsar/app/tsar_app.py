@@ -10,7 +10,6 @@ executes an associated method (e.g. self.edit_tsar_file).
 import sys
 import argparse
 import os
-import subprocess
 import shutil
 from tsar import (
     config,
@@ -23,7 +22,8 @@ from pathlib import Path
 from tsar.lib import (
     search,
     metadb,
-    file_parser
+    file_parser,
+    io
 )
 from tsar.app import search_page
 from datetime import datetime
@@ -36,14 +36,6 @@ DEFAULT_SEARCH_INDEX = 'wiki'
 # "inspecting" a folder uses temporary index, db, content folder:
 _TEMP_SEARCH_INDEX = 'temp_index'
 _TEMP_DB_PATH = os.path.join(METADB_PATH, '.tmp.pkl')
-
-
-def open_file(file_path, editor_path=config.EDITOR):
-    """open file in editor, wait until file (process) is closed.
-    """
-    file_path = file_parser.to_Path(file_path)
-    editor_cmd = '{} -w {}'.format(editor_path, str(file_path))
-    subprocess.Popen(editor_cmd, shell=True).wait()
 
 
 class App(object):
@@ -152,7 +144,7 @@ class App(object):
 
         # open path in editor
         file_path = os.path.join(CONTENT_FOLDER, fname)
-        open_file(file_path, editor_path=config.EDITOR)
+        io.open_record(file_path)
         # update record, index if file exists (may not have been saved):
         if os.path.exists(file_path):
             self._update_record(file_path)
