@@ -8,7 +8,6 @@ To do:
 from elasticsearch import Elasticsearch
 from elasticsearch.serializer import JSONSerializer
 import numpy as np
-# import pandas as pd
 import requests
 import os
 import subprocess
@@ -73,7 +72,6 @@ class TsarSearch(object):
     def query_records(self, query_str, tsar_df):
         """return metadata records matching the query
         """
-        # import pdb; pdb.set_trace()
         raw_results = self._query_records(query_str)
         result_ids = [result['_id'] for result in raw_results['hits']['hits']]
 
