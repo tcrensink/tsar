@@ -208,7 +208,7 @@ class App(object):
         update_record=True,
         write_db=True,
         fname=None,
-        softlink=False
+        softlink=True
     ):
         """add an existing file (not currently in tsar) to tsar_content folder:
 
@@ -287,7 +287,7 @@ class App(object):
 
     def inspect_folder(
         self,
-        source_path='.',
+        source_path,
         record_type=DEFAULT_RECORD_TYPE,
         ):
         """create a temporary tsar instance for examining folder contents, remove db, index afterwards
@@ -300,7 +300,6 @@ class App(object):
         - clean up (delete index, db, files)
         """
         # reinit temp vars:
-
         self.db_path = _TEMP_DB_PATH
         self.index = _TEMP_SEARCH_INDEX
         self.content_folder = _TEMP_CONTENT_FOLDER

@@ -1,30 +1,17 @@
-"""query interface that executes query callback on keystrokes.
+"""Query/search app interface
 
-
-Todo: decouple result selection from result data management
-
-RecordSelector current manages result formatting and the selected result index,
-while results_from_query is a standalone function that returns a list of result strings.
-
-Separate the functionality more clearly between result managment and selection managment as follows:
-
-class result_selector: only defines logic of selected result index
-    - attr for number of results, current result
-    - methods for changing result index
-
-class ResultManager:
-    - init:
-        - tsar_app (contains all result data from a query)
-        - result_selector (manages result selection)
-    - attr selected_index: defines current result, with help of result_selector
-    - method formatted_results: returns list of FormattedText results
-    - method `preview`: generates/returns preview of selected result
+- SearchInterface(object):
+    - connects tsar_app (including df, tsar_search (elasticsearch) with prompt_toolkit app defined here
+    - attributes include query, results, preview layout objects
+    - handles index logic for selected results from list
+    - includes callback for updating results based on query
+- run(tsar_app):
+    - defines prompt_toolkit layout, runs prompt_toolkit app
 """
 
 from __future__ import unicode_literals
-
-import os
-from prompt_toolkit import prompt
+# import os
+from prompt_toolkit import prompt, print_formatted_text
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import HSplit, Window
@@ -36,44 +23,48 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.widgets import HorizontalLine
 from functools import partial
 from prompt_toolkit.formatted_text import FormattedText
-
 STYLE = {
     'selected': 'bg:#944288',
     'unselected': 'default'
 }
 
 
-def return_status_text(num_results, num_records):
-    """
-    """
-    status_str =  "{num_results} of {num_records} |\
-    ".format(num_results=3, num_records=3)
+class SearchInterface(object):
+    """Interface that handles search_page display logic from tsar_app records
 
+    - prompt-toolkit query, results, preview, status elements as attributes
+    - generates results from search_page query string
+    - formats results for display
+    - handles index of selected result
+    - generates preview of selected record
 
-class RecordSelector(object):
-    """convert list of results to FormattedText list of tuples; index defines selected row.
     """
-    def __init__(self, results_list=None, style=STYLE, index=None):
+    def __init__(self, tsar_app, style=STYLE, index=-1):
 
+        self.tsar_app = tsar_app
+        self.query_buffer = Buffer(name='query_buffer', multiline=False)
+        # callback function that links query to results:
+        self.query_buffer.on_text_changed += self.update_results
+        self.results_textcontrol = FormattedTextControl('(no results)')
+        self.preview_textcontrol = FormattedTextControl('(no result selected)')
+        self.status_textcontrol = FormattedTextControl()
         self.style = style
-        if results_list is None:
-            results_list = []
-        # results must always be modified in-place
+        # value -1 indicates no result is currently selected
+        self._index = -1
         self.results = []
-        self.update_results(
-            results_list=results_list,
-            index=index
-        )
+        # FormattedText results:
+        self.formatted_results = self._apply_default_format(self.results)
+        self.update_results()
 
     @property
-    def result_styles(self):
-        _result_styles, _ = zip(*self.results)
-        return list(_result_styles)
+    def query_str(self):
+        return self.query_buffer.text
 
-    @property
-    def result_texts(self):
-        _, _result_texts = zip(*self.results)
-        return list(_result_texts)
+    @query_str.setter
+    def query_str(self, new_query_str):
+        """computes results when set
+        """
+        self.query_buffer.text = new_query_str
 
     @property
     def index(self):
@@ -81,40 +72,52 @@ class RecordSelector(object):
 
     @index.setter
     def index(self, new_index):
-        """change the results `style` based active_result_index
+        """defines the index (int) of the selected result
+        if no selected result, index=-1 (keeping type int makes life simpler)
         """
-        # self._index may not exist:
-        try:
-            old_index = self._index
-        except AttributeError:
-            old_index = None
+        old_index = self._index
 
-        # correct value bounds:
-        try:
-            if new_index >= len(self.results):
-                new_index = len(self.results) - 1
-            elif new_index < 0:
-                new_index = 0
-        except TypeError:
-            pass
+        L = len(self.results)
+        if L == 0:
+            new_index = -1
+        elif new_index < 0:
+            new_index = 0
+        elif L - 1 < new_index:
+            new_index = L - 1
+
         self._index = new_index
-        self._update_selected(old_index, new_index)
+        self._update_preview_content()
 
-    def _update_selected(self, old_index, new_index):
-        """change the style of previous index to default, new index to selected
-        Either old or new index may be None and should be handled separately
+        # update results formatting
+        self._update_selected_result(old_index, new_index)
+
+    def _update_preview_content(self):
+        """update preview content based on index
         """
-        if len(self.results) == 0:
-            return
+        if self.index == -1:
+            preview_str = ""
+        else:
+            preview_str = self.tsar_app.tsar_db.df.loc[self.results[self.index]]['content']
+        self.preview_textcontrol.text = preview_str
+
+    def _update_selected_result(self, old_index, new_index):
+        """update formatted results style based on index change.
+
+        old or new index may be -1 or no longer exist
+        """
         try:
-            _, res = self.results[old_index]
-            self.results[old_index] = (self.style["unselected"], res)
-        except TypeError:
+            self.formatted_results[old_index] = (
+                self.style['unselected'],
+                self.formatted_results[old_index][1]
+            )
+        except IndexError:
             pass
         try:
-            _, res = self.results[new_index]
-            self.results[new_index] = (self.style["selected"], res)
-        except TypeError:
+            self.formatted_results[new_index] = (
+                self.style['selected'],
+                self.formatted_results[new_index][1]
+            )
+        except IndexError:
             pass
 
     def _apply_default_format(self, results_list):
@@ -122,94 +125,75 @@ class RecordSelector(object):
 
         print formatted results using print_formatted_text
         """
-        results_list = ["{}\n".format(res) for res in results_list]
-        formatted_results = FormattedText([(self.style['unselected'], res) for res in results_list])
+        if len(results_list) != 0:
+            results_list = ["{}\n".format(res) for res in results_list]
+            formatted_results = [(self.style['unselected'], res) for res in results_list]
+        else:
+            formatted_results = []
         return formatted_results
 
-    def update_results(self, results_list, index=None):
-        """update attributes from new results_list.  It's critical
-        that the results object maintains the same id, else they will not be updated.
+    def update_results(self, passthrough='dummy_arg'):
+        """call back function updates results when query text changes
+        - signature required to be callable from prompt_toolkit callback
+
+        - set results based on query
+        - set formatted results (default formatting)
+        - update index to 0 (-1 if no results)
+            - updates selected record
+            - updates preview of selected record
+        - update status bar
         """
-        self.results.clear()
-        self.results.extend(self._apply_default_format(results_list))
-        self.index = index
+        # update df index references
+        self.results = self.tsar_app.tsar_search.query_records(
+            self.query_str,
+            self.tsar_app.tsar_db.df
+        )
+        # update formatted results for display
+        self.formatted_results = self._apply_default_format(self.results)
+        self.results_textcontrol.text = self.formatted_results
+        self.index = 0
+        self.status_textcontrol.text = '{} of {} records'.format(
+            len(self.results),
+            self.tsar_app.tsar_db.df.shape[0]
+        )
 
-
-def results_from_query(
-    query_buffer,
-    tsar_app,
-    record_selector,
-):
-    """get results from query, update formatted_results object
-    """
-    result_record_ids = tsar_app.tsar_search.query_records(
-        query_buffer.text,
-        tsar_app.tsar_db.df
-    )
-    results_list = []
-    rec_str = "{n} {name}, {summary}"
-    for j, record_id in enumerate(result_record_ids):
-        record = tsar_app.tsar_db.df.loc[record_id]
-        name = os.path.split(record.name)[1]
-        summary = record.file_path
-        results_list.append(rec_str.format(n=j, name=name, summary=summary))
-
-    record_selector.update_results(results_list)
-
-def return_preview(
-    record_id,
-    tsar_db,
-):
-    """return a preview based on the current result index
-    """
-    preview = tsar_db.df.loc[record_id].content
-    return preview
-
+# %% test SearchInterface
+# q = SearchInterface(tsar_app)
+# q.query_str = '*'
+# q.index += 1
+# print_formatted_text(FormattedText(q.formatted_results))
 
 
 def run(tsar_app):
-    """LAYOUT: define buffers, assign query -> results callback"""
+    """start the interactive search page.query
+
+    LAYOUT: define buffers, assign query -> results callback
+    """
+    search_interface = SearchInterface(tsar_app)
 
     query_window = Window(
         BufferControl(
-            Buffer(
-                name='query_buffer',
-                multiline=False
-            )
+            search_interface.query_buffer
         ),
         height=1,
     )
 
-    record_selector = RecordSelector()
     result_window = Window(
-        FormattedTextControl(record_selector.results),
+        search_interface.results_textcontrol,
+        # FormattedTextControl(record_selector.results),
         height=12
     )
-
     preview_window = Window(
-        FormattedTextControl('(no record preview yet)'),
+        search_interface.preview_textcontrol,
         height=22
     )
-
     status_window = Window(
-        FormattedTextControl('{} of {} records'.format(1, tsar_app.tsar_db.df.shape[0])),
+        search_interface.status_textcontrol,
         height=1,
         style='reverse'
     )
 
     line = HorizontalLine()
-
-
-    """ DEFINE CALLBACKS
-    - update results from query
-    - update status bar from query
-    """
-    query_window.content.buffer.on_text_changed += partial(
-        results_from_query,
-        tsar_app=tsar_app,
-        record_selector=record_selector,
-    )
-
 
     # GENERATE LAYOUT
     layout = Layout(
@@ -243,26 +227,17 @@ def run(tsar_app):
         - update selected result (formatted_results.index)
         - update preview
         """
-        import pdb; pdb.set_trace()
         key = event.key_sequence[0].key
-        try:
-            if key == 'up':
-                record_selector.index -= 1
-            if key == 'down':
-                record_selector.index += 1
-        except TypeError:
-            record_selector.index = 0
-        preview_window.content = return_preview(
-            record_id=tsar_app.tsar_db.df.iloc[record_selector.index],
-            tsar_db=tsar_app.tsar_db,
-        )
-
+        if key == 'up':
+            search_interface.index -= 1
+        if key == 'down':
+            search_interface.index += 1
 
     ### APPLICATION
     application = Application(
         layout=layout,
         key_bindings=kb,
-        full_screen=True)
+        full_screen=True
+    )
 
     application.run()
-
