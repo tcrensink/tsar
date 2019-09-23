@@ -7,15 +7,18 @@
     - tsar edit: edit existing file or create new
     - tsar inspect: create temporary db, index for exploring folder contents
 
-# prompt toolkit interface
+# on `tsar inspect test_content`
     X update query after each keystroke
-    - select result with up/down (maintain cursor in query)
-    - display preview of selected result
+    X select result with up/down (maintain cursor in query)
+    X display preview of selected result
     - open record on selection
-    - add records summary info at bottom of screen
-        - number of records
-        - available keywords (is this a cross-record type field?)
+    X add records summary info at bottom of screen
+        X number of records
 
+# improve usability
+    - daemonize/reduce startup time
+    - update records only if hash differs
+    - caching(?)
 
 # next: test it out, get feedback
     - what works well?
