@@ -39,6 +39,7 @@ class SearchInterface(object):
     - generates preview of selected record
 
     """
+
     def __init__(self, tsar_app, style=STYLE, index=-1):
 
         self.tsar_app = tsar_app
@@ -95,7 +96,7 @@ class SearchInterface(object):
         """update preview content based on index
         """
         if self.index == -1:
-            preview_str = ""
+            preview_str = "(no result selected)"
         else:
             preview_str = self.tsar_app.tsar_db.df.loc[self.results[self.index]]['content']
         self.preview_textcontrol.text = preview_str
@@ -127,7 +128,8 @@ class SearchInterface(object):
         """
         if len(results_list) != 0:
             results_list = ["{}\n".format(res) for res in results_list]
-            formatted_results = [(self.style['unselected'], res) for res in results_list]
+            formatted_results = [(self.style['unselected'], res)
+                                 for res in results_list]
         else:
             formatted_results = []
         return formatted_results
@@ -143,12 +145,10 @@ class SearchInterface(object):
             - updates preview of selected record
         - update status bar
         """
-        # update df index references
         self.results = self.tsar_app.tsar_search.query_records(
             self.query_str,
             self.tsar_app.tsar_db.df
         )
-        # update formatted results for display
         self.formatted_results = self._apply_default_format(self.results)
         self.results_textcontrol.text = self.formatted_results
         self.index = 0
@@ -156,12 +156,6 @@ class SearchInterface(object):
             len(self.results),
             self.tsar_app.tsar_db.df.shape[0]
         )
-
-# %% test SearchInterface
-# q = SearchInterface(tsar_app)
-# q.query_str = '*'
-# q.index += 1
-# print_formatted_text(FormattedText(q.formatted_results))
 
 
 def run(tsar_app):
@@ -212,8 +206,9 @@ def run(tsar_app):
         ])
     )
 
-    ### KEYBINDINGS
+    # KEYBINDINGS
     kb = KeyBindings()
+
     @kb.add('c-c')
     def _(event):
         " Control-c to quit application. "
@@ -233,7 +228,7 @@ def run(tsar_app):
         if key == 'down':
             search_interface.index += 1
 
-    ### APPLICATION
+    # APPLICATION
     application = Application(
         layout=layout,
         key_bindings=kb,
