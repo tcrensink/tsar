@@ -22,7 +22,8 @@ import numpy as np
 import functools
 from datetime import datetime
 from pathlib import Path
-
+import nltk
+# import sklearn
 """
 schema fields common to record types.  Some fields are used to generate file meta data
 """
@@ -76,6 +77,7 @@ class Extractor(object):
     - file_parser
     - hash field (record content)
     - file metadata
+    - one_line_summary
     """
 
     def __init__(self, record_type):
@@ -110,6 +112,7 @@ class Extractor(object):
             raise KeyError('record does not match schema.  key mis-match: {}'.format(key_diff))
 
         return record_dict
+
 
 
 def _parse_wiki(path, content_col, keyword_col):
@@ -149,7 +152,7 @@ def return_file_meta_data(path):
     return meta_dict
 
 def to_Path(path):
-    """returns expanded path objct from a string.
+    """returns expanded path object from a string.
     """
     expanded_path = Path(path).expanduser().resolve()
     return expanded_path
@@ -173,3 +176,10 @@ def get_valid_files(path, file_extensions):
             valid_fpaths = [fp for fp, ext in zip(fpaths, file_exts) if ext in file_extensions]
             file_paths.extend(valid_fpaths)
     return file_paths
+
+
+set(nltk.corpus.stopwords.words('english'))
+def pre_index(record):
+    """given a record (body content), remove stop words
+    """
+    nltk.c

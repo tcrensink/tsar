@@ -1,34 +1,74 @@
-# V2: start with very fast, lightweight experiments on UI, UX
+# DONE LOG
+- working commands: tsar {init, query, add, edit, inspect}
+    - inspect a bit buggy
+- clarified objectives, design in description.md
+- redefined api in design_doc.md
 
-# working, bug-free
-    - tsar init: recreate metadata based on content_folder files
-    - tsar query: search current records
-    - tsar add: copy file(s) from elsewhere into content_folder, add associated metadata
-    - tsar edit: edit existing file or create new
-    - tsar inspect: create temporary db, index for exploring folder contents
+# TO RESUME
+- start implementing new API, referencing design_doc api sketch:
+    - write RecordDef(ABC)
+    - (re)write TsarDB
+    - (re)write TsarSearch
+    - write Collection
+    - test Collection code; write up as tests(?)
+    - define App api, behavior
+        - reread description.md and think about UI for modalities
+        - define desired UI flow in words, document it
+        - sketch App api, CLI commands
+        - implement App
 
-# on `tsar inspect test_content`
-    X update query after each keystroke
-    X select result with up/down (maintain cursor in query)
-    X display preview of selected result
-    - open record on selection
-    X add records summary info at bottom of screen
-        X number of records
 
-# improve usability
-    - daemonize/reduce startup time
-    - update records only if hash differs
-    - caching(?)
+- read api_sketch.py (almost finished) in prep for refactor.  RecordType and app are the largest changes
+- finish implementing REST API search.py
+    X instantiate session
+    X delete index
+    X create index (from template)
+    - \_query index (raw)
+    - query_index (return list of \_id of records)
+    - index_record
+    - index_records
+    - configure mapping to make use of Elasticsearch text filters for indexing
 
-# next: test it out, get feedback
-    - what works well?
-    - what is biggest pain point?
-    - how would you re-imagine what it offers?
-    - thoughts:
-        - improve performance
-        - provide search metadata:
-            - how many records?
-            - keywords, ranked by popularity
+- write ABC-based RecordType
+- create a wiki collection file including:
+    - RecordType subclass
+    - base_schema definition
+    - schema definition
+    - start of parsing library
+    - elasticsearch mapping
+
+- create config files (start with python files).  See design_doc.md for thoughts
+    - global config:
+        - editor
+        - document collections
+        - default document collection
+        - default file extension -> record type map
+    - document collection
+        - name (defines db, index references)
+        - default file extension -> record type map
+        - default search behavior (which fields are searched by default?)
+    - record type definition
+        - db parser
+            - transformation function
+            - fields, types
+        - index mapping (parse of metadata to elasticsearch index)
+
+- daemonize:
+    - connect to (existing) process for fast access
+    - decouple daemon logic (indexing, etc) from program
+    - improve results preview (crop filename, show other metadata)
+    - add status bar with keywords
+    - daemonize to reduce start up time (always on feeling)
+    - keep folder structure for wiki files (avoid name collisions)
+    - write code base parser
+
+
+# LATER: after trial, evaluation
+    Do this process:
+    1) reread tsar raison d'etre, proposed use-cases.  How does it measure up?  Has this vision changed?
+        - what works well?
+        - what is biggest pain point?
+        - how would you re-imagine what it offers?
         - search record previews
         - interactive search
         - journal function?
@@ -39,8 +79,13 @@
             - keyword generation with tf-idf?
         - load time/daemonize
         - doc browse/association?
-    - feedback thoughts
-        - its slow
+    3) define a clear vision for the architecture.  It should include the following:
+        - what is defined by a template, how extensible is it?
+        - is there a single tsar, or several different?  Can one include multiple doc types?
+        - do files live in a specific folder, or are they just soft-linked?
+        - what is the interface workflow?  Will it remain a series of bash commands, or interactive windows?
+            - is browse a separate window from search?
+            - can you access multiple functions in one session, or each a separate bash command?
 
 
 (Glorious future/notes)
@@ -52,9 +97,8 @@ examples that may be useful, from python-prompt-toolkit/examples/full-screen/:
 - change focus: focus.py
 
 
-# prompt-toolkit integration
-**presently aborted** Resume the following if a python-prompt-toolkit front end is of interest.
-The example files up through 04_autocomplete_link_to_doc.py should work out of the box, or nearly so.
+# PREVIOUS
+X see aborted previous efforts in git/repos/prompt_toolkit, 04_autocomplete_link_to_doc.py
 
 X install elasticsearch
 X write elasticsearch example:
@@ -68,45 +112,11 @@ X write elasticsearch example to query local markdown
     X generate elasticsearch doc for each file
     X add doc to elasticsearch index with using client
 
-X (draft) write repl to query records, sanity check elasticsearch
-    X prompt for query
-    X result prompt to requery or display contents
-    X prompt to remove record
-    X display results names (fix hits display)
-
-X (draft) add record in terminal from editor
-    X define editor excutable in config file
-    X open editor when "+" is pressed
-    X on save or close, adds document to index (updates index)
-
-X (draft) sync index to markdown files:
-    X .md and index reference; both exist
-    X add index id when file is created; store at uuid path
-    X update index id when file is edited
-    X remove index id when file is removed
-
 X (draft) TUI (use prompt toolkit!)
     X create a layout with a search bar, results widgets
     X get focus working properly:
         X typing modifies query
         X up/down selects results
-
-X fix prompt-toolkit dependency issue
-    X standard version needed for ipython, modified for tsar
-    X create forked version in `~`/git/forks
-    X recursively rename all references to `prompt_toolkit_dev`
-    X conda develop <project name!!> -n tsar
-    X verify imports work
-
-X move monkey patched example code to forked repo
-    X ElasticSearch completer
-    X fix references to prompt_toolkit_dev
-
-- (draft) define I/O for selection
-    X populate preview of document for query results
-    X creat "live" search/return results when updated string
-    - simplify: instead of buffer, use a prompt
-
 
     - perform (any) pre-defined function when selecting a completion.  See:
         X create a test_function that writes to file (so as not to conflict with buffer etc)
@@ -114,47 +124,3 @@ X move monkey patched example code to forked repo
             - buffer.apply_completion (doesn't seem to be... and is only connected to mouse completion)
             -
         - buffer.
-
-        - in buffer class, see:
-               `def insert_text(self, data: str, overwrite: bool = False,
-                        move_cursor: bool = True, fire_event: bool = True) -> None:
-            """
-            Insert characters at cursor position.
-            :param fire_event: Fire `on_text_insert` event. This is mainly used to
-                trigger autocompletion while typing.
-            """`
-    - open document on selection (what key?)
-
-- (draft) integrate prompt-toolkit with REPL:
-    - file can be viewed via keystroke (ok to view in any program)
-    - file can be edited, updated in index (subl)
-    - document can be deleted
-    - record can be added (assumptions/simplifications ok)
-
-- refactor
-    - move files to reasonable place (uncertain at this point...)
-    - remove clutter
-    - add docstrings
-    - lint
-
-- create v0 app
-    - create keybindings as needed
-    - make TSAR (bash) executable
-    - on startup: check for elasticsearch instance, start one if not running
-    - create environment.yaml/setup.py or whatever
-    - git tag, packge, distribution ready
-    - hone widgets
-    - add help page
-
-- test
-    - debug
-    - make a list of highest priority things to change based on usability
-
-- LATER...
-    - look back at use-cases in docs
-    - add browsing and memory palace capability?
-    - improve search results
-    - define file-naming system (dated? UUID?, user submitted title?)
-    - add lexer for Lucene query syntax
-    - add spaced repetition algo/reminder
-
