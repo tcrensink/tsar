@@ -16,7 +16,8 @@ from tsar import (
     METADB_PATH,
     CONTENT_FOLDER,
     REPO_PATH,
-    _TEMP_CONTENT_FOLDER
+    _TEMP_CONTENT_FOLDER,
+    _TEMP_METADB_PATH
 )
 from pathlib import Path
 from tsar.lib import (
@@ -29,13 +30,13 @@ from tsar.app import search_page
 from datetime import datetime
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import PromptSession
-DEFAULT_DB_PATH = os.path.join(METADB_PATH, 'tsar.pkl')
 DEFAULT_RECORD_TYPE = 'wiki'
+DEFAULT_DB_PATH = os.path.join(METADB_PATH, 'tsar.pkl')
 DEFAULT_SEARCH_INDEX = 'wiki'
 
 # "inspecting" a folder uses temporary index, db, content folder:
 _TEMP_SEARCH_INDEX = 'temp_index'
-_TEMP_DB_PATH = os.path.join(METADB_PATH, '.tmp.pkl')
+_TEMP_DB_PATH = os.path.join(_TEMP_METADB_PATH, '.tmp.pkl')
 
 
 class App(object):
@@ -64,7 +65,7 @@ class App(object):
 
         self.tsar_db = metadb.TsarDB(self.db_path)
         self.extractor = file_parser.Extractor(self.record_type)
-        self.tsar_search = search.TsarSearch(index=self.index)
+        self.tsar_search = search.TsarSearch()
 
     def main(self):
         """The main function that runs the command line supplied command, args, kwargs.
@@ -148,7 +149,6 @@ class App(object):
         # update record, index if file exists (may not have been saved):
         if os.path.exists(file_path):
             self._update_record(file_path)
-
 
     def initialize_tsar(self):
         """reset metadata and index for tsar content
@@ -251,12 +251,9 @@ class App(object):
 
         - if file, accepts fname argument
         - if folder, default (source file name) is used for contents
-
-        todo:
-        revise to copy source folder structure to avoid name collisions
         """
+        source_path = str(file_parser.to_Path(source_path[0]))
         # generate list of source_paths, enforce default fname if folder
-        # source_path = source_path[0]
         source_paths = []
         if os.path.isfile(source_path):
             source_paths.append(source_path)
@@ -302,8 +299,6 @@ class App(object):
         # recreate blank tmp db, index
         print('generating db and index...')
         self.initialize_tsar()
-
-        source_path = str(file_parser.to_Path(source_path[0]))
 
         self.add_tsar_files(
             source_path,

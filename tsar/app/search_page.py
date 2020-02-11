@@ -1,16 +1,10 @@
-"""Query/search app interface
+"""Query/search app interface.
 
-- SearchInterface(object):
-    - connects tsar_app (including df, tsar_search (elasticsearch) with prompt_toolkit app defined here
-    - attributes include query, results, preview layout objects
-    - handles index logic for selected results from list
-    - includes callback for updating results based on query
-- run(tsar_app):
-    - defines prompt_toolkit layout, runs prompt_toolkit app
+SearchInterface: defines behavior and coupling of search page and tsar_app
+run: runs/starts the search_page application
 """
 
 from __future__ import unicode_literals
-# import os
 from prompt_toolkit import prompt, print_formatted_text
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
@@ -26,6 +20,7 @@ from prompt_toolkit.formatted_text import FormattedText
 from tsar.lib import io
 
 
+# color styles for results list
 STYLE = {
     'selected': 'bg:#944288',
     'unselected': 'default'
@@ -40,10 +35,9 @@ class SearchInterface(object):
     - formats results for display
     - handles index of selected result
     - generates preview of selected record
-
     """
 
-    def __init__(self, tsar_app, style=STYLE, index=-1):
+    def __init__(self, tsar_app, style=STYLE):
 
         self.tsar_app = tsar_app
         self.query_buffer = Buffer(name='query_buffer', multiline=False)
@@ -150,7 +144,8 @@ class SearchInterface(object):
         """
         self.results = self.tsar_app.tsar_search.query_records(
             self.query_str,
-            self.tsar_app.tsar_db.df
+            self.tsar_app.tsar_db.df,
+            size=12
         )
         self.formatted_results = self._apply_default_format(self.results)
         self.results_textcontrol.text = self.formatted_results
@@ -222,25 +217,28 @@ def run(tsar_app):
 
     @kb.add('c-c')
     def _(event):
-        """Control-c to quit application. """
+        """ctrl+c to quit application. """
         event.app.exit()
 
     # select result:
     @kb.add('up')
+    def _(event):
+        search_interface.index -= 1
     @kb.add('down')
     def _(event):
-        """change selection based on key presses"""
-        key = event.key_sequence[0].key
-        if key == 'up':
-            search_interface.index -= 1
-        if key == 'down':
-            search_interface.index += 1
-
+        search_interface.index += 1
     @kb.add('enter')
     def _(event):
         """open selected record"""
-        # print('(open record on selection)')
         search_interface.open_selected()
+
+    # APPLICATION
+    application = Application(
+        layout=layout,
+        key_bindings=kb,
+        full_screen=True
+    )
+
     # APPLICATION
     application = Application(
         layout=layout,

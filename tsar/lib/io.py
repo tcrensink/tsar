@@ -5,8 +5,6 @@ from tsar import (
     config
 )
 from tsar.lib import (
-    # search,
-    # metadb,
     file_parser
 )
 

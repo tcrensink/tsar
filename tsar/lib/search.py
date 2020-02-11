@@ -1,9 +1,9 @@
-#! /Users/trensink/anaconda3/bin/python
 """
 syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax
 docs: https://elasticsearch-py.readthedocs.io/en/master/
 
 To do:
+use elastic search filter stop-words, tokenization?
 """
 from elasticsearch import Elasticsearch
 from elasticsearch.serializer import JSONSerializer
@@ -21,6 +21,28 @@ ELASTICSEARCH_EXEC_PATH = os.path.join(REPO_PATH, 'dependencies', 'elasticsearch
 SERVER_FILE = os.path.join(REPO_PATH, 'server.txt')
 INDEX = 'wiki'
 
+# defines mapping (schema) for a specific document/index
+WIKI_MAPPING = {
+    "mappings": {
+        "properties": {
+            "name_text": {
+                "type": "text",
+                "analyzer": "english"
+            },
+            "body_text": {
+                "type": "text",
+                "analyzer": "english"
+            },
+            "keywords": {
+                "type": "text",
+                "index": "false"
+            }
+        }
+    }
+}
+
+
+# mapping used to define indexing/field properties: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 class TsarEncoder(JSONSerializer):
     """json cannot natively serialize sets; subclass it for TSAR records
     """
@@ -31,6 +53,7 @@ class TsarEncoder(JSONSerializer):
             return int(obj)
 
         return JSONSerializer.default(self, obj)
+
 
 
 class TsarSearch(object):
@@ -58,20 +81,20 @@ class TsarSearch(object):
         if not self.client.indices.exists(self.index):
             self.client.indices.create(self.index)
 
-    def _query_records(self, query_str):
+    def _query_records(self, query_str, **kwargs):
         """return raw query results from index.  Top level keys of "results":
         'took',
         'timed_out',
         '_shards',
         'hits'
         """
-        results = self.client.search(q=query_str, index=self.index)
+        results = self.client.search(q=query_str, index=self.index, **kwargs)
         return results
 
-    def query_records(self, query_str, tsar_df):
+    def query_records(self, query_str, tsar_df, **kwargs):
         """return metadata records matching the query
         """
-        raw_results = self._query_records(query_str)
+        raw_results = self._query_records(query_str, **kwargs)
         result_ids = [result['_id'] for result in raw_results['hits']['hits']]
 
         return result_ids
@@ -114,6 +137,152 @@ class TsarSearch(object):
             )
 
 
+# class TsarSearch(object):
+#     """instantiate a search interface object using the elasticsearch rest API
+#     """
+
+#     def __init__(
+#         self,
+#         host="localhost",
+#         port="9200"
+#     ):
+#         self.session = requests.Session()
+#         self.host = host
+#         self.port = port
+#         self.base_url = "http://{}:{}".format(host, port)
+
+#     @property
+#     def indexes(self):
+#         print(self.return_indexes())
+
+
+#     def create_index(
+#         self,
+#         name,
+#         mapping=WIKI_MAPPING,
+#     ):
+#         url = "{}/{}".format(self.base_url, name)
+#         res = self.session.put(url, json=mapping)
+#         return res
+
+
+#     def delete_index(
+#         self,
+#         index_name,
+#     ):
+#         """delete an index by name
+#         """
+#         url = "{}/{}".format(self.base_url, index_name)
+#         res = self.session.delete(url)
+#         return res
+
+
+#     def return_indexes(self):
+#         """return all indices on cluster/node
+#         """
+#         res = self.session.get(self.base_url + '/_cat/indices?v')
+#         indexes = res.text
+#         return indexes
+
+
+#     def check_connection(self):
+#         """test if elasticsearch is running on host, port
+#         """
+#         try:
+#             res = self.session.get(self.base_url)
+#             status = res.status_code
+#         except:
+#             print('elasticsearch server is not running...')
+#         if status != 200:
+#             print('warning, status code is {}'.format(res.status))
+#         return res.text
+
+
+#     def return_mapping(self, index_name):
+#         """return mapping for given index
+#         """
+#         url = "{}/{}?pretty".format(self.base_url, index_name)
+#         json_results = self.session.get(url).json()
+#         return json_results
+
+
+#     def get_fields(self, index_name):
+#         """fields, types (properties) of an index;  Use pd.DataFrame.from_dict(properties)
+#         """
+#         mapping = self.return_mapping(index_name=index_name, url=self.base_url)
+#         # extract fields, types from mapping:
+#         properties = mapping.json()[index_name]['mappings']['properties']
+#         return properties
+
+
+#     def _query_records(
+#         self,
+#         index_name,
+#         query_str="*",
+#         fields="*",
+#     ):
+#         """basic query using the lucene search syntax.  By default, searches all fields
+#         """
+#         url = "{}/{}/_search".format(self.base_url, index_name)
+#         json_params = {
+#             "query": {
+#                 "query_string": {
+#                     "query": "{}".format(query_str),
+#                     "default_field": fields
+#                 }
+#             }
+#         }
+#         res = self.session.get(url, json=json_params)
+#         results = res.json()
+#         return results
+
+#     def query_records(self, query_str, tsar_df, index_name="wiki", **kwargs):
+#         """return metadata records matching the query
+#         """
+#         raw_results = self._query_records(query_str, **kwargs)
+#         result_ids = [result['_id'] for result in raw_results['hits']['hits']]
+
+#         return result_ids
+
+#     def index_record(
+#         self,
+#         index_name,
+#         record,
+#         record_id,
+#         record_type,
+#         encoder=TsarEncoder()
+#     ):
+#         """
+#         - index one record
+#         - update index for that record
+#         """
+#         encoded_record = encoder.dumps(record)
+#         self.client.index(
+#             index=self.index,
+#             doc_type=record_type,
+#             id=record_id,
+#             body=encoded_record
+#         )
+
+#     def index_records(self, db_records):
+#         """update all records to reflect current state of df:
+
+#         - delete existing index
+#         - create new (empty) index
+#         - index all records in df_records
+#         - update all records in index
+#         """
+#         record_ids = db_records.index.values
+#         for record_id in record_ids:
+#             record = db_records.loc[record_id]
+#             self.index_record(
+#                 record,
+#                 record_id,
+#                 record['record_type'],
+#                 encoder=TsarEncoder()
+#             )
+
+
 def launch_es_daemon(
     target=ELASTICSEARCH_EXEC_PATH,
     server_file=SERVER_FILE,
@@ -123,22 +292,13 @@ def launch_es_daemon(
     """Start the elasticsearch server, verify response, return a client
 
     Todo:
-        - check for running instance of daemon/server (process_info.return_code == 1 when alrady running)
+        - check for running instance of daemon/server (process_info.return_code == 1 when already running)
     """
     # start elasticsearch daemon, record pid in meta_data file:
     cmd = "{} -d -p {}".format(target, server_file)
     result = subprocess.run(cmd, shell=True)
     test_server(host=HOST, port=PORT, verbose=True)
     return result
-
-
-def shutdown_es_daemon():
-    """safely shut down daemon.
-    - read pid
-    - kill pid
-    - clean up file
-    """
-    pass
 
 
 def test_server(host=HOST, port=PORT, verbose=False):
@@ -197,3 +357,4 @@ def result_preview(es, query_str=''):
     else:
         previews = df.source_body.values
     return previews
+
