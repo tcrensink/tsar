@@ -1,2 +1,0 @@
-"""parse metadata to search
-"""
