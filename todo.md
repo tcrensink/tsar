@@ -5,6 +5,8 @@
 - redefined api in design_doc.md
 
 # TO RESUME
+- clarify interface design
+- clarify new code API, structure
 - start implementing new API, referencing design_doc api sketch:
     - write RecordDef(ABC)
     - (re)write TsarDB
