@@ -2,16 +2,21 @@ This document describes the TSAR data model and implementation specifics.
 
 # CORE DEFINITIONS
 **doc**: source document, generally of any type that will be abstracted as records in tsar.
-**record**: a dict represented by {record_id: {record_def_values}} (not implemented as a class).  Represented in tsar_db as a row with index record_id and column values determined by record_def.
+**record**: a dict represented by {record_id: {record_def_values}} (not implemented as a class), a row in a tsardb.
 **record_def**: defines schema, parser, index mapping and everything else to fully specify doc->record
 **TsarDB**: class that contains records of type record_def for a given collection.
-**TsarSearch**: class that handles search index associated with a collection
 **Collection**: main interface class; has tsar_db and tsar_search attributes associated with a specific collection, and implements all methods that are accessed by the app.
+**TsarSearch**: class that handles search index associated with a collection
 **App**: UI that handles user input and display.  Still need to define UI flow between modalities.
 **TsarDaemon**: implements App as a background process for fast access
 
 # DESCRIPTION
 (raw) source docs are transformed via a RecordDef(ABC) class into records.  RecordDef defines all behavior for how the source doc is converted to a record, including a parser and index mapping for the search engine.  A Collection is a group of records of the same RecordDef that may be searched/browsed together; multiple collections are ok, and different collections may have the same type.  The Collection class contains all high-level methods and serves as an interface to the App class.  A collection object includes TsarDB and TsarSearch objects as attributes.  The App defines the UI flow/behavior and is not yet determined; it should include the interaction modalities noted in description.md.  As a program, TSAR runs a dameon in the background with pre-populated Collections, ready to start the App when called from the command line.
+
+# LEARNINGS
+- a thin client with (local) http server is still pretty slow.  See examples/flask_tsar.
+- there is not a super easy way to get screen session like behavior without using screen :/
+
 
 # EXAMPLE API USAGE
 ```python
