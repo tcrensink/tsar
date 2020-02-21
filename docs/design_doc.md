@@ -5,17 +5,50 @@ This document describes the TSAR data model and implementation specifics.
 **record**: a dict represented by {record_id: {record_def_values}} (not implemented as a class), a row in a tsardb.
 **record_def**: defines schema, parser, index mapping and everything else to fully specify doc->record
 **TsarDB**: class that contains records of type record_def for a given collection.
-**Collection**: main interface class; has tsar_db and tsar_search attributes associated with a specific collection, and implements all methods that are accessed by the app.
+**Collection**: main interface class; includes tsar_db and tsar_search attributes associated with a specific collection, and implements all methods that are accessed by the app.
 **TsarSearch**: class that handles search index associated with a collection
 **App**: UI that handles user input and display.  Still need to define UI flow between modalities.
-**TsarDaemon**: implements App as a background process for fast access
+
 
 # DESCRIPTION
-(raw) source docs are transformed via a RecordDef(ABC) class into records.  RecordDef defines all behavior for how the source doc is converted to a record, including a parser and index mapping for the search engine.  A Collection is a group of records of the same RecordDef that may be searched/browsed together; multiple collections are ok, and different collections may have the same type.  The Collection class contains all high-level methods and serves as an interface to the App class.  A collection object includes TsarDB and TsarSearch objects as attributes.  The App defines the UI flow/behavior and is not yet determined; it should include the interaction modalities noted in description.md.  As a program, TSAR runs a dameon in the background with pre-populated Collections, ready to start the App when called from the command line.
+(raw) source docs are transformed via a RecordDef(ABC) class into records.  RecordDef defines all behavior for how the source doc is converted to a record, including a parser and index mapping for the search engine.  A Collection is a group of records of the same RecordDef that may be searched/browsed together; multiple collections are ok, and different collections may have the same type.  The Collection class contains all high-level methods and serves as an interface to the App class.  A collection object includes TsarDB and TsarSearch objects as attributes.  The App defines the UI flow/behavior and is not yet determined; it should include the interaction modalities noted in description.md.  Optimally, TSAR runs in the background and is instantly conjured in any terminal window.
 
-# LEARNINGS
-- a thin client with (local) http server is still pretty slow.  See examples/flask_tsar.
-- there is not a super easy way to get screen session like behavior without using screen :/
+
+# SIMPLIFYING ASSUMPTIONS TO START
+- Collections have a fixed schema, search mapping.  use case-switch as needed to parse different files to standard record format.
+- use screen to "instantly conjure"; integrate with terminal command if possible.
+- ignore multiple collections for now.  You still have `tsar inspect`
+- create concrete record_defs before making ABC to get started
+- focus on capture, search, review first.  browse, summarize can come later with minimal change to UI.
+
+
+# USER INTERFACE
+- what is user workflow?
+    terminal commands:
+        - `tsar`: [default action: capture]
+        - `tsar capture`: opens capture buffer
+        - `tsar query`: opens search/browse interface
+        - `tsar inspect <entry_point> <record_def>`: open query interface for docs at entry_point
+    in-tsar navigation:
+        - capture <-> query (shortcuts)
+        - (from query):
+            - select record to view, edit
+        - (from capture):
+            - cmd + n -> new document
+            - selected text -> new document
+
+
+# QUESTIONS, OPEN AND ANSWERED
+- Q: how to handle app-state difficuties found in tsar 1.0?
+- Q: How to keep Collection organized?  E.g.: I want to add lasso regularization info somewhere - a new doc or is there an existing one that makes sense?
+    A: Suggest related docs for adding (SO style for questions)
+- Q: Can a collection include different record_defs, or record_defs with different schemas?
+    A: No, not now (do not implement this, it will blow up).
+- Q: Are source docs copied or linked?
+    A: For now, create a "full text" attribute in the tsar_db, a copy of each source doc in the record.
+- Q: how to summarize a collection for understanding it as a whole?
+- Q: what is the tradeoff of explicit specification vs model inference (e.g., should you prompt the user for keywords or generate them automatically from a new doc?)
+    A: As a guiding principle, minimize friction.  Auto generate keywords unless the user overrides (this is advanced feature though).
 
 
 # EXAMPLE API USAGE
@@ -62,7 +95,6 @@ Here is a sketch of
 
 ```python
 # global_config.py
-DEFAULT_COLLECTION = #...
 VIEW_PROGRAMS = {
     ".txt": "/path/to/subl",
     ".md": "/path/to/md_viewer_prog",
@@ -72,16 +104,17 @@ EDIT_PROGRAMS = {
     ".md": "/path/to/subl",
 }
 
-# required for internal handling of tsar:
+KEYBOARD_SHORTCUTS = {
+    "add_new": "ctrl+a",
+    "open_in_tsar": "enter",
+    "open_out_of_tsar": "shift+enter"
+}
+
+# collections.py: dict of collection names and associated paths(?)
 _BASE_SCHEMA = {
     "record_id": "str",
     "file_type": "str",
 }
-KEYBOARD_SHORTCUTS = {
-    "add_new": "ctrl+a",
-}
-
-# collections.py: dict of collection names and associated paths(?)
 
 class RecordDef(ABC):
     """A "config" class that defines all behavior of a record/collection, notably the record schema.
@@ -176,13 +209,6 @@ class Collection(object):
         pass
 
 
-class TsarDaemon(object):
-    """background process, includes setup and teardown for fast access."""
-    def __init__(self):
-        # start/verify elasticsearch client
-        # load all collections into memory
-        # kick off scheduled processes in background (reindex, etc)
-
 class App(object):
     """The API that handles user input, display.  This is beta; define UI flow first."""
     def __init__(self, tsar_db):
@@ -197,22 +223,4 @@ class App(object):
     def inspect(self, record_type, path):
         pass
 ```
-
-# Adding Features/Genaralizations
-Q: I want to add X generalization that causes Y complications.  What is the best implementation?
-    A: Premature generalization is a worse sin than premature optimization.  Ask yourself the following:
-        - is this something you think you need, or observe that you need?
-        - how strongly do you desire this feature/generalization?
-        - if the answer is "yes" and "strongly", then create the simplest implementation to get feedback; if delivers expected value, only then contemplate what production implementation should look like.
-- Q: how should the UI connect search, browse, edit, create, etc?
-    A: 1) think about it 2) experiment with simple ideas, iterate.
-- Q: How to keep PKR style collection organized?  E.g., I want to add lasso regularization info somewhere; should this be a new doc or added to existing?
-    A: Suggest related docs for adding (SO style for questions)
-- Q: Can a collection include different record_defs, or record_defs with different schemas?
-    A: No, not now (do not implement this, it will blow up).
-- Q: Are source docs copied or linked?
-    A: For now, create a "full text" attribute in the tsar_db, a copy of each source doc in the record.
-- Q: what should the data comprehension tools look like?  How can you understand a *collection*?
-- Q: what is the tradeoff of explicit specification vs model inference (e.g., should you prompt the user for keywords or generate them automatically from a new doc?)
-    A: As a guiding principle, minimize friction.  Auto generate keywords unless the user overrides (this is advanced feature though).
 
