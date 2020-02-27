@@ -17,18 +17,13 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.widgets import HorizontalLine
 from functools import partial
 from prompt_toolkit.formatted_text import FormattedText
-from tsar.lib import io
+from tsar.config import SEARCH_RECORD_COLORS
+from tsar.lib.collection import Collection
+# from tsar.lib import io
 
 
-# color styles for results list
-STYLE = {
-    'selected': 'bg:#944288',
-    'unselected': 'default'
-}
-
-
-class SearchInterface(object):
-    """Interface that handles search_page display logic from tsar_app records
+class SearchViewModel(object):
+    """View model/business logic for search window.
 
     - prompt-toolkit query, results, preview, status elements as attributes
     - generates results from search_page query string
@@ -36,15 +31,14 @@ class SearchInterface(object):
     - handles index of selected result
     - generates preview of selected record
     """
+    def __init__(self, collection, style=SEARCH_RECORD_COLORS):
 
-    def __init__(self, tsar_app, style=STYLE):
-
-        self.tsar_app = tsar_app
-        self.query_buffer = Buffer(name='query_buffer', multiline=False)
+        self.collection = collection
+        self.query_buffer = Buffer(name="query_buffer", multiline=False)
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
-        self.results_textcontrol = FormattedTextControl('(no results)')
-        self.preview_textcontrol = FormattedTextControl('(no result selected)')
+        self.results_textcontrol = FormattedTextControl("(no results)")
+        self.preview_textcontrol = FormattedTextControl("(no result selected)")
         self.status_textcontrol = FormattedTextControl()
         self.style = style
         # value -1 indicates no result is currently selected
@@ -95,7 +89,7 @@ class SearchInterface(object):
         if self.index == -1:
             preview_str = "(no result selected)"
         else:
-            preview_str = self.tsar_app.tsar_db.df.loc[self.results[self.index]]['content']
+            preview_str = self.collection.df.loc[self.results[self.index]]["record_summary"]
         self.preview_textcontrol.text = preview_str
 
     def _update_selected_result(self, old_index, new_index):
@@ -105,14 +99,14 @@ class SearchInterface(object):
         """
         try:
             self.formatted_results[old_index] = (
-                self.style['unselected'],
+                self.style["unselected"],
                 self.formatted_results[old_index][1]
             )
         except IndexError:
             pass
         try:
             self.formatted_results[new_index] = (
-                self.style['selected'],
+                self.style["selected"],
                 self.formatted_results[new_index][1]
             )
         except IndexError:
@@ -125,13 +119,13 @@ class SearchInterface(object):
         """
         if len(results_list) != 0:
             results_list = ["{}\n".format(res) for res in results_list]
-            formatted_results = [(self.style['unselected'], res)
+            formatted_results = [(self.style["unselected"], res)
                                  for res in results_list]
         else:
             formatted_results = []
         return formatted_results
 
-    def update_results(self, passthrough='dummy_arg'):
+    def update_results(self, passthrough="dummy_arg"):
         """call back function updates results when query text changes
         - signature required to be callable from prompt_toolkit callback
 
@@ -142,17 +136,15 @@ class SearchInterface(object):
             - updates preview of selected record
         - update status bar
         """
-        self.results = self.tsar_app.tsar_search.query_records(
-            self.query_str,
-            self.tsar_app.tsar_db.df,
-            size=12
-        )
+        results = self.collection.query_records(self.query_str)
+        self.results = list(results.keys())
+
         self.formatted_results = self._apply_default_format(self.results)
         self.results_textcontrol.text = self.formatted_results
         self.index = 0
-        self.status_textcontrol.text = '{} of {} records'.format(
+        self.status_textcontrol.text = "{} of {} records".format(
             len(self.results),
-            self.tsar_app.tsar_db.df.shape[0]
+            self.collection.df.shape[0]
         )
 
     def open_selected(self):
@@ -162,88 +154,84 @@ class SearchInterface(object):
             record_id = self.results[self.index]
         else:
             pass
-        io.open_record(record_id=record_id)
+        # io.open_record(record_id=record_id)
 
 
-def run(tsar_app):
-    """start the interactive search page.query
+class SearchView(object):
+    """Bind input, visual elements to search_view_model logic. """
 
-    LAYOUT: define buffers, assign query -> results callback
-    """
-    search_interface = SearchInterface(tsar_app)
+    def __init__(self, search_view_model):
 
-    query_window = Window(
-        BufferControl(
-            search_interface.query_buffer
-        ),
-        height=1,
-    )
-
-    result_window = Window(
-        search_interface.results_textcontrol,
-        height=12
-    )
-    preview_window = Window(
-        search_interface.preview_textcontrol,
-        height=22
-    )
-    status_window = Window(
-        search_interface.status_textcontrol,
-        height=1,
-        style='reverse'
-    )
-
-    line = HorizontalLine()
-
-    # GENERATE LAYOUT
-    layout = Layout(
-        HSplit([
-            Window(
-                FormattedTextControl('query:'),
-                height=1,
-                style='reverse'
+        query_window = Window(
+            BufferControl(
+                search_view_model.query_buffer
             ),
-            query_window,
-            line,
-            result_window,
-            line,
-            preview_window,
-            status_window
-        ])
-    )
+            height=1,
+        )
+        result_window = Window(
+            search_view_model.results_textcontrol,
+            height=12
+        )
+        preview_window = Window(
+            search_view_model.preview_textcontrol,
+            height=22
+        )
+        status_window = Window(
+            search_view_model.status_textcontrol,
+            height=1,
+            style="reverse"
+        )
 
-    # KEYBINDINGS
-    kb = KeyBindings()
+        # GENERATE LAYOUT
+        self.layout = Layout(
+            HSplit([
+                Window(
+                    FormattedTextControl("query:"),
+                    height=1,
+                    style="reverse"
+                ),
+                query_window,
+                HorizontalLine(),
+                result_window,
+                HorizontalLine(),
+                preview_window,
+                status_window
+            ])
+        )
 
-    @kb.add('c-c')
-    def _(event):
-        """ctrl+c to quit application. """
-        event.app.exit()
+        # KEYBINDINGS
+        self.kb = KeyBindings()
 
-    # select result:
-    @kb.add('up')
-    def _(event):
-        search_interface.index -= 1
-    @kb.add('down')
-    def _(event):
-        search_interface.index += 1
-    @kb.add('enter')
-    def _(event):
-        """open selected record"""
-        search_interface.open_selected()
+        @self.kb.add("c-c")
+        def _(event):
+            """ctrl+c to quit application. """
+            event.app.exit()
+
+        # select result:
+        @self.kb.add("up")
+        def _(event):
+            search_view_model.index -= 1
+
+        @self.kb.add("down")
+        def _(event):
+            search_view_model.index += 1
+
+        @self.kb.add("enter")
+        def _(event):
+            """open selected record"""
+            search_view_model.open_selected()
+
+
+if __name__ == "__main__":
+
+    collection = Collection("wiki")
+    search_view_model = SearchViewModel(collection)
+    search_view = SearchView(search_view_model)
 
     # APPLICATION
     application = Application(
-        layout=layout,
-        key_bindings=kb,
+        layout=search_view.layout,
+        key_bindings=search_view.kb,
         full_screen=True
     )
-
-    # APPLICATION
-    application = Application(
-        layout=layout,
-        key_bindings=kb,
-        full_screen=True
-    )
-
     application.run()
