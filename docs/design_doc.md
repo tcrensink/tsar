@@ -10,8 +10,17 @@ This document describes the TSAR data model and implementation specifics.
 **App**: defines interaction between collections and UI.
 **AppWrapper**: handles input, control flow, and screen integration
 
-# OPERATIONAL DESCRIPTION
+# BACKEND DESIGN
 (raw) source docs are transformed via a RecordDef(ABC) class into records.  RecordDef defines all behavior for how the source doc is converted to a record, including a parser and index mapping for the search engine.  A Collection is a group of records of fixed RecordDef that may be searched/browsed/accessed together; multiple collections are possible, different collections may use the same RecordDef.  The App class makes calls to a Collection instance that implements all record management.  Collection is generally the only class that the App should communicate to.
+
+# FRONTEND DESIGN
+Ideally, all stateful data (active_collection, active_record, etc., current_collections) is managed at the app level, alongside a collection of Screens which display it.  This model is complicated when screens can modify app-level data. The following guidelines are used to keep things coherent:
+- keep all app-wide data as attributes, as much as possible
+- App-level data that is modified via a screen (e.g. active_collection selection) is done via @property
+- Currently, `App.update_app()` updates the active screen attributes (colletion) and app attributes (layout, keybindings).  The screen may not be fully reinitialized however; if this is insufficient, then it may be sensible to implement a method `state.refresh_data(self.active_collection, ...)` for all screens.
+- Screen is effectively operating as an ABC, and should be converted to one (or otherwise enforce methods)
+- The organization of View, ViewModel and collection is working ok, but up for reconsideration.
+
 
 # UI DESCRIPTION
 Optimally, TSAR runs in the background, instantly conjured by a terminal command in any terminal window.  The provisory interface is as follows (see description.md modalities for more thoughts):

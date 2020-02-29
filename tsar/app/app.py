@@ -8,72 +8,117 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.layout.layout import Layout
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
-from tsar.app.collections_window import CollectionsView
+from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from prompt_toolkit.widgets import HorizontalLine
 from prompt_toolkit.layout.containers import HSplit, Window
-
-# create global and page keybindings
+from itertools import cycle
 from prompt_toolkit.key_binding import KeyBindings, ConditionalKeyBindings, merge_key_bindings
+from dataclasses import dataclass
+from typing import Any
+from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
+from tsar import LOG_PATH
+import logging
 
 
 class Screen(object):
-    """Class that defines a view (layout, keybindings) and view_model (logic) for a specific screen."""
-    pass
+    """Define object necessary to determine app state and change view.
+
+    This should be an ABC, defining template for future screens.
+    """
+    def __init__(self, collection, ViewModel, View):
+        self._collection = collection
+        self.view_model = ViewModel(self._collection)
+        self.view = View(self.view_model)
+        self.key_bindings = self.view.kb
+        self.layout = self.view.layout
+
+    @property
+    def collection(self):
+        return self._collection
+
+    @collection.setter
+    def collection(self, collection):
+        self._collection = collection
+        self.view_model.collection = collection
 
 
 class App(object):
     """Contains MVVM style prompt-toolkit views, view models, and keybindings."""
 
-    def __init__(self, collection):
+    def __init__(
+        self,
+        default_collection_name=DEFAULT_COLLECTION,
+        default_screen=DEFAULT_SCREEN
+    ):
 
-        self.screens = []
+        # empty application updated in update_screen
+        self.application = Application()
+        self._active_collection = Collection(default_collection_name)
+        self._global_kb = self._return_global_keybindings()
+        self.kb = self._global_kb
 
-        self.kb_global = self.register_global_keybindings()
-
-        self.search_view_model = SearchViewModel(collection)
-        self.search_view = SearchView(self.search_view_model)
-
-        self.collections_view_model = None #SearchViewModel(Collection)
-        self.collections_view = CollectionsView(self.collections_view_model)
-
-        self.layout = self.search_view.layout
-        # self.layout = self.collections_view.layout
-        self.kb = self.search_view.kb
-
-        self.application = Application(
-            layout=self.layout,
-            key_bindings=self.kb_global,
-            full_screen=True
+        # add screens to app:
+        self.screens = {}
+        self.screens["search"] = Screen(
+            collection=self._active_collection,
+            ViewModel=SearchViewModel,
+            View=SearchView
         )
+        self.screens["collections"] = Screen(
+            collection=self._active_collection,
+            ViewModel=CollectionsViewModel,
+            View=CollectionsView
+        )
+        self.active_screen = None
+        self.active_screen = self.update_app(default_screen)
 
-    def register_global_keybindings(self):
-        """Register global (app-wide) key bindings."""
-        kb = KeyBindings()
+    @property
+    def active_collection(self):
+        """active collection is always pulled from the collections screen"""
+        self._active_collection = self.screens["collections"].view_model.collection
+        return self._active_collection
 
-        @kb.add("q")
+    @active_collection.setter
+    def active_collection(self, active_collection):
+        self._active_collection = active_collection
+
+    def _return_global_keybindings(self):
+        """Register key bindings (global, screen specific)."""
+        kb_global = KeyBindings()
+        @kb_global.add(GLOBAL_KB["exit"])
         def close_app(event):
-            """ctrl+c to quit application. """
             event.app.exit()
-
-        @kb.add("t")
+        @kb_global.add(GLOBAL_KB["search_screen"])
         def next_screen(event):
-            """display next screen."""
-            self.layout.container.children = self.collections_view.layout.container.children
-            self.key_bindings = self.collections_view.kb
+            self.update_app("search")
+        @kb_global.add(GLOBAL_KB["collections_screen"])
+        def next_screen(event):
+            self.update_app("collections")
+        return kb_global
+
+    def _update_keybindings(self):
+        """Register key bindings (global, screen specific)."""
+        kb = merge_key_bindings([self._global_kb, self.active_screen.key_bindings])
         return kb
 
-    def add_screen(self, screen_view, screen_view_model, screen_kb):
-        """add screen to list of screens."""
+    def update_app(self, screen_key):
+        """On keystroke, display new screen with current data."""
 
+        if self.active_screen == self.screens[screen_key]:
+            return
+        self.active_screen = self.screens[screen_key]
+        self.active_screen.collection = self.active_collection
+        self.application.layout = self.active_screen.layout
+        self.application.key_bindings = self._update_keybindings()
 
     def run(self):
         self.application.run()
 
 
-
 if __name__ == "__main__":
 
-    collection = Collection("wiki")
-
-    app = App(collection)
+    """Instantiate views, view_models, app; run the app."""
+    logging.basicConfig(filename=LOG_PATH, level=logging.INFO)
+    logging.getLogger('parso.python.diff').disabled = True
+    app = App()
     app.run()

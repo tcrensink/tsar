@@ -5,7 +5,6 @@ run: runs/starts the search_page application
 """
 
 from __future__ import unicode_literals
-from prompt_toolkit import prompt, print_formatted_text
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import HSplit, Window
@@ -13,13 +12,9 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.controls import BufferControl
 from prompt_toolkit.buffer import Buffer
-from prompt_toolkit.document import Document
 from prompt_toolkit.widgets import HorizontalLine
-from functools import partial
-from prompt_toolkit.formatted_text import FormattedText
 from tsar.config import SEARCH_RECORD_COLORS
 from tsar.lib.collection import Collection
-# from tsar.lib import io
 
 
 class SearchViewModel(object):
@@ -142,10 +137,7 @@ class SearchViewModel(object):
         self.formatted_results = self._apply_default_format(self.results)
         self.results_textcontrol.text = self.formatted_results
         self.index = 0
-        self.status_textcontrol.text = "{} of {} records".format(
-            len(self.results),
-            self.collection.df.shape[0]
-        )
+        self.status_textcontrol.text = f"{len(self.results)} of {self.collection.df.shape[0]} records"
 
     def open_selected(self):
         """open selected record
@@ -184,28 +176,25 @@ class SearchView(object):
 
         # GENERATE LAYOUT
         self.layout = Layout(
-            HSplit([
-                Window(
-                    FormattedTextControl("query:"),
-                    height=1,
-                    style="reverse"
-                ),
-                query_window,
-                HorizontalLine(),
-                result_window,
-                HorizontalLine(),
-                preview_window,
-                status_window
-            ])
+            HSplit(
+                [
+                    Window(
+                        FormattedTextControl("query:"),
+                        height=1,
+                        style="reverse"
+                    ),
+                    query_window,
+                    HorizontalLine(),
+                    result_window,
+                    HorizontalLine(),
+                    preview_window,
+                    status_window
+                ]
+            )
         )
 
-        # KEYBINDINGS
+        # SEARCH PAGE KEYBINDINGS
         self.kb = KeyBindings()
-
-        @self.kb.add("c-c")
-        def _(event):
-            """ctrl+c to quit application. """
-            event.app.exit()
 
         # select result:
         @self.kb.add("up")
@@ -223,15 +212,19 @@ class SearchView(object):
 
 
 if __name__ == "__main__":
+    """stand-alone version of the search window for debugging."""
 
     collection = Collection("wiki")
-    search_view_model = SearchViewModel(collection)
-    search_view = SearchView(search_view_model)
+    view_model = SearchViewModel(collection)
+    view = SearchView(view_model)
 
-    # APPLICATION
+    @view.kb.add("c-c")
+    def _(event):
+        event.app.exit()
+
     application = Application(
-        layout=search_view.layout,
-        key_bindings=search_view.kb,
+        layout=view.layout,
+        key_bindings=view.kb,
         full_screen=True
     )
     application.run()
