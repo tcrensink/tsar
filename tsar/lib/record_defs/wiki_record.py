@@ -2,7 +2,7 @@
 Define wiki record creation from a .md wiki file.
 """
 # import os
-import datetime
+from datetime import datetime
 from tsar import config
 from tsar.lib.record_def import RecordDef, BASE_SCHEMA, SafeSerializer
 from tsar.lib.record_defs import parse_lib
@@ -84,11 +84,10 @@ class WikiRecord(RecordDef):
         return (record_id, record_index)
 
     @staticmethod
-    def open_doc(record_id):
+    def open_doc(record):
         """open document associated with record to view"""
-        parse_lib.open_textfile(path=record_id, editor=DOC_VIEWER)
-        # parse_lib.open_textfile(path=record["record_id"], editor=DOC_VIEWER)
-        # record["access_times"].append(datetime.utcnow().timestamp())
+        record["access_times"].append(datetime.utcnow().timestamp())
+        parse_lib.open_textfile(path=record["record_id"], editor=DOC_VIEWER)
 
 
 def return_record_name(doc):

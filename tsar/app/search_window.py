@@ -146,7 +146,7 @@ class SearchViewModel(object):
             record_id = self.results[self.index]
         else:
             pass
-        self.collection.RecordDef.open_doc(record_id=record_id)
+        self.collection.open_document(record_id=record_id)
 
 
 class SearchView(object):
