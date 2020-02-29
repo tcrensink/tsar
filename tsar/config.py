@@ -8,9 +8,8 @@ GLOBAL_KB = {
     "exit": "c-c",
     "search_screen": ("s-right"),
     "collections_screen": ("s-left"),
-    "open": "enter",
+    "open_document": "enter",
 }
-
 
 # color styles for results list
 SEARCH_RECORD_COLORS = {
@@ -18,7 +17,5 @@ SEARCH_RECORD_COLORS = {
     'unselected': 'default'
 }
 
-
 DEFAULT_COLLECTION = "wiki"
-
 DEFAULT_SCREEN = "search"

@@ -17,9 +17,9 @@ This document describes the TSAR data model and implementation specifics.
 Ideally, all stateful data (active_collection, active_record, etc., current_collections) is managed at the app level, alongside a collection of Screens which display it.  This model is complicated when screens can modify app-level data. The following guidelines are used to keep things coherent:
 - keep all app-wide data as attributes, as much as possible
 - App-level data that is modified via a screen (e.g. active_collection selection) is done via @property
-- Currently, `App.update_app()` updates the active screen attributes (colletion) and app attributes (layout, keybindings).  The screen may not be fully reinitialized however; if this is insufficient, then it may be sensible to implement a method `state.refresh_data(self.active_collection, ...)` for all screens.
+- `App.update_app()` updates the app to the active screen.  App level attributes updated (active_collection), and screen-specific state is updated through `screen.refresh_view`. This is add to `view` as it has access to all view/view_model attributes and can be implemented for the specific screen.
 - Screen is effectively operating as an ABC, and should be converted to one (or otherwise enforce methods)
-- The organization of View, ViewModel and collection is working ok, but up for reconsideration.
+- The organization of View, ViewModel, Screen is working ok, but up for reconsideration.
 
 
 # UI DESCRIPTION
@@ -62,10 +62,13 @@ Optimally, TSAR runs in the background, instantly conjured by a terminal command
     A: For now, whatever is easiest.  Management strategy may depend on document types (save a webpage?).
 - Q: what is the tradeoff of explicit specification vs model inference (e.g., should you prompt the user for keywords or generate them automatically from a new doc?)
     A: As a guiding principle: minimize friction.  Auto generate keywords unless the user overrides (this is advanced feature though).
+- Q: how to handle app-state difficuties found in tsar 1.0
+    A: 1) try to keep view, data separate; use @property to implement "listener", keep thinking about it...
 
 
 # QUESTIONS, OPEN
-- Q: how to handle app-state difficuties found in tsar 1.0?
+- Q: will there be a mode to "explore" docs (e.g. arxiv) and add them to a collection?
+- Q: Will there be a notes section?  May be useful for non-text based documents.
 - Q: how to summarize a collection for understanding it as a whole?
 - Q: how will you implement browse?  What is the UI?  Will there be a GUI?  Are links user generated or automated?  How will they be updated?:
     - networkX

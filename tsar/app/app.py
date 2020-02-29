@@ -11,10 +11,7 @@ from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from prompt_toolkit.key_binding import (
     KeyBindings,
     merge_key_bindings
-    # ConditionalKeyBindings,
 )
-# from dataclasses import dataclass
-# from typing import Any
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
 from tsar import LOG_PATH
 import logging
@@ -32,6 +29,7 @@ class Screen(object):
         self.view = View(self.view_model)
         self.key_bindings = self.view.kb
         self.layout = self.view.layout
+        self.refresh_view = self.view.refresh_view
 
     @property
     def collection(self):
@@ -113,7 +111,8 @@ class App(object):
         if self.active_screen == self.screens[screen_key]:
             return
         self.active_screen = self.screens[screen_key]
-        self.active_screen.collection = self.active_collection
+        # self.active_screen.collection = self.active_collection
+        self.active_screen.refresh_view(collection=self.active_collection)
         self.application.layout = self.active_screen.layout
         self.application.key_bindings = self._update_keybindings()
 

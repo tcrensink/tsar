@@ -154,22 +154,23 @@ class SearchView(object):
 
     def __init__(self, search_view_model):
 
+        self.view_model = search_view_model
         query_window = Window(
             BufferControl(
-                search_view_model.query_buffer
+                self.view_model.query_buffer
             ),
             height=1,
         )
         result_window = Window(
-            search_view_model.results_textcontrol,
+            self.view_model.results_textcontrol,
             height=12
         )
         preview_window = Window(
-            search_view_model.preview_textcontrol,
+            self.view_model.preview_textcontrol,
             height=22
         )
         status_window = Window(
-            search_view_model.status_textcontrol,
+            self.view_model.status_textcontrol,
             height=1,
             style="reverse"
         )
@@ -199,16 +200,22 @@ class SearchView(object):
         # select result:
         @self.kb.add("up")
         def _(event):
-            search_view_model.index -= 1
+            self.view_model.index -= 1
 
         @self.kb.add("down")
         def _(event):
-            search_view_model.index += 1
+            self.view_model.index += 1
 
         @self.kb.add("enter")
         def _(event):
             """open selected record"""
-            search_view_model.open_selected()
+            self.view_model.open_selected()
+
+    def refresh_view(self, collection):
+        self.view_model.collection = collection
+        self.view_model.query_str = ""
+        self.view_model.update_results()
+
 
 
 if __name__ == "__main__":
