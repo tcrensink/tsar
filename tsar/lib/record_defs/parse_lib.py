@@ -8,7 +8,13 @@ import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
+from pathlib import Path
 
+
+def resolve_path(path):
+    """Resolve path, including relative, tilde, and env vars."""
+    resolved_path = str(Path(path).resolve())
+    return resolved_path
 
 def open_textfile(path, editor):
     """Open text file with editor.

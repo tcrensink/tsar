@@ -6,6 +6,7 @@ import datetime
 from tsar import config
 from tsar.lib.record_def import RecordDef, BASE_SCHEMA, SafeSerializer
 from tsar.lib.record_defs import parse_lib
+
 SERIALIZER = SafeSerializer()
 
 RECORD_TYPE = "wiki"
@@ -36,7 +37,6 @@ INDEX_MAPPING = {
 }
 
 DOC_VIEWER = config.EDITOR
-DOC_EDITOR = config.EDITOR
 
 
 class WikiRecord(RecordDef):
@@ -49,9 +49,10 @@ class WikiRecord(RecordDef):
     index_mapping = INDEX_MAPPING
 
     @staticmethod
-    def gen_record(record_id):
+    def gen_record(path):
         """Parse doc into a record; return it."""
 
+        record_id = parse_lib.resolve_path(path)
         raw_doc = parse_lib.return_raw_doc(record_id)
         file_info = parse_lib.file_meta_data(record_id)
 
@@ -83,16 +84,11 @@ class WikiRecord(RecordDef):
         return (record_id, record_index)
 
     @staticmethod
-    def view_doc(record):
+    def open_doc(record_id):
         """open document associated with record to view"""
-        parse_lib.open_textfile(path=record["record_id"], editor=DOC_VIEWER)
-        record["access_times"].append(datetime.utcnow().timestamp())
-
-    @staticmethod
-    def edit_doc(record):
-        """open doc associated with record to edit"""
-        parse_lib.open_textfile(path=record["record_id"], editor=DOC_EDITOR)
-        record["access_times"].append(datetime.utcnow().timestamp())
+        parse_lib.open_textfile(path=record_id, editor=DOC_VIEWER)
+        # parse_lib.open_textfile(path=record["record_id"], editor=DOC_VIEWER)
+        # record["access_times"].append(datetime.utcnow().timestamp())
 
 
 def return_record_name(doc):
