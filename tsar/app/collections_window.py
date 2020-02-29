@@ -83,6 +83,11 @@ class CollectionsView(object):
         self.kb.add('down')(focus_next)
         self.kb.add('up')(focus_previous)
 
+    def refresh_view(self, collection):
+        self.view_model.collection = collection
+
+
+
 
 if __name__ == "__main__":
     """stand-alone version of the collections window for debugging."""
@@ -95,7 +100,6 @@ if __name__ == "__main__":
     def _(event):
         event.app.exit()
 
-    # APPLICATION
     application = Application(
         layout=view.layout,
         key_bindings=view.kb,
