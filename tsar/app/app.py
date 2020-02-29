@@ -5,16 +5,16 @@ This module contains high level management of:
 - collections (underlying data interface object)
 """
 from prompt_toolkit.application import Application
-from prompt_toolkit.layout.layout import Layout
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
-from prompt_toolkit.widgets import HorizontalLine
-from prompt_toolkit.layout.containers import HSplit, Window
-from itertools import cycle
-from prompt_toolkit.key_binding import KeyBindings, ConditionalKeyBindings, merge_key_bindings
-from dataclasses import dataclass
-from typing import Any
+from prompt_toolkit.key_binding import (
+    KeyBindings,
+    merge_key_bindings
+    # ConditionalKeyBindings,
+)
+# from dataclasses import dataclass
+# from typing import Any
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
 from tsar import LOG_PATH
 import logging
@@ -25,6 +25,7 @@ class Screen(object):
 
     This should be an ABC, defining template for future screens.
     """
+
     def __init__(self, collection, ViewModel, View):
         self._collection = collection
         self.view_model = ViewModel(self._collection)
@@ -43,7 +44,7 @@ class Screen(object):
 
 
 class App(object):
-    """Contains MVVM style prompt-toolkit views, view models, and keybindings."""
+    """Contains MVVM style views, view models, and keybindings."""
 
     def __init__(
         self,
@@ -85,20 +86,25 @@ class App(object):
     def _return_global_keybindings(self):
         """Register key bindings (global, screen specific)."""
         kb_global = KeyBindings()
+
         @kb_global.add(GLOBAL_KB["exit"])
         def close_app(event):
             event.app.exit()
+
         @kb_global.add(GLOBAL_KB["search_screen"])
-        def next_screen(event):
+        def search_screen(event):
             self.update_app("search")
+
         @kb_global.add(GLOBAL_KB["collections_screen"])
-        def next_screen(event):
+        def collections_screen(event):
             self.update_app("collections")
         return kb_global
 
     def _update_keybindings(self):
-        """Register key bindings (global, screen specific)."""
-        kb = merge_key_bindings([self._global_kb, self.active_screen.key_bindings])
+        """Merge and return keybindings for global + screen."""
+        kb = merge_key_bindings(
+            [self._global_kb, self.active_screen.key_bindings]
+        )
         return kb
 
     def update_app(self, screen_key):
