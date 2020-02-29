@@ -35,7 +35,9 @@ You want faster access and deeper understanding of large volumes of human-interp
 - tool for modifying relational graph?
 - clipboard integration
 - syntax highlighting
-
+- RecordDef syntax highlighting: https://python-prompt-toolkit.readthedocs.io/en/master/pages/asking_for_input.html
+- Input validation: https://python-prompt-toolkit.readthedocs.io/en/master/pages/asking_for_input.html#input-validation
+- history: https://python-prompt-toolkit.readthedocs.io/en/master/pages/asking_for_input.html#history
 
 # SERIOUSLY WISHFUL THINKING
 - remote access/ssh inspect

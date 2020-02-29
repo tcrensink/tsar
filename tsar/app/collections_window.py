@@ -3,7 +3,6 @@
 A simple example of a few buttons and click handlers.
 """
 from __future__ import unicode_literals
-
 from prompt_toolkit.application import Application
 from prompt_toolkit.application.current import get_app
 from prompt_toolkit.key_binding import KeyBindings
@@ -14,24 +13,30 @@ from prompt_toolkit.key_binding.bindings.focus import (
 from prompt_toolkit.layout import HSplit, Layout, VSplit
 from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea, HorizontalLine
+from tsar.lib.collection import Collection
+import logging
 
 
-# Event handlers for all the buttons.
-def button1_clicked():
-    text_area.text = 'Button 1 clicked'
+def button_handler_factory(view_model, collection_name):
+    """create callables to bind to each button that updates the active_collection."""
+    def handler():
+        view_model.update_selected_collection(collection_name)
+        logging.info(f"collection set to: {view_model.collection.name}")
+    return handler
 
 
-def button2_clicked():
-    text_area.text = 'Button 2 clicked'
+class CollectionsViewModel(object):
+    """Business logic for collections view"""
+    def __init__(self, collection):
 
+        self.collection = collection
+        self.collection_names = tuple(collection.db_meta.index)
 
-def button3_clicked():
-    text_area.text = 'Button 3 clicked'
-
-
-def exit_clicked():
-    get_app().exit()
-
+    def update_selected_collection(self, collection_name):
+        """sets the active collection and returns it"""
+        collection = Collection(collection_name=collection_name)
+        self.collection = collection
+        return collection
 
 
 class CollectionsView(object):
@@ -39,73 +44,61 @@ class CollectionsView(object):
 
     def __init__(self, collections_view_model):
 
-        # All the widgets for the UI.
-        button1 = Button('Button 1', handler=button1_clicked)
-        button2 = Button('Button 2', handler=button2_clicked)
-        button3 = Button('Button 3', handler=button3_clicked)
-        button4 = Button('Exit', handler=exit_clicked)
-        text_area = TextArea(focusable=True)
+        self.view_model = collections_view_model
+        collection_names = collections_view_model.collection_names
 
+        # create buttons, bind function that returns their name when clicked.
+        buttons = []
+        for coll_name in collection_names:
 
-        # Combine all the widgets in a UI.
-        # The `Box` object ensures that padding will be inserted around the containing
-        # widget. It adapts automatically, unless an explicit `padding` amount is given.
+            handler = button_handler_factory(self.view_model, coll_name)
+            button = Button(f"{coll_name}", handler=handler)
+            buttons.append(button)
+            if coll_name == self.view_model.collection.name:
+                focused_element = button
+
         root_container = Box(
-            HSplit([
-                Label(text='Press `Tab` to move the focus.'),
-                VSplit([
+            HSplit(
+                [
+                    Label(text='Collections:'),
                     Box(
                         body=HSplit(
-                            [button1, button2, button3, button4],
-                            padding=1),
-                        padding=1,
-                        style='class:left-pane'),
-                    Box(
-                        body=Frame(text_area),
-                        padding=1,
-                        style='class:right-pane'),
-                ]),
-            ]),
+                            buttons,
+                            padding=1
+                        ),
+                        padding=2,
+                        style='class:left-pane'
+                    ),
+                ]
+            ),
         )
 
         self.layout = Layout(
             container=root_container,
-            focused_element=button1)
-        # self.layout = Layout(
-        #     HSplit([
-        #         HorizontalLine(),
-        #         HorizontalLine(),
-        #         HorizontalLine(),
-        #         ])
-
+            focused_element=focused_element
+        )
 
         # Key bindings.
         self.kb = KeyBindings()
-        self.kb.add('tab')(focus_next)
-        self.kb.add('s-tab')(focus_previous)
-
-        # Styling.
-        # style = Style([
-        #     ('left-pane', 'bg:#888800 #000000'),
-        #     ('right-pane',      'bg:#00aa00 #000000'),
-        #     ('button',          '#000000'),
-        #     ('button-arrow',    '#000000'),
-        #     ('button focused', 'bg:#ff0000'),
-        #     ('text-area focused', 'bg:#ff0000'),
-        # ])
+        self.kb.add('down')(focus_next)
+        self.kb.add('up')(focus_previous)
 
 
-        # Build a main application object.
-        # application = Application(
-        #     layout=layout,
-        #     key_bindings=kb,
-        #     style=style,
-        #     full_screen=True)
+if __name__ == "__main__":
+    """stand-alone version of the collections window for debugging."""
 
+    collection = Collection("wiki")
+    view_model = CollectionsViewModel(collection)
+    view = CollectionsView(view_model)
 
-        # def main():
-        #     application.run()
+    @view.kb.add("c-c")
+    def _(event):
+        event.app.exit()
 
-
-# if __name__ == '__main__':
-#     main()
+    # APPLICATION
+    application = Application(
+        layout=view.layout,
+        key_bindings=view.kb,
+        full_screen=True
+    )
+    application.run()

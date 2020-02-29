@@ -13,3 +13,5 @@ COLLECTIONS_FOLDER = os.path.join(REPO_PATH, 'resources/collections/')
 _TEMP_CONTENT_FOLDER = os.path.join(REPO_PATH, '.tmp_content')
 
 TESTS_FOLDER = os.path.join(REPO_PATH, "tests")
+
+LOG_PATH = os.path.join(REPO_PATH, "log.txt")
