@@ -84,7 +84,7 @@ class Data(object):
     def rm_record(self, record_id):
         """Remove a record from the df."""
         try:
-            self.df = self.df.drop(record_id)
+            self.df.drop(record_id, inplace=True)
         except KeyError:
             print('warning: no record to remove at {}'.format(record_id))
 
@@ -99,6 +99,7 @@ class Collection(object):
     Includes high level api for collection management and error handling. Also
     handles collection-level methods e.g. tf/idf keyword generation.
     """
+
     def __init__(
         self,
         collection_name,
@@ -106,7 +107,6 @@ class Collection(object):
         db_meta_path=DB_META_PATH,
         client=None
     ):
-
         self.name = collection_name
         self.data = Data(self.name, folder=folder)
         self.df = self.data.df
@@ -194,6 +194,12 @@ class Collection(object):
         self.data.write_db()
         self.client.delete_record(record_id, collection_name=self.name)
 
+    def return_record(self, record_id):
+        """return record dict from record_id"""
+        ser = self.df.loc[record_id]
+        record = ser.to_dict()
+        return record
+
     def _raw_query(self, query_str):
         """Return raw query result json."""
         query_results = self.client.query(
@@ -215,8 +221,9 @@ class Collection(object):
 
     def open_document(self, record_id):
         """Open record (edit ok now) with associated executable."""
-        pass
+        record = self.df.loc[record_id]
+        self.RecordDef.open_doc(record)
 
-    def open_capture_buffer():
+    def open_capture_buffer(self):
         """Open buffer for 'capture' interface."""
         pass
