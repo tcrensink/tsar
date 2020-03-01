@@ -6,6 +6,7 @@ This module contains high level management of:
 """
 from prompt_toolkit.application import Application
 from tsar.lib.collection import Collection
+from tsar.lib.search import Server, Client
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from prompt_toolkit.key_binding import (
@@ -50,6 +51,7 @@ class App(object):
         default_screen=DEFAULT_SCREEN
     ):
 
+        Server().start()
         # empty application updated in update_screen
         self.application = Application()
         self._active_collection = Collection(default_collection_name)
@@ -69,7 +71,7 @@ class App(object):
             View=CollectionsView
         )
         self.active_screen = None
-        self.active_screen = self.update_app(default_screen)
+        self.active_screen = self.update_state(default_screen)
 
     @property
     def active_collection(self):
@@ -91,11 +93,11 @@ class App(object):
 
         @kb_global.add(GLOBAL_KB["search_screen"])
         def search_screen(event):
-            self.update_app("search")
+            self.update_state("search")
 
         @kb_global.add(GLOBAL_KB["collections_screen"])
         def collections_screen(event):
-            self.update_app("collections")
+            self.update_state("collections")
         return kb_global
 
     def _update_keybindings(self):
@@ -105,7 +107,7 @@ class App(object):
         )
         return kb
 
-    def update_app(self, screen_key):
+    def update_state(self, screen_key):
         """On keystroke, display new screen with current data."""
 
         if self.active_screen == self.screens[screen_key]:

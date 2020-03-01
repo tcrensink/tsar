@@ -3,6 +3,8 @@
 EDITOR = '/usr/local/bin/subl'
 # TSAR_FOLDER = '/Users/trensink/Dropbox/shared_wiki'
 
+ELASTICSEARCH_PORT = 9200
+
 # global keybindings
 GLOBAL_KB = {
     "exit": "c-c",

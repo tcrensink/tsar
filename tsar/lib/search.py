@@ -10,10 +10,9 @@ import numpy as np
 from pandas.io.json import json_normalize
 from tsar import MODULE_PATH, REPO_PATH
 from urllib.parse import quote_plus, unquote_plus
-
+from tsar.config import ELASTICSEARCH_PORT
 HOST = 'localhost'
-PORT = 9200
-BASE_URL = f"http://{HOST}:{PORT}"
+BASE_URL = f"http://{HOST}:{ELASTICSEARCH_PORT}"
 
 ELASTICSEARCH_PATH = os.path.join(
     REPO_PATH,
@@ -43,9 +42,17 @@ class Server(object):
         self.server_file = server_file
 
     def start(self):
-        """Start ES service"""
-        cmd = f"{self.app} -d -p {self.server_file}"
-        _ = subprocess.call(cmd.split(" "))
+        """Start elasticsearch server if not running."""
+        client = Client()
+        if client.test_connection():
+            return
+        else:
+            cmd = f"{self.app} -d -p {self.server_file}"
+            _ = subprocess.call(cmd.split(" "))
+            while True:
+                res = Client().test_connection()
+                if res:
+                    return
 
     def shutdown(self):
         """shutdown service."""
@@ -58,7 +65,7 @@ class Server(object):
 
 class Client(object):
     """Elasticsearch client used by tsar, uses rest API."""
-    def __init__(self, host=HOST, port=PORT):
+    def __init__(self, host=HOST, port=ELASTICSEARCH_PORT):
         self.session = requests.Session()
         self.host = host
         self.port = port
@@ -84,6 +91,19 @@ class Client(object):
         res = self.session.put(url, json=record_index)
         res.raise_for_status()
         return res
+
+    def index_records(self, record_ids, record_indexes, collection_name):
+        """Index a list of records.
+
+        Optimize with bulk api:
+        https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+        """
+        for r_id, r_ind in zip(record_ids, record_indexes):
+            self.index_record(
+                record_id=r_id,
+                record_index=r_ind,
+                collection_name=collection_name
+            )
 
     def delete_record(self, record_id, collection_name):
         """Remove record from index."""
@@ -178,7 +198,7 @@ class Client(object):
 # @attr.s(slots=True, init=False)
 # class ClientWAttrs(object):
 #     host = attr.ib(type=<blah>, default=HOST)
-#     port = attr.ib(type=<blah>, default=PORT)
+#     port = attr.ib(type=<blah>, default=ELASTICSEARCH_PORT)
 #     session = attr.ib(init=False, factory=requests.Session)
 #     base_url = attr.ib(init=False)
 #     serializer = attr.ib(init=False)
