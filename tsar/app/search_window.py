@@ -15,6 +15,7 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.widgets import HorizontalLine
 from tsar.config import SEARCH_RECORD_COLORS
 from tsar.lib.collection import Collection
+from prompt_toolkit.lexers import PygmentsLexer
 
 
 class SearchViewModel(object):
@@ -29,11 +30,16 @@ class SearchViewModel(object):
     def __init__(self, collection, style=SEARCH_RECORD_COLORS):
 
         self.collection = collection
+        self.RecordDef = collection.RecordDef
         self.query_buffer = Buffer(name="query_buffer", multiline=False)
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
-        self.preview_textcontrol = FormattedTextControl("(no result selected)")
+        self.preview_textcontrol = BufferControl(
+            lexer=PygmentsLexer(self.RecordDef.preview_lexer)
+        )
+        self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
+        self.preview_textcontrol.buffer.text = "(no result selected)"
         self.status_textcontrol = FormattedTextControl()
         self.style = style
         # value -1 indicates no result is currently selected
@@ -85,7 +91,7 @@ class SearchViewModel(object):
             preview_str = "(no result selected)"
         else:
             preview_str = self.collection.df.loc[self.results[self.index]]["record_summary"]
-        self.preview_textcontrol.text = preview_str
+        self.preview_textcontrol.buffer.text = preview_str
 
     def _update_selected_result(self, old_index, new_index):
         """update formatted results style based on index change.
@@ -131,13 +137,19 @@ class SearchViewModel(object):
             - updates preview of selected record
         - update status bar
         """
-        results = self.collection.query_records(self.query_str)
-        self.results = list(results.keys())
-
-        self.formatted_results = self._apply_default_format(self.results)
-        self.results_textcontrol.text = self.formatted_results
-        self.index = 0
-        self.status_textcontrol.text = f"{len(self.results)} of {self.collection.df.shape[0]} records"
+        try:
+            results = self.collection.query_records(self.query_str)
+            self.results = list(results.keys())
+        except Exception:
+            self.results = {}
+            self.status_textcontrol.text = "(invalid query)"
+        else:
+            self.formatted_results = self._apply_default_format(self.results)
+            self.results_textcontrol.text = self.formatted_results
+            self.index = 0
+            self.status_textcontrol.text = (
+                f"showing {len(self.results)} of {self.collection.df.shape[0]} records "
+            )
 
     def open_selected(self):
         """open selected record
@@ -155,9 +167,10 @@ class SearchView(object):
     def __init__(self, search_view_model):
 
         self.view_model = search_view_model
+        _collection_info = "(" + " | ".join(self.view_model.collection.df.columns) + ")"
         query_window = Window(
             BufferControl(
-                self.view_model.query_buffer
+                self.view_model.query_buffer,
             ),
             height=1,
         )
@@ -167,7 +180,7 @@ class SearchView(object):
         )
         preview_window = Window(
             self.view_model.preview_textcontrol,
-            height=22
+            height=22,
         )
         status_window = Window(
             self.view_model.status_textcontrol,
@@ -180,7 +193,10 @@ class SearchView(object):
             HSplit(
                 [
                     Window(
-                        FormattedTextControl("query:"),
+                        FormattedTextControl(
+                            "QUERY  " +
+                            _collection_info
+                        ),
                         height=1,
                         style="reverse"
                     ),
@@ -191,7 +207,7 @@ class SearchView(object):
                     preview_window,
                     status_window
                 ]
-            )
+            ),
         )
 
         # SEARCH PAGE KEYBINDINGS
@@ -209,13 +225,15 @@ class SearchView(object):
         @self.kb.add("enter")
         def _(event):
             """open selected record"""
-            self.view_model.open_selected()
+            try:
+                self.view_model.open_selected()
+            except Exception:
+                self.view_model.status_textcontrol.text = "(no doc selected)"
 
     def refresh_view(self, collection):
         self.view_model.collection = collection
         self.view_model.query_str = ""
         self.view_model.update_results()
-
 
 
 if __name__ == "__main__":

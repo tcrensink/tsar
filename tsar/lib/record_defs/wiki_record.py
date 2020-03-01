@@ -6,6 +6,9 @@ from datetime import datetime
 from tsar import config
 from tsar.lib.record_def import RecordDef, BASE_SCHEMA, SafeSerializer
 from tsar.lib.record_defs import parse_lib
+from pygments.lexers.markup import MarkdownLexer
+from prompt_toolkit.styles.pygments import style_from_pygments_cls
+from pygments.styles import get_style_by_name
 
 SERIALIZER = SafeSerializer()
 
@@ -38,6 +41,10 @@ INDEX_MAPPING = {
 
 DOC_VIEWER = config.EDITOR
 
+VALID_EXTENSIONS = (
+    ".md",
+)
+
 
 class WikiRecord(RecordDef):
     """Defines wiki doc -> wiki_record and downstream processing."""
@@ -47,12 +54,18 @@ class WikiRecord(RecordDef):
     schema = SCHEMA
     schema.update(BASE_SCHEMA)
     index_mapping = INDEX_MAPPING
+    preview_lexer = MarkdownLexer
+    preview_style = style_from_pygments_cls(get_style_by_name('solarizeddark'))
 
     @staticmethod
     def gen_record(path):
         """Parse doc into a record; return it."""
 
         record_id = parse_lib.resolve_path(path)
+        if record_id.suffix not in VALID_EXTENSIONS:
+            return
+        record_id = str(record_id)
+
         raw_doc = parse_lib.return_raw_doc(record_id)
         file_info = parse_lib.file_meta_data(record_id)
 
@@ -70,6 +83,14 @@ class WikiRecord(RecordDef):
         record["access_times"] = [file_info["st_atime"]]
         record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 8))
         return record
+
+
+    @staticmethod
+    def gen_records(folder):
+        """Return records for docs of valid extension within a folder."""
+        paths = parse_lib.return_files(folder, extensions=VALID_EXTENSIONS)
+        records = [WikiRecord.gen_record(path) for path in paths]
+        return records
 
     @staticmethod
     def gen_record_index(record):

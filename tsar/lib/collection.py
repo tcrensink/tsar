@@ -74,7 +74,6 @@ class Data(object):
         """Add or update a record in the df."""
         record_id = record["record_id"]
         self.df.loc[record_id] = record
-        self.write_db()
 
     def return_record(self, record_id):
         """Return record associated with record_id."""
@@ -176,17 +175,37 @@ class Collection(object):
         df = pd.read_pickle(db_meta_path)
         return df
 
-    def add_document(self, record_id):
-        """Add a record to the collection."""
+    def _add_document(self, record_id):
+        """add record without saving."""
         record = self.RecordDef.gen_record(record_id)
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
-        self.data.write_db()
         self.client.index_record(
             record_id=record_id,
             record_index=record_index,
             collection_name=self.name
         )
+
+    def add_document(self, record_id):
+        """Add a record to the collection."""
+        self._add_document(record_id)
+        self.data.write_db()
+
+    def add_documents(self, source):
+        """Performantly add multiple documents from a given source (e.g. folder).
+
+        source -> documents conversion is defined in the RecordDef
+        """
+        records = self.RecordDef.gen_records(source)
+        for record in records:
+            (record_id, record_index) = self.RecordDef.gen_record_index(record)
+            self.data.update_record(record)
+            self.client.index_record(
+                record_id=record_id,
+                record_index=record_index,
+                collection_name=self.name
+            )
+        self.data.write_db()
 
     def remove_record(self, record_id):
         """Remove reocrd from collection."""

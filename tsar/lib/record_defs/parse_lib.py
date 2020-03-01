@@ -11,10 +11,33 @@ import numpy as np
 from pathlib import Path
 
 
+def return_files(folder, extensions=None):
+    """Return all files within folder for the given extension types."""
+    if isinstance(extensions, str):
+        raise TypeError("extensions should be a list, tuple, or set.")
+
+    folder = Path(folder).resolve()
+    if not folder.is_dir():
+        raise ValueError("a folder is needed to generate records.")
+
+    paths = []
+    for root, dirs, files in os.walk(folder):
+        curr_paths = [resolve_path(os.path.join(root, f)) for f in files]
+        if extensions:
+            curr_paths = \
+                [str(p) for p in curr_paths if p.suffix in set(extensions)]
+        else:
+            curr_paths = [str(p) for p in curr_paths]
+        paths.extend(curr_paths)
+
+    return paths
+
+
 def resolve_path(path):
     """Resolve path, including relative, tilde, and env vars."""
-    resolved_path = str(Path(path).resolve())
+    resolved_path = Path(path).resolve()
     return resolved_path
+
 
 def open_textfile(path, editor):
     """Open text file with editor.
