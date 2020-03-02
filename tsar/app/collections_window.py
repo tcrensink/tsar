@@ -15,13 +15,6 @@ from tsar.lib.collection import Collection
 import logging
 
 
-def button_handler_factory(view_model, collection_name):
-    """Create handlers to bind to each button when pressed."""
-    def handler():
-        view_model.update_selected_collection(collection_name)
-    return handler
-
-
 class CollectionsViewModel(object):
     """Business logic for collections view"""
     def __init__(self, collection):
@@ -48,7 +41,7 @@ class CollectionsView(object):
         buttons = []
         for coll_name in collection_names:
 
-            handler = button_handler_factory(self.view_model, coll_name)
+            handler = self._button_handler_factory(coll_name)
             button = Button(f"{coll_name}", handler=handler)
             buttons.append(button)
             if coll_name == self.view_model.collection.name:
@@ -79,6 +72,12 @@ class CollectionsView(object):
         self.kb = KeyBindings()
         self.kb.add('down')(focus_next)
         self.kb.add('up')(focus_previous)
+
+    def _button_handler_factory(self, collection_name):
+        """Create handlers to bind to each button when pressed."""
+        def handler():
+            self.view_model.update_selected_collection(collection_name)
+        return handler
 
     def refresh_view(self, collection):
         self.view_model.collection = collection

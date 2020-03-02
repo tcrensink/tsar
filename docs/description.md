@@ -26,6 +26,8 @@ You want faster access and deeper understanding of large volumes of human-interp
 
 
 # WISHLIST FEATURES
+- undo/history
+- "notes": modifiable record attribute associated with document, useful for view only (e.g. arxiv, images)
 - journaling function(?): template that is filled every day
 - search sorting by predefined filters, e.g. add date, edit date, relevance, hits
 - syntax coloring in custom preview
