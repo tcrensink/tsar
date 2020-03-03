@@ -108,7 +108,6 @@ if __name__ == "__main__":
 
     """Instantiate views, view_models, app; run the app."""
     logging.basicConfig(filename=LOG_PATH, level=logging.INFO)
-    logger = logging.getLogger('parso.python.diff').disabled = True
-    # logger('parso.python.diff').disabled = True
+    logging.getLogger('parso.python.diff').disabled = True
     app = App()
     app.run()

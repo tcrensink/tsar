@@ -40,7 +40,7 @@ class CollectionsView(object):
             handler = self._button_handler_factory(coll_name)
             button = Button(f"{coll_name}", handler=handler)
             buttons.append(button)
-            if coll_name == self.view_model["active_collection"].name:
+            if coll_name == self.shared_state["active_collection"].name:
                 focused_element = button
 
         root_container = Box(
