@@ -17,16 +17,12 @@ import logging
 
 class CollectionsViewModel(object):
     """Business logic for collections view"""
-    def __init__(self, collection):
+    def __init__(self, shared_state):
 
-        self.collection = collection
-        self.collection_names = tuple(collection.db_meta.index)
-
-    def update_selected_collection(self, collection_name):
-        """sets the active collection and returns it"""
-        collection = Collection(collection_name=collection_name)
-        self.collection = collection
-        return collection
+        self.shared_state = shared_state
+        self.collection_names = tuple(
+            shared_state["active_collection"].db_meta.index
+        )
 
 
 class CollectionsView(object):
@@ -35,16 +31,16 @@ class CollectionsView(object):
     def __init__(self, collections_view_model):
 
         self.view_model = collections_view_model
-        collection_names = collections_view_model.collection_names
+        self.shared_state = self.view_model.shared_state
+        collection_names = self.view_model.collection_names
 
         # create buttons, bind function that returns their name when clicked.
         buttons = []
         for coll_name in collection_names:
-
             handler = self._button_handler_factory(coll_name)
             button = Button(f"{coll_name}", handler=handler)
             buttons.append(button)
-            if coll_name == self.view_model.collection.name:
+            if coll_name == self.view_model["active_collection"].name:
                 focused_element = button
 
         root_container = Box(
@@ -76,18 +72,23 @@ class CollectionsView(object):
     def _button_handler_factory(self, collection_name):
         """Create handlers to bind to each button when pressed."""
         def handler():
-            self.view_model.update_selected_collection(collection_name)
+            self.shared_state["active_collection"] = Collection(collection_name)
         return handler
 
-    def refresh_view(self, collection):
-        self.view_model.collection = collection
+    def refresh_view(self):
+        pass
 
 
 if __name__ == "__main__":
     """stand-alone version of the collections window for debugging."""
 
-    collection = Collection("wiki")
-    view_model = CollectionsViewModel(collection)
+
+    shared_state = {
+        "active_collection": Collection("wiki"),
+        "active_screen": None,
+        "application": Application(),
+    }
+    view_model = CollectionsViewModel(shared_state)
     view = CollectionsView(view_model)
 
     @view.kb.add("c-c")

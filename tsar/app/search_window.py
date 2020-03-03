@@ -27,10 +27,10 @@ class SearchViewModel(object):
     - handles index of selected result
     - generates preview of selected record
     """
-    def __init__(self, collection, style=SEARCH_RECORD_COLORS):
+    def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
-        self.collection = collection
-        self.RecordDef = collection.RecordDef
+        self.shared_state = shared_state
+        self.RecordDef = self.shared_state["active_collection"].RecordDef
         self.query_buffer = Buffer(name="query_buffer", multiline=False)
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
@@ -90,7 +90,8 @@ class SearchViewModel(object):
         if self.index == -1:
             preview_str = "(no result selected)"
         else:
-            preview_str = self.collection.df.loc[self.results[self.index]]["record_summary"]
+            preview_str = self.shared_state["active_collection"]\
+                .df.loc[self.results[self.index]]["record_summary"]
         self.preview_textcontrol.buffer.text = preview_str
 
     def _update_selected_result(self, old_index, new_index):
@@ -138,7 +139,7 @@ class SearchViewModel(object):
         - update status bar
         """
         try:
-            results = self.collection.query_records(self.query_str)
+            results = self.shared_state["active_collection"].query_records(self.query_str)
             self.results = list(results.keys())
         except Exception:
             self.results = {}
@@ -148,7 +149,7 @@ class SearchViewModel(object):
             self.results_textcontrol.text = self.formatted_results
             self.index = 0
             self.status_textcontrol.text = (
-                f"showing {len(self.results)} of {self.collection.df.shape[0]} records "
+                f"showing {len(self.results)} of {self.shared_state['active_collection'].df.shape[0]} records "
             )
 
     def open_selected(self):
@@ -158,7 +159,7 @@ class SearchViewModel(object):
             record_id = self.results[self.index]
         else:
             pass
-        self.collection.open_document(record_id=record_id)
+        self.shared_state["active_collection"].open_document(record_id=record_id)
 
 
 class SearchView(object):
@@ -167,7 +168,9 @@ class SearchView(object):
     def __init__(self, search_view_model):
 
         self.view_model = search_view_model
-        _collection_info = "(" + " | ".join(self.view_model.collection.df.columns) + ")"
+        self.shared_state = self.view_model.shared_state
+        _collection_info = "(" + " | ".join(self.shared_state["active_collection"]\
+            .df.columns) + ")"
         query_window = Window(
             BufferControl(
                 self.view_model.query_buffer,
@@ -230,8 +233,7 @@ class SearchView(object):
             except Exception:
                 self.view_model.status_textcontrol.text = "(no doc selected)"
 
-    def refresh_view(self, collection):
-        self.view_model.collection = collection
+    def refresh_view(self):
         self.view_model.query_str = ""
         self.view_model.update_results()
 
@@ -239,8 +241,13 @@ class SearchView(object):
 if __name__ == "__main__":
     """stand-alone version of the search window for debugging."""
 
-    collection = Collection("wiki")
-    view_model = SearchViewModel(collection)
+    shared_state = {
+        "active_collection": Collection("wiki"),
+        "active_screen": None,
+        "application": Application(),
+    }
+
+    view_model = SearchViewModel(shared_state)
     view = SearchView(view_model)
 
     @view.kb.add("c-c")

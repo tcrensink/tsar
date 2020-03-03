@@ -23,23 +23,13 @@ class Screen(object):
 
     This should be an ABC, defining template for future screens.
     """
-
-    def __init__(self, collection, ViewModel, View):
-        self._collection = collection
-        self.view_model = ViewModel(self._collection)
+    def __init__(self, shared_state, ViewModel, View):
+        self.shared_state = shared_state
+        self.view_model = ViewModel(shared_state)
         self.view = View(self.view_model)
         self.key_bindings = self.view.kb
         self.layout = self.view.layout
         self.refresh_view = self.view.refresh_view
-
-    @property
-    def collection(self):
-        return self._collection
-
-    @collection.setter
-    def collection(self, collection):
-        self._collection = collection
-        self.view_model.collection = collection
 
 
 class App(object):
@@ -52,36 +42,30 @@ class App(object):
     ):
 
         Server().start()
-        # empty application updated in update_screen
-        self.application = Application()
-        self._active_collection = Collection(default_collection_name)
+        # empty prompt_toolkit application
         self._global_kb = self._return_global_keybindings()
-        self.kb = self._global_kb
 
-        # add screens to app:
+        application = Application()
+        # mutable/updatable object references across app.
+        self.shared_state = {
+            "active_collection": Collection(default_collection_name),
+            "active_screen": None,
+            "application": application,
+        }
+        # screens in app
         self.screens = {}
         self.screens["search"] = Screen(
-            collection=self._active_collection,
+            shared_state=self.shared_state,
             ViewModel=SearchViewModel,
             View=SearchView
         )
         self.screens["collections"] = Screen(
-            collection=self._active_collection,
+            shared_state=self.shared_state,
             ViewModel=CollectionsViewModel,
             View=CollectionsView
         )
-        self.active_screen = None
-        self.active_screen = self.update_state(default_screen)
-
-    @property
-    def active_collection(self):
-        """active collection is always pulled from the collections screen"""
-        self._active_collection = self.screens["collections"].view_model.collection
-        return self._active_collection
-
-    @active_collection.setter
-    def active_collection(self, active_collection):
-        self._active_collection = active_collection
+        self.update_state(default_screen)
+        self.shared_state["active_screen"] = self.screens[default_screen]
 
     def _return_global_keybindings(self):
         """Register key bindings (global, screen specific)."""
@@ -103,29 +87,28 @@ class App(object):
     def _update_keybindings(self):
         """Merge and return keybindings for global + screen."""
         kb = merge_key_bindings(
-            [self._global_kb, self.active_screen.key_bindings]
+            [self._global_kb, self.shared_state["active_screen"].key_bindings]
         )
         return kb
 
     def update_state(self, screen_key):
-        """On keystroke, display new screen with current data."""
-
-        if self.active_screen == self.screens[screen_key]:
+        """Update shared_state when screen is changed."""
+        if self.shared_state["active_screen"] == self.screens[screen_key]:
             return
-        self.active_screen = self.screens[screen_key]
-        # self.active_screen.collection = self.active_collection
-        self.active_screen.refresh_view(collection=self.active_collection)
-        self.application.layout = self.active_screen.layout
-        self.application.key_bindings = self._update_keybindings()
+        self.shared_state["active_screen"] = self.screens[screen_key]
+        self.shared_state["application"].layout = self.shared_state["active_screen"].layout
+        self.shared_state["application"].key_bindings = self._update_keybindings()
+        self.shared_state["active_screen"].refresh_view()
 
     def run(self):
-        self.application.run()
+        self.shared_state["application"].run()
 
 
 if __name__ == "__main__":
 
     """Instantiate views, view_models, app; run the app."""
     logging.basicConfig(filename=LOG_PATH, level=logging.INFO)
-    logging.getLogger('parso.python.diff').disabled = True
+    logger = logging.getLogger('parso.python.diff').disabled = True
+    # logger('parso.python.diff').disabled = True
     app = App()
     app.run()
