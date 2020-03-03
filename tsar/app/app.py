@@ -37,18 +37,18 @@ class App(object):
 
     def __init__(
         self,
-        default_collection_name=DEFAULT_COLLECTION,
-        default_screen=DEFAULT_SCREEN
+        initial_collection_name=DEFAULT_COLLECTION,
+        initial_screen_name=DEFAULT_SCREEN
     ):
 
         Server().start()
         # empty prompt_toolkit application
         self._global_kb = self._return_global_keybindings()
 
-        application = Application()
+        application = Application(full_screen=True)
         # mutable/updatable object references across app.
         self.shared_state = {
-            "active_collection": Collection(default_collection_name),
+            "active_collection": Collection(initial_collection_name),
             "active_screen": None,
             "application": application,
         }
@@ -64,8 +64,8 @@ class App(object):
             ViewModel=CollectionsViewModel,
             View=CollectionsView
         )
-        self.update_state(default_screen)
-        self.shared_state["active_screen"] = self.screens[default_screen]
+        self.update_state(initial_screen_name)
+        self.shared_state["active_screen"] = self.screens[initial_screen_name]
 
     def _return_global_keybindings(self):
         """Register key bindings (global, screen specific)."""
