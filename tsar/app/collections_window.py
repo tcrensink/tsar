@@ -13,6 +13,9 @@ from prompt_toolkit.layout import HSplit, Layout
 from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea, HorizontalLine
 from tsar.lib.collection import Collection
 import logging
+from prompt_toolkit.key_binding import (
+    merge_key_bindings
+)
 
 
 class CollectionsViewModel(object):
@@ -73,6 +76,15 @@ class CollectionsView(object):
         """Create handlers to bind to each button when pressed."""
         def handler():
             self.shared_state["active_collection"] = Collection(collection_name)
+            self.shared_state["active_screen"] = self.shared_state["prev_screen"]
+            self.shared_state["application"].layout = self.shared_state["active_screen"].layout
+            self.shared_state["application"].key_bindings = merge_key_bindings(
+                [
+                    self.shared_state["active_screen"].key_bindings,
+                    self.shared_state["global_kb"]
+                ]
+            )
+            self.shared_state["active_screen"].refresh_view()
         return handler
 
     def refresh_view(self):

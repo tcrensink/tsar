@@ -43,14 +43,14 @@ class App(object):
 
         Server().start()
         # empty prompt_toolkit application
-        self._global_kb = self._return_global_keybindings()
 
-        application = Application(full_screen=True)
         # mutable/updatable object references across app.
         self.shared_state = {
             "active_collection": Collection(initial_collection_name),
             "active_screen": None,
-            "application": application,
+            "prev_screen": None,
+            "global_kb": self._return_global_keybindings(),
+            "application": Application(full_screen=True),
         }
         # screens in app
         self.screens = {}
@@ -84,24 +84,24 @@ class App(object):
             self.update_state("collections")
         return kb_global
 
-    def _update_keybindings(self):
-        """Merge and return keybindings for global + screen."""
-        kb = merge_key_bindings(
-            [self._global_kb, self.shared_state["active_screen"].key_bindings]
-        )
-        return kb
-
     def update_state(self, screen_key):
         """Update shared_state when screen is changed."""
         if self.shared_state["active_screen"] == self.screens[screen_key]:
             return
+        self.shared_state["prev_screen"] = self.shared_state["active_screen"]
         self.shared_state["active_screen"] = self.screens[screen_key]
         self.shared_state["application"].layout = self.shared_state["active_screen"].layout
-        self.shared_state["application"].key_bindings = self._update_keybindings()
+        self.shared_state["application"].key_bindings = merge_key_bindings(
+            [
+                self.shared_state["active_screen"].key_bindings,
+                self.shared_state["global_kb"]
+            ]
+        )
         self.shared_state["active_screen"].refresh_view()
 
     def run(self):
         self.shared_state["application"].run()
+
 
 
 if __name__ == "__main__":
