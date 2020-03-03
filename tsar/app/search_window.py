@@ -36,6 +36,7 @@ class SearchViewModel(object):
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_textcontrol = BufferControl(
+            focusable=False,
             lexer=PygmentsLexer(self.RecordDef.preview_lexer)
         )
         self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
@@ -171,7 +172,7 @@ class SearchView(object):
         self.shared_state = self.view_model.shared_state
         _collection_info = "(" + " | ".join(self.shared_state["active_collection"]\
             .df.columns) + ")"
-        query_window = Window(
+        self.query_window = Window(
             BufferControl(
                 self.view_model.query_buffer,
             ),
@@ -203,7 +204,7 @@ class SearchView(object):
                         height=1,
                         style="reverse"
                     ),
-                    query_window,
+                    self.query_window,
                     HorizontalLine(),
                     result_window,
                     HorizontalLine(),
@@ -236,7 +237,7 @@ class SearchView(object):
     def refresh_view(self):
         self.view_model.query_str = ""
         self.view_model.update_results()
-
+        self.layout.focus(self.query_window)
 
 if __name__ == "__main__":
     """stand-alone version of the search window for debugging."""
