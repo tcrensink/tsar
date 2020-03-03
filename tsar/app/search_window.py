@@ -16,7 +16,7 @@ from prompt_toolkit.widgets import HorizontalLine
 from tsar.config import SEARCH_RECORD_COLORS
 from tsar.lib.collection import Collection
 from prompt_toolkit.lexers import PygmentsLexer
-
+from prompt_toolkit.layout.processors import TabsProcessor
 
 class SearchViewModel(object):
     """View model/business logic for search window.
@@ -37,6 +37,7 @@ class SearchViewModel(object):
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_textcontrol = BufferControl(
             focusable=False,
+            input_processors=[TabsProcessor(tabstop=4, char1=' ', char2=' ')],
             lexer=PygmentsLexer(self.RecordDef.preview_lexer)
         )
         self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
