@@ -38,8 +38,6 @@ class App(object):
         initial_screen_name=DEFAULT_SCREEN
     ):
 
-        # empty prompt_toolkit application
-
         # mutable/updatable object references across app.
         self.shared_state = {
             "active_collection": Collection(initial_collection_name),
@@ -97,6 +95,7 @@ class App(object):
         self.shared_state["active_screen"].refresh_view()
 
     def run(self):
+        """Start Prompt-toolkit event loop."""
         self.shared_state["application"].run()
 
 
