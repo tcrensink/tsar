@@ -119,6 +119,7 @@ class Client(object):
         collection_name,
         query_str="*",
         default_fields="*",
+        num_results=12,
     ):
         """Basic query using the lucene search syntax.  Searches all fields by default.
 
@@ -131,9 +132,10 @@ class Client(object):
                 "query_string": {
                     "query": query_str,
                     "default_field": default_fields,
-                    "analyze_wildcard": "true"
-                }
-            }
+                    "analyze_wildcard": "true",
+                },
+            },
+        "size": str(num_results),
         }
         try:
             res = self.session.get(url, json=json_params)
