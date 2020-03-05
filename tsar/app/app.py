@@ -1,12 +1,10 @@
 """
-This module contains high level management of:
-- views (interactive bits)
-- view_models (business logic for views)
-- collections (underlying data interface object)
+This module contains high level management of the terminal interface, including:
+- Screen: contains view and view_model for a single window (e.g. search)
+- App: manages active view, app state, keybindings, and event loop
 """
 from prompt_toolkit.application import Application
 from tsar.lib.collection import Collection
-from tsar.lib.search import Server, Client
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from prompt_toolkit.key_binding import (
@@ -14,8 +12,6 @@ from prompt_toolkit.key_binding import (
     merge_key_bindings
 )
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
-from tsar import LOG_PATH
-import logging
 
 
 class Screen(object):
@@ -23,6 +19,7 @@ class Screen(object):
 
     This should be an ABC, defining template for future screens.
     """
+
     def __init__(self, shared_state, ViewModel, View):
         self.shared_state = shared_state
         self.view_model = ViewModel(shared_state)
@@ -89,7 +86,8 @@ class App(object):
             return
         self.shared_state["prev_screen"] = self.shared_state["active_screen"]
         self.shared_state["active_screen"] = self.screens[screen_key]
-        self.shared_state["application"].layout = self.shared_state["active_screen"].layout
+        self.shared_state["application"].layout =\
+            self.shared_state["active_screen"].layout
         self.shared_state["application"].key_bindings = merge_key_bindings(
             [
                 self.shared_state["active_screen"].key_bindings,
@@ -102,11 +100,8 @@ class App(object):
         self.shared_state["application"].run()
 
 
-
 if __name__ == "__main__":
 
     """Instantiate views, view_models, app; run the app."""
-    logging.basicConfig(filename=LOG_PATH, level=logging.INFO)
-    logging.getLogger('parso.python.diff').disabled = True
     app = App()
     app.run()
