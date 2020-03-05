@@ -6,7 +6,6 @@ import os
 import requests
 import pandas as pd
 from requests.exceptions import ConnectionError, HTTPError
-import numpy as np
 from pandas.io.json import json_normalize
 from tsar import MODULE_PATH, REPO_PATH
 from urllib.parse import quote_plus, unquote_plus
@@ -37,6 +36,7 @@ class Server(object):
     methods to add:
     - n documents in index: /index/_count
     """
+
     def __init__(self, es_app=ELASTICSEARCH_PATH, server_file=SERVER_FILE):
         self.app = es_app
         self.server_file = server_file
@@ -65,6 +65,7 @@ class Server(object):
 
 class Client(object):
     """Elasticsearch client used by tsar, uses rest API."""
+
     def __init__(self, host=HOST, port=ELASTICSEARCH_PORT):
         self.session = requests.Session()
         self.host = host
@@ -117,7 +118,7 @@ class Client(object):
         self,
         collection_name,
         query_str="*",
-        fields="*",
+        default_fields="*",
     ):
         """Basic query using the lucene search syntax.  Searches all fields by default.
 
@@ -128,8 +129,9 @@ class Client(object):
         json_params = {
             "query": {
                 "query_string": {
-                    "query": f"{query_str}",
-                    "default_field": fields
+                    "query": query_str,
+                    "default_field": default_fields,
+                    "analyze_wildcard": "true"
                 }
             }
         }
@@ -192,48 +194,3 @@ class Client(object):
         except ConnectionError:
             connection_status = False
         return connection_status
-
-
-# import attr
-# @attr.s(slots=True, init=False)
-# class ClientWAttrs(object):
-#     host = attr.ib(type=<blah>, default=HOST)
-#     port = attr.ib(type=<blah>, default=ELASTICSEARCH_PORT)
-#     session = attr.ib(init=False, factory=requests.Session)
-#     base_url = attr.ib(init=False)
-#     serializer = attr.ib(init=False)
-
-#     @base_url.default
-#     def _base_url(self):
-#         self.base_url = "http://{}:{}".format(self.host, self.port)
-
-
-"""OLD"""
-# def results_to_df(results_dict):
-#     """
-#     """
-#     df = json_normalize(results_dict['hits']['hits'], sep='_')
-#     names = {name: name.strip('_') for name in df.columns}
-#     df.rename(columns=names, inplace=True)
-#     return df
-
-
-# def result_ids(es, query_str=''):
-#     results_dict = es.search(q=query_str)
-#     df = results_to_df(results_dict)
-#     if df.empty:
-#         ids = []
-#     else:
-#         ids = df.id.values
-#     return ids
-
-
-# def result_preview(es, query_str=''):
-#     results_dict = es.search(q=query_str)
-#     df = results_to_df(results_dict)
-#     if df.empty:
-#         previews = []
-#     else:
-#         previews = df.source_body.values
-#     return previews
-

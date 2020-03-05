@@ -47,6 +47,13 @@ def open_textfile(path, editor):
     subprocess.Popen(cmd, shell=True).wait()
 
 
+def open_url(url, browser):
+    """Open url in browser.
+    """
+    cmd = f"open {url} -a {browser}"
+    subprocess.Popen(cmd, shell=True).wait()
+
+
 def return_raw_doc(path):
     """Return text doc as a string."""
     with open(path, 'r') as fp:

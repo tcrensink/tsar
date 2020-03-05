@@ -41,7 +41,6 @@ class App(object):
         initial_screen_name=DEFAULT_SCREEN
     ):
 
-        Server().start()
         # empty prompt_toolkit application
 
         # mutable/updatable object references across app.
