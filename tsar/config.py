@@ -1,8 +1,8 @@
 """TSAR config file."""
 
-EDITOR = '/usr/local/bin/subl'
-# TSAR_FOLDER = '/Users/trensink/Dropbox/shared_wiki'
+EDITOR = "/usr/local/bin/subl"
 
+BROWSER = "Safari"
 ELASTICSEARCH_PORT = 9200
 
 # global keybindings
@@ -15,9 +15,10 @@ GLOBAL_KB = {
 
 # color styles for results list
 SEARCH_RECORD_COLORS = {
-    'selected': 'bg:#944288',
+    'selected': 'bg:#144288',
     'unselected': 'default'
 }
 
-DEFAULT_COLLECTION = "wiki"
+DEFAULT_COLLECTION = "lit"
 DEFAULT_SCREEN = "search"
+

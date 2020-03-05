@@ -12,7 +12,9 @@ import pandas as pd
 from tsar import COLLECTIONS_FOLDER
 from tsar.lib import search
 from tsar.lib.record_def import RecordDef
+# must be imported to be recognized as subclasses...
 from tsar.lib.record_defs.wiki_record import WikiRecord
+from tsar.lib.record_defs.arxiv_def import ArxivRecord
 import datetime
 
 # df that contains summary info for all collections
@@ -106,6 +108,7 @@ class Collection(object):
         db_meta_path=DB_META_PATH,
         client=None
     ):
+        search.Server().start()
         self.name = collection_name
         self.data = Data(self.name, folder=folder)
         self.df = self.data.df
@@ -131,6 +134,7 @@ class Collection(object):
         - if collection by name doesn't exist:
             - add new entry to collections_db (create as needed)
         """
+        search.Server().start()
         meta_db_record = {
             "record_type": RecordDef.record_type,
             "creation_date": datetime.datetime.utcnow(),
@@ -191,7 +195,7 @@ class Collection(object):
         self._add_document(record_id)
         self.data.write_db()
 
-    def add_documents(self, source):
+    def add_documents(self, source=None):
         """Performantly add multiple documents from a given source (e.g. folder).
 
         source -> documents conversion is defined in the RecordDef
@@ -234,10 +238,6 @@ class Collection(object):
         record_score_dict = {r["_id"]: r["_score"] for r in results}
         return record_score_dict
 
-    def browse_records(self, target_record):
-        """Return records associated with target_record"""
-        pass
-
     def open_document(self, record_id):
         """Open record (edit ok now) with associated executable."""
         record = self.df.loc[record_id]
@@ -245,4 +245,8 @@ class Collection(object):
 
     def open_capture_buffer(self):
         """Open buffer for 'capture' interface."""
+        pass
+
+    def browse_records(self, target_record):
+        """Return records associated with target_record"""
         pass

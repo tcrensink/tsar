@@ -18,6 +18,7 @@ from tsar.lib.collection import Collection
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.layout.processors import TabsProcessor
 
+
 class SearchViewModel(object):
     """View model/business logic for search window.
 
@@ -122,7 +123,9 @@ class SearchViewModel(object):
         print formatted results using print_formatted_text
         """
         if len(results_list) != 0:
-            results_list = ["{}\n".format(res) for res in results_list]
+            # results_list = [f"{res}\n" for res in results_list]
+            result_names = self.shared_state['active_collection'].df.loc[results_list].record_name
+            results_list = [f"{res}\n" for res in result_names]
             formatted_results = [(self.style["unselected"], res)
                                  for res in results_list]
         else:
@@ -171,21 +174,35 @@ class SearchView(object):
 
         self.view_model = search_view_model
         self.shared_state = self.view_model.shared_state
-        _collection_info = "(" + " | ".join(self.shared_state["active_collection"]\
-            .df.columns) + ")"
+
+        # layout components:
+        self.query_header = Window(
+            FormattedTextControl(query_title_bar_text(self.shared_state)),
+            height=1,
+            style="reverse"
+        )
+
         self.query_window = Window(
             BufferControl(
                 self.view_model.query_buffer,
             ),
             height=1,
         )
-        result_window = Window(
+        results_window = Window(
             self.view_model.results_textcontrol,
             height=12
         )
+
+        self.preview_header = Window(
+            FormattedTextControl(query_title_bar_text(self.shared_state)),
+            height=1,
+            style="reverse"
+        )
+
         preview_window = Window(
             self.view_model.preview_textcontrol,
             height=22,
+            wrap_lines=True
         )
         status_window = Window(
             self.view_model.status_textcontrol,
@@ -197,17 +214,10 @@ class SearchView(object):
         self.layout = Layout(
             HSplit(
                 [
-                    Window(
-                        FormattedTextControl(
-                            "QUERY  " +
-                            _collection_info
-                        ),
-                        height=1,
-                        style="reverse"
-                    ),
+                    self.query_header,
                     self.query_window,
                     HorizontalLine(),
-                    result_window,
+                    results_window,
                     HorizontalLine(),
                     preview_window,
                     status_window
@@ -227,6 +237,10 @@ class SearchView(object):
         def _(event):
             self.view_model.index += 1
 
+        @self.kb.add("escape")
+        def _(event):
+            self.view_model.query_str = ""
+
         @self.kb.add("enter")
         def _(event):
             """open selected record"""
@@ -236,9 +250,19 @@ class SearchView(object):
                 self.view_model.status_textcontrol.text = "(no doc selected)"
 
     def refresh_view(self):
-        self.view_model.query_str = ""
+        """Code when screen is changed."""
+        # self.view_model.query_str = ""
+        self.query_header.content.text = query_title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
+
+
+def query_title_bar_text(shared_state):
+    """return text for title bar, updated when screen changes."""
+    cols = shared_state["active_collection"].df.columns
+    str_value = f"QUERY ({' | '.join(cols)})"
+    return str_value
+
 
 if __name__ == "__main__":
     """stand-alone version of the search window for debugging."""

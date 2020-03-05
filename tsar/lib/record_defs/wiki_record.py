@@ -108,11 +108,11 @@ class WikiRecord(RecordDef):
     def open_doc(record):
         """open document associated with record to view"""
         record["access_times"].append(datetime.utcnow().timestamp())
-        parse_lib.open_textfile(path=record["record_id"], editor=DOC_VIEWER)
+        parse_lib.open_textfile(path=record["record_id"], editor=config.EDITOR)
 
 
 def return_record_name(doc):
-    """Create name from doc/content.
+    """Create display name for doc/content.
 
     To do: add logic.
     """
@@ -120,7 +120,7 @@ def return_record_name(doc):
 
 
 def return_record_summary(raw_doc):
-    """Create summary of the raw_doc.
+    """Create display summary of the raw_doc.
 
     To do: add logic.
     """
