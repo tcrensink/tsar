@@ -1,5 +1,5 @@
 """
-tsar elasticsearch server, client classes.
+Elasticsearch server, client classes.
 """
 import subprocess
 import os
@@ -121,9 +121,9 @@ class Client(object):
         default_fields="*",
         num_results=12,
     ):
-        """Basic query using the lucene search syntax.  Searches all fields by default.
+        """Basic query using the lucene search syntax.
 
-        discussion of GET request with a body:
+        Discussion of GET request with a body:
         https://www.elastic.co/guide/en/elasticsearch/guide/current/_empty_search.html
         """
         url = f"{self.base_url}/{collection_name}/_search"
@@ -166,20 +166,21 @@ class Client(object):
         return res
 
     def return_index(self, collection_name):
-        """return mapping for given index
-        """
+        """Return index info for collection."""
         url = f"{self.base_url}/{collection_name}?pretty"
         res = self.session.get(url)
         res.raise_for_status()
         return res
 
     def return_mapping(self, collection_name):
+        """Return index mapping for collection."""
         res = self.session.get(self.base_url + f"/{collection_name}/_mapping/?pretty")
         mapping = res.json()
         return mapping
 
     def return_fields(self, collection_name):
-        """Return fields, types of an index;
+        """Return fields, types for an index.
+
         Use pd.DataFrame.from_dict(properties)
         """
         mapping = self.return_mapping(collection_name=collection_name)
@@ -188,7 +189,7 @@ class Client(object):
         return properties
 
     def test_connection(self):
-        """Return bool(can elasticsearch server be reached?)."""
+        """Test connection with elasticsearch server."""
         try:
             res = self.session.get(self.base_url)
             res.raise_for_status()
