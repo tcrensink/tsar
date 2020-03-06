@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 A simple example of a few buttons and click handlers.
 """
@@ -10,9 +9,9 @@ from prompt_toolkit.key_binding.bindings.focus import (
     focus_previous,
 )
 from prompt_toolkit.layout import HSplit, Layout
-from prompt_toolkit.widgets import Box, Button, Frame, Label, TextArea, HorizontalLine
+from prompt_toolkit.widgets import Box, Button, Label
 from tsar.lib.collection import Collection
-import logging
+from tsar.config import DEFAULT_COLLECTION
 from prompt_toolkit.key_binding import (
     merge_key_bindings
 )
@@ -20,6 +19,7 @@ from prompt_toolkit.key_binding import (
 
 class CollectionsViewModel(object):
     """Business logic for collections view"""
+
     def __init__(self, shared_state):
 
         self.shared_state = shared_state
@@ -75,9 +75,12 @@ class CollectionsView(object):
     def _button_handler_factory(self, collection_name):
         """Create handlers to bind to each button when pressed."""
         def handler():
-            self.shared_state["active_collection"] = Collection(collection_name)
-            self.shared_state["active_screen"] = self.shared_state["prev_screen"]
-            self.shared_state["application"].layout = self.shared_state["active_screen"].layout
+            self.shared_state["active_collection"] =\
+                Collection(collection_name)
+            self.shared_state["active_screen"] =\
+                self.shared_state["prev_screen"]
+            self.shared_state["application"].layout =\
+                self.shared_state["active_screen"].layout
             self.shared_state["application"].key_bindings = merge_key_bindings(
                 [
                     self.shared_state["active_screen"].key_bindings,
@@ -94,9 +97,8 @@ class CollectionsView(object):
 if __name__ == "__main__":
     """stand-alone version of the collections window for debugging."""
 
-
     shared_state = {
-        "active_collection": Collection("wiki"),
+        "active_collection": Collection(DEFAULT_COLLECTION),
         "active_screen": None,
         "application": Application(),
     }

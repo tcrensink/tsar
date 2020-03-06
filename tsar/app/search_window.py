@@ -1,7 +1,5 @@
-"""Query/search app interface.
-
-SearchInterface: defines behavior and coupling of search page and tsar_app
-run: runs/starts the search_page application
+"""
+SearchInterface.  Defines behavior and coupling of search page.
 """
 
 from __future__ import unicode_literals
@@ -13,7 +11,7 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.controls import BufferControl
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.widgets import HorizontalLine
-from tsar.config import SEARCH_RECORD_COLORS
+from tsar.config import SEARCH_RECORD_COLORS, DEFAULT_COLLECTION
 from tsar.lib.collection import Collection
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.layout.processors import TabsProcessor
@@ -28,6 +26,7 @@ class SearchViewModel(object):
     - handles index of selected result
     - generates preview of selected record
     """
+
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
@@ -252,7 +251,8 @@ class SearchView(object):
     def refresh_view(self):
         """Code when screen is changed."""
         # self.view_model.query_str = ""
-        self.query_header.content.text = query_title_bar_text(self.shared_state)
+        self.query_header.content.text =\
+            query_title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     """stand-alone version of the search window for debugging."""
 
     shared_state = {
-        "active_collection": Collection("wiki"),
+        "active_collection": Collection(DEFAULT_COLLECTION),
         "active_screen": None,
         "application": Application(),
     }
