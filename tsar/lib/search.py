@@ -135,7 +135,7 @@ class Client(object):
                     "analyze_wildcard": "true",
                 },
             },
-        "size": str(num_results),
+            "size": str(num_results),
         }
         try:
             res = self.session.get(url, json=json_params)
@@ -174,7 +174,9 @@ class Client(object):
 
     def return_mapping(self, collection_name):
         """Return index mapping for collection."""
-        res = self.session.get(self.base_url + f"/{collection_name}/_mapping/?pretty")
+        res = self.session.get(
+            self.base_url + f"/{collection_name}/_mapping/?pretty"
+        )
         mapping = res.json()
         return mapping
 
