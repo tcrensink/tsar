@@ -3,12 +3,12 @@ library of parsing functions and utilities used by record_defs
 """
 import subprocess
 import os
-from tsar.lib.record_def import BASE_SCHEMA
 import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
 from pathlib import Path
+from datetime import datetime
 
 
 def return_files(folder, extensions=None):
@@ -40,16 +40,13 @@ def resolve_path(path):
 
 
 def open_textfile(path, editor):
-    """Open text file with editor.
-    -w returns to host program on close.
-    """
-    cmd = f"{editor} -w {path}"
-    subprocess.Popen(cmd, shell=True).wait()
+    """Open text file with editor."""
+    cmd = f"{editor} {path}".split(" ")
+    subprocess.Popen(cmd).wait()
 
 
 def open_url(url, browser):
-    """Open url in browser.
-    """
+    """Open url in browser."""
     cmd = f"open {url} -a {browser}"
     subprocess.Popen(cmd, shell=True).wait()
 
@@ -78,7 +75,7 @@ def basic_text_to_keyword(raw_text, N):
     tokenizes, filters to alphabetical, top N scoring sqrt(freq)*word_length
     """
     words = nltk.word_tokenize(raw_text)
-    words=[word.lower() for word in words if word.isalpha()]
+    words = [word.lower() for word in words if word.isalpha()]
     word_counts = dict(Counter(words))
     df = pd.DataFrame.from_dict(word_counts, columns=["count"], orient="index")
     df["length"] = df.index.str.len()
@@ -104,3 +101,9 @@ def file_meta_data(path):
         "st_size": info.st_size
     }
     return info_dict
+
+
+def utc_now_timestamp():
+    """return utc timestamp for right now"""
+    ts = datetime.utcnow().timestamp()
+    return ts
