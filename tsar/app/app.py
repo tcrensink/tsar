@@ -1,5 +1,5 @@
 """
-This module contains high level management of the terminal interface, including:
+This module contains high level management of the terminal interface:
 - Screen: contains view and view_model for a single window (e.g. search)
 - App: manages active view, app state, keybindings, and event loop
 """
@@ -12,7 +12,7 @@ from prompt_toolkit.key_binding import (
     merge_key_bindings
 )
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
-
+from prompt_toolkit.patch_stdout import patch_stdout
 
 class Screen(object):
     """Define object necessary to determine app state and change view.
@@ -46,7 +46,8 @@ class App(object):
             "global_kb": self._return_global_keybindings(),
             "application": Application(full_screen=True),
         }
-        # screens in app
+
+        # app screens
         self.screens = {}
         self.screens["search"] = Screen(
             shared_state=self.shared_state,
@@ -96,11 +97,12 @@ class App(object):
 
     def run(self):
         """Start Prompt-toolkit event loop."""
-        self.shared_state["application"].run()
+        with patch_stdout():
+            self.shared_state["application"].run()
 
 
 if __name__ == "__main__":
-
     """Instantiate views, view_models, app; run the app."""
+
     app = App()
     app.run()
