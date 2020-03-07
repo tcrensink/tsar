@@ -239,9 +239,13 @@ class Collection(object):
         return record_score_dict
 
     def open_document(self, record_id):
-        """Open record (edit ok now) with associated executable."""
+        """Open record (edit ok now) with associated executable.
+
+        Write db as record access_times have been updated.
+        """
         record = self.df.loc[record_id]
-        self.RecordDef.open_doc(record)
+        self.RecordDef.open_doc(df=self.df, record_id=record_id)
+        self.data.write_db()
 
     def open_capture_buffer(self):
         """Open buffer for 'capture' interface."""

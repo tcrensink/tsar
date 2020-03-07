@@ -81,7 +81,7 @@ class WikiRecord(RecordDef):
         # SCHEMA fields
         record["content"] = raw_doc
         record["access_times"] = [file_info["st_atime"]]
-        record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 8))
+        record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 6))
         return record
 
 
@@ -101,14 +101,15 @@ class WikiRecord(RecordDef):
         record_index["content"] = record["content"]
         record_index["access_times"] = max(record["access_times"])
         record_index["keywords"] = record["keywords"]
-        # record_index = SERIALIZER.dump(record_index)
         return (record_id, record_index)
 
     @staticmethod
-    def open_doc(record):
+    def open_doc(df, record_id):
         """open document associated with record to view"""
-        record["access_times"].append(datetime.utcnow().timestamp())
-        parse_lib.open_textfile(path=record["record_id"], editor=config.EDITOR)
+        curr_time = parse_lib.utc_now_timestamp()
+        df.loc[record_id, "utc_last_access"] = curr_time
+        df.loc[record_id, "access_times"].append(curr_time)
+        parse_lib.open_textfile(path=record_id, editor=config.EDITOR)
 
 
 def return_record_name(doc):

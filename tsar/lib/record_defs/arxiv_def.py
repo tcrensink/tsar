@@ -82,7 +82,7 @@ def gen_record_from_atom(content):
     content = atoma.parse_atom_bytes(res.content).entries[0].
     """
     abstract = content.summary.value
-    curr_time = datetime.utcnow().timestamp()
+    curr_time = parse_lib.utc_now_timestamp()
 
     record = {}
     # BASE_SCHEMA fields
@@ -94,7 +94,7 @@ def gen_record_from_atom(content):
 
     # SCHEMA fields
     record["access_times"] = [curr_time]
-    record["keywords"] = list(parse_lib.basic_text_to_keyword(abstract, 8))
+    record["keywords"] = list(parse_lib.basic_text_to_keyword(abstract, 6))
     record["authors"] = [author.name for author in content.authors]
     record["publish_date"] = content.published
     return record
@@ -152,7 +152,12 @@ class ArxivRecord(RecordDef):
         return (record_id, record_index)
 
     @staticmethod
-    def open_doc(record):
-        """open document associated with record to view"""
-        record["access_times"].append(datetime.utcnow().timestamp())
-        parse_lib.open_url(url=record["record_id"], browser=config.BROWSER)
+    def open_doc(df, record_id):
+        """open document associated with record to view.
+
+        df passed to update access times.
+        """
+        curr_time = parse_lib.utc_now_timestamp()
+        df.loc[record_id, "utc_last_access"] = curr_time
+        df.loc[record_id, "access_times"].append(curr_time)
+        parse_lib.open_url(url=record_id, browser=config.BROWSER)
