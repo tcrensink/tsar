@@ -103,13 +103,14 @@ class SearchViewModel(object):
         else:
             record = self.shared_state["active_collection"].df.loc[self.results[self.index]]
 
-            kw_str = ', '.join(sorted(record['keywords']))
-            kw_str = f"KEYWORDS:\t\t{kw_str}\n"
+            id_str = f"RECORD_ID:\t\t{record['record_id']}\n"
+            _kw_str = ', '.join(sorted(record['keywords']))
+            kw_str = f"KEYWORDS:\t\t{_kw_str}\n"
             date = datetime.fromtimestamp(record["utc_last_access"])
-            date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
-            access_date_str = f"LAST ACCESS:\t{date_str}\n"
+            _date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+            access_date_str = f"LAST ACCESS:\t{_date_str}\n"
             summary_str = f"\n{record['record_summary']}"
-            preview_str = kw_str + access_date_str + summary_str
+            preview_str = id_str + kw_str + access_date_str + summary_str
 
         self.preview_textcontrol.buffer.text = preview_str
 
@@ -173,7 +174,8 @@ class SearchViewModel(object):
             self.index = 0
             self.status_textcontrol.text = (
                 f"showing {len(self.results)} of "
-                f"{self.shared_state['active_collection'].df.shape[0]} records "
+                f"{self.shared_state['active_collection'].df.shape[0]} records.    "
+                f"(ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
             )
 
     def open_selected(self):
@@ -283,8 +285,8 @@ def query_title_bar_text(shared_state):
     # cols = shared_state["active_collection"].df.columns
     client = shared_state["active_collection"].client
     coll_name = shared_state["active_collection"].name
-    mapping = client.return_mapping(coll_name)
-    map_fields = mapping[coll_name]["mappings"]["properties"].keys()
+    mapping = client.return_fields(coll_name)
+    map_fields = mapping.keys()
 
     fields_str = ' | '.join(map_fields)
     str_value = f"QUERY    fields: {fields_str}"
