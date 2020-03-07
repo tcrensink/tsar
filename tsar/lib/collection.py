@@ -16,6 +16,7 @@ from tsar.lib.record_def import RecordDef
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.record_defs.arxiv_def import ArxivRecord
 import datetime
+from requests import HTTPError
 
 # df that contains summary info for all collections
 DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_meta.pkl")
@@ -166,12 +167,24 @@ class Collection(object):
 
     @classmethod
     def drop(cls, collection_name, folder=COLLECTIONS_FOLDER, db_meta_path=DB_META_PATH):
-        """Remove a collection."""
-        Data.drop(collection_name, folder=folder)
-        db_meta = pd.read_pickle(db_meta_path)
-        db_meta = db_meta.drop(collection_name)
-        db_meta.to_pickle(db_meta_path)
-        search.Client().drop_index(collection_name)
+        """Remove a collection.
+
+        Try/except to avoid erring if index exists but db doesn't, etc.
+        """
+        try:
+            Data.drop(collection_name, folder=folder)
+        except Exception:
+            pass
+        try:
+            db_meta = pd.read_pickle(db_meta_path)
+            db_meta = db_meta.drop(collection_name)
+            db_meta.to_pickle(db_meta_path)
+        except Exception:
+            pass
+        try:
+            search.Client().drop_index(collection_name)
+        except HTTPError:
+            pass
 
     @classmethod
     def return_collections_df(cls, db_meta_path=DB_META_PATH):
