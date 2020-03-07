@@ -93,6 +93,14 @@ class Client(object):
         res.raise_for_status()
         return res
 
+    def return_record_index(self, record_id, collection_name):
+        """Return dict of index values for record_id."""
+        encoded_id = encode_url_str(record_id)
+        url = f"{self.base_url}/{collection_name}/_doc/{encoded_id}"
+        res = self.session.get(url)
+        res.raise_for_status()
+        return res
+
     def index_records(self, record_ids, record_indexes, collection_name):
         """Index a list of records.
 
@@ -187,7 +195,7 @@ class Client(object):
         """
         mapping = self.return_mapping(collection_name=collection_name)
         # extract fields, types from mapping:
-        properties = mapping.json()[collection_name]['mappings']['properties']
+        properties = mapping[collection_name]['mappings']['properties']
         return properties
 
     def test_connection(self):
