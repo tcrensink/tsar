@@ -19,6 +19,7 @@ from tsar.lib.collection import Collection
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.layout.processors import TabsProcessor
 from datetime import datetime
+from operator import itemgetter
 
 class SearchViewModel(object):
     """View model/business logic for search window.
@@ -41,6 +42,7 @@ class SearchViewModel(object):
         self.preview_header = BufferControl(
             focusable=False,
         )
+        self.preview_header.buffer.text = "RECORD PREVIEW"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -97,22 +99,18 @@ class SearchViewModel(object):
         """update preview content based on index
         """
         if self.index == -1:
-            preview_header_str = "(no result selected)"
-            preview_str = ""
+            preview_str = "(no result selected)"
         else:
             record = self.shared_state["active_collection"].df.loc[self.results[self.index]]
-            preview_header_str = (
-                "RECORD PREVIEW"
-            )
 
+            kw_str = ', '.join(sorted(record['keywords']))
+            kw_str = f"KEYWORDS:\t\t{kw_str}\n"
             date = datetime.fromtimestamp(record["utc_last_access"])
             date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
-            kw_str = f"KEYWORDS:\t\t{', '.join(sorted(record['keywords']))}\n"
             access_date_str = f"LAST ACCESS:\t{date_str}\n"
             summary_str = f"\n{record['record_summary']}"
             preview_str = kw_str + access_date_str + summary_str
 
-        self.preview_header.buffer.text = preview_header_str
         self.preview_textcontrol.buffer.text = preview_str
 
     def _update_selected_result(self, old_index, new_index):
@@ -165,7 +163,7 @@ class SearchViewModel(object):
         try:
             results = self.shared_state["active_collection"]\
                 .query_records(self.query_str)
-            self.results = list(results.keys())
+            self.results = sorted(results, key=itemgetter(1), reverse=True)
         except Exception:
             self.results = {}
             self.status_textcontrol.text = "(invalid query)"
@@ -282,9 +280,14 @@ class SearchView(object):
 
 def query_title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
-    cols = shared_state["active_collection"].df.columns
-    fields_str = ' | '.join(cols)
-    str_value = f"QUERY: {fields_str}"
+    # cols = shared_state["active_collection"].df.columns
+    client = shared_state["active_collection"].client
+    coll_name = shared_state["active_collection"].name
+    mapping = client.return_mapping(coll_name)
+    map_fields = mapping[coll_name]["mappings"]["properties"].keys()
+
+    fields_str = ' | '.join(map_fields)
+    str_value = f"QUERY    fields: {fields_str}"
     return str_value
 
 
