@@ -60,7 +60,6 @@ class App(object):
             View=SearchView
         )
         self.update_state(initial_screen_name)
-        self.update_state(initial_screen_name)
         self.shared_state["active_screen"] = self.screens[initial_screen_name]
 
     def _return_global_keybindings(self):
