@@ -1,6 +1,7 @@
-# What is TSAR?
-TSAR is a frictionless terminal interface for interacting with large collections of documents.  Search, browse, and edit your document collections from a single interface.
+(note: tsar is currently pre-release)
 
+# What is TSAR?
+TSAR is a frictionless, terminal interface for large document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, spaced repetition), TSAR renders large data sets immediately accessible.
 
 # Key features
 **Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
