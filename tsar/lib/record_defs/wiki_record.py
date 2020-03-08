@@ -62,15 +62,12 @@ class WikiRecord(RecordDef):
         """Parse doc into a record; return it."""
 
         record_id = parse_lib.resolve_path(path)
-        if record_id.suffix not in VALID_EXTENSIONS:
-            return
         record_id = str(record_id)
 
         raw_doc = parse_lib.return_raw_doc(record_id)
         file_info = parse_lib.file_meta_data(record_id)
 
         record = {}
-
         # BASE_SCHEMA fields
         record["record_id"] = record_id
         record["record_type"] = RECORD_TYPE
@@ -81,15 +78,21 @@ class WikiRecord(RecordDef):
         # SCHEMA fields
         record["content"] = raw_doc
         record["access_times"] = [file_info["st_atime"]]
-        record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 6))
+        try:
+            record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 6))
+        except Exception:
+            return None
         return record
-
 
     @staticmethod
     def gen_records(folder):
         """Return records for docs of valid extension within a folder."""
         paths = parse_lib.return_files(folder, extensions=VALID_EXTENSIONS)
-        records = [WikiRecord.gen_record(path) for path in paths]
+        records = []
+        for path in paths:
+            record = WikiRecord.gen_record(path)
+            if record:
+                records.append(record)
         return records
 
     @staticmethod
