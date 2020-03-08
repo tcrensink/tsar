@@ -3,14 +3,17 @@
 # What is TSAR?
 TSAR is a frictionless terminal interface for large document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, spaced repetition), TSAR lets you access digital documents as an extension of your mind.
 
-# Key features
-**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
+# Features
+**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch:
 
-**Workflow**: TSAR makes a distinction between *documents* (source data of interest) and *records* (TSAR's text representation of each document).  In contrast to many notetaking apps, TSAR lets you search/browse/annotate documents of any file-type with the same TSAR interface and open them with your favorite editor/web browser.
+
+**Workflow**: TSAR makes a distinction between *documents* (source data of interest) and *records* (TSAR's text representation of each document).  Unlike many notetaking apps, TSAR does not define the format of your documents; it provides a standard interface for you to access them with your favorite text editor/web browser, etc.
 
 **Extensibility**: The real power of TSAR lies in the definition of *Record Types*.  Use the included library of functions to define how metadata is generated/displayed from your source documents, or write your own.
 
-**Flexibility**: Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
+**Flexibility**:
+- Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
+- Define default browsers, text editors, and collections; create custom key bindings.  TSAR is designed to be optimized in your workflow
 
 **Terminal Interface**: TSAR provides a terminal-based interface for ultimate efficiency.  It leverages the powerful prompt-toolkit library with features like auto-suggestion, autocompletion, and syntax highlighting to integrate directly into your workflow.
 
