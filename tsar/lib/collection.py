@@ -224,6 +224,10 @@ class Collection(object):
             )
         self.data.write_db()
 
+    def update_collection():
+        """Perform record, index updates that depend on collection of docs."""
+        self.RecordDef.update_collection()
+
     def remove_record(self, record_id):
         """Remove reocrd from collection."""
         self.data.rm_record(record_id)

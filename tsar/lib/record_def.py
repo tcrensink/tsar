@@ -11,6 +11,7 @@ A RecordType subclass must implement the following:
 - collection_update: update records/search indexes based on entire collection
 - preview lexer (optional)
 - preview style (optional)
+- update_collection (can be no-op, but must be defined)
 
 Validations to require with ABC:
 - record_id is string (used to open doc with open_doc)

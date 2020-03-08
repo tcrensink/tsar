@@ -162,3 +162,9 @@ class ArxivRecord(RecordDef):
         df.loc[record_id, "utc_last_access"] = curr_time
         df.loc[record_id, "access_times"].append(curr_time)
         ArxivRecord._open_doc(record_id)
+
+    @staticmethod
+    def update_collection(record_list):
+        """Modifications to records that depend on collection."""
+        pass
+
