@@ -1,6 +1,7 @@
 # What is TSAR?
 TSAR is a frictionless terminal interface for interacting with large collections of documents.  Search, browse, and edit your document collections from a single interface.
 
+
 # Key features
 **Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
 
@@ -8,9 +9,11 @@ TSAR is a frictionless terminal interface for interacting with large collections
 
 **Extensibility**: The real power of TSAR lies in the definition of *Record Types*.  Use a library of functions to define how metadata is generated from your source documents, or create your own.
 
-**Flexibility**: Define multiple, semantically different *Collections* that can be explored independently, with independent parsing, search indexing, syntax highighting, etc.
+**Flexibility**: Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
 
 **Learning tools (coming soon):**  The ultimate aim of TSAR is to augment your mastery over the information in curated data sets.  To that end, a host of learning tools, from raw information "capture" methods to spaced-repetition review are included to help ingest information in your corpera.
+
+**Terminal Interface**: TSAR leverages the python prompt-toolkit for a fast and feature-rich text-basd interface ready at the terminal.
 
 
 # Example use-cases
