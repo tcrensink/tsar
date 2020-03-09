@@ -208,12 +208,12 @@ class Collection(object):
         self._add_document(record_id)
         self.data.write_db()
 
-    def add_documents(self, source=None):
+    def add_documents(self, source=None, **kwargs):
         """Performantly add multiple documents from a given source (e.g. folder).
 
         source -> documents conversion is defined in the RecordDef
         """
-        records = self.RecordDef.gen_records(source)
+        records = self.RecordDef.gen_records(source, **kwargs)
         for record in records:
             (record_id, record_index) = self.RecordDef.gen_record_index(record)
             self.data.update_record(record)
