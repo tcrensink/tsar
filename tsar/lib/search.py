@@ -13,11 +13,7 @@ from tsar.config import ELASTICSEARCH_PORT
 HOST = 'localhost'
 BASE_URL = f"http://{HOST}:{ELASTICSEARCH_PORT}"
 
-ELASTICSEARCH_PATH = os.path.join(
-    REPO_PATH,
-    'dependencies',
-    'elasticsearch-7.1.1/bin/elasticsearch'
-)
+ELASTICSEARCH_PATH = '/usr/local/bin/elasticsearch'
 SERVER_FILE = os.path.join(REPO_PATH, 'server.txt')
 
 
