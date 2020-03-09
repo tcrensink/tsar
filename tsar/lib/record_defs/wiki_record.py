@@ -98,7 +98,6 @@ class WikiRecord(RecordDef):
     @staticmethod
     def gen_record_index(record):
         """Generate search index entry for record."""
-
         record_id = record["record_id"]
         record_index = {}
         record_index["content"] = record["content"]
@@ -107,12 +106,22 @@ class WikiRecord(RecordDef):
         return (record_id, record_index)
 
     @staticmethod
+    def _open_doc(record_id):
+        """Open doc from record_id."""
+        parse_lib.open_textfile(path=record_id, editor=config.EDITOR)
+
+    @staticmethod
     def open_doc(df, record_id):
-        """open document associated with record to view"""
+        """open document associated with record, update metadata."""
         curr_time = parse_lib.utc_now_timestamp()
         df.loc[record_id, "utc_last_access"] = curr_time
         df.loc[record_id, "access_times"].append(curr_time)
-        parse_lib.open_textfile(path=record_id, editor=config.EDITOR)
+        WikiRecord._open_doc(record_id)
+
+    @staticmethod
+    def update_collection(record_list):
+        """Modifications to records that depend on collection."""
+        pass
 
 
 def return_record_name(doc):

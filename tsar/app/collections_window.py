@@ -77,6 +77,9 @@ class CollectionsView(object):
         def handler():
             self.shared_state["active_collection"] =\
                 Collection(collection_name)
+            # if "collections" is first screen, there will be no prev_screen
+            if self.shared_state["prev_screen"] is None:
+                self.shared_state["prev_screen"] = self.shared_state["active_screen"]
             self.shared_state["active_screen"] =\
                 self.shared_state["prev_screen"]
             self.shared_state["application"].layout =\

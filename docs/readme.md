@@ -1,20 +1,23 @@
-(note: tsar is currently pre-release)
+(currently pre-release)
 
 # What is TSAR?
-TSAR is a frictionless, terminal interface for large document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, spaced repetition), TSAR renders large data sets immediately accessible.
+TSAR is a frictionless terminal interface for large document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, spaced repetition), TSAR lets you access digital documents as an extension of your mind.
 
-# Key features
-**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
+# Features
+**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch:
 
-**Workflow**: Unlike many notetaking apps or productivity tools, TSAR makes a distinction between *documents* (source data of interest) and *records* (metadata asscociated with each document).  Doing so allows TSAR to provide a unified interface for introspection that is completely agnostic to the document file type; TSAR lets you use your favorite text editor/web browser to interact with documents.
 
-**Extensibility**: The real power of TSAR lies in the definition of *Record Types*.  Use a library of functions to define how metadata is generated from your source documents, or create your own.
+**Workflow**: TSAR makes a distinction between *documents* (source data of interest) and *records* (TSAR's text representation of each document).  Unlike many notetaking apps, TSAR does not define the format of your documents; it provides a standard interface for you to access them with your favorite text editor/web browser, etc.
 
-**Flexibility**: Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
+**Extensibility**: The real power of TSAR lies in the definition of *Record Types*.  Use the included library of functions to define how metadata is generated/displayed from your source documents, or write your own.
 
-**Learning tools (coming soon):**  The ultimate aim of TSAR is to augment your mastery over the information in curated data sets.  To that end, a host of learning tools, from raw information "capture" methods to spaced-repetition review are included to help ingest information in your corpera.
+**Flexibility**:
+- Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
+- Define default browsers, text editors, and collections; create custom key bindings.  TSAR is designed to be optimized in your workflow
 
-**Terminal Interface**: TSAR leverages the python prompt-toolkit for a fast and feature-rich text-basd interface ready at the terminal.
+**Terminal Interface**: TSAR provides a terminal-based interface for ultimate efficiency.  It leverages the powerful prompt-toolkit library with features like auto-suggestion, autocompletion, and syntax highlighting to integrate directly into your workflow.
+
+**Learning tools (coming soon):**  TSAR's ultimate aim is to provide the strongest connection possible between your mind and your managed digital collections.  To that end, a host of curation tools are included to help learn the data, if desired.
 
 
 # Example use-cases
@@ -22,14 +25,13 @@ TSAR is a frictionless, terminal interface for large document collections.  With
 - **Information Discovery**: Use TSAR to efficiently introspect external document repositories such as Arxiv or Github.
 
 # Installation
-Currently requires installation of Elasticsearch and several python dependencies.  Packaging coming soon.
+Requires Elasticsearch and several python dependencies; deployment coming soon.
 
 # Related
-
-TSAR grew out of a desire to create the perfect productivity tool for learning and remembering large volumes of information.  Sources of inspiration and related tools include:
+TSAR grew out of a desire to create the perfect productivity tool for interacting with more data than you can remember easily.  Sources of inspiration and related tools include:
 
 - ["Getting Things Done"](https://gettingthingsdone.com) by David Allen
-- emacs [org mode](https://orgmode.org)
+- Emacs [org mode](https://orgmode.org)
 - [Roam](https://roamresearch.com)
 - [nvALT](https://nvultra.com)
 - [wiki.js](https://wiki.js.org)

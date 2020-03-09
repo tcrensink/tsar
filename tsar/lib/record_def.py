@@ -1,19 +1,25 @@
 """
-This module include the ABC required to create a new RecordType:
-- BASE_SCHEMA,
-- constants/defaults/templates for defining record behavior
-- RecordDef ABC (later)
+This module include the ABC required to create a new RecordType.
 
-Elasticsearch mapping: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
-Elasticsearch analysers: https://www.elastic.co/guide/en/elasticsearch/reference/current/analyzer.html
+A RecordType subclass must implement the following:
 
-- index types: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
+- record_type: name of recorddef
+- base_schema: record BASE_SCHEMA fields
+- schema: additional type-specific record fields
+- index mapping: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+- open_doc is implemented
+- collection_update: update records/search indexes based on entire collection
+- preview lexer (optional)
+- preview style (optional)
+- update_collection (can be no-op, but must be defined)
 
-List of validations when creating ABC:
-- record types are uniquely named (automatic)
-- parse is defined
-- schema fields are all defined
-- base/record schema and index mapping are consistent
+Validations to require with ABC:
+- record_id is string (used to open doc with open_doc)
+- record types are unique
+- gen_record() implements all record fields
+- no additional fields are generated
+- base/record schema and index mapping are consistent (type check)
+- verify INDEX_MAPPING["mappings"]["content"][:]["type"] are in set ELASTICSEARCH_TYPES
 """
 from tsar import config
 from abc import ABC, abstractmethod
@@ -35,7 +41,6 @@ BASE_SCHEMA = {
     "record_name": str,
     "record_summary": str,
     "utc_last_access": datetime.datetime,
-    # "collection": str,
 }
 
 DOC_VIEWERS = {
