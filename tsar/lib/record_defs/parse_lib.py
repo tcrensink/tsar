@@ -12,11 +12,11 @@ from datetime import datetime
 
 
 def return_files(folder, extensions=None):
-    """Return all files within folder for the given extension types."""
+    """Return all file paths within folder for the given file extensions."""
     if isinstance(extensions, str):
         raise TypeError("extensions should be a list, tuple, or set.")
 
-    folder = Path(folder).resolve()
+    folder = resolve_path(folder)
     if not folder.is_dir():
         raise ValueError("a folder is needed to generate records.")
 
@@ -35,7 +35,7 @@ def return_files(folder, extensions=None):
 
 def resolve_path(path):
     """Resolve path, including relative, tilde, and env vars."""
-    resolved_path = Path(path).resolve()
+    resolved_path = Path(path).expanduser().resolve()
     return resolved_path
 
 
