@@ -143,7 +143,6 @@ class ArxivRecord(RecordDef):
     @staticmethod
     def gen_record_index(record):
         """Generate search index entry for record."""
-
         record_id = record["record_id"]
         record_index = {}
         record_index["content"] = record["record_summary"]
@@ -152,12 +151,20 @@ class ArxivRecord(RecordDef):
         return (record_id, record_index)
 
     @staticmethod
-    def open_doc(df, record_id):
-        """open document associated with record to view.
+    def _open_doc(record_id):
+        """Open doc from record_id."""
+        parse_lib.open_url(url=record_id, browser=config.BROWSER)
 
-        df passed to update access times.
-        """
+    @staticmethod
+    def open_doc(df, record_id):
+        """open document associated with record, update metadata."""
         curr_time = parse_lib.utc_now_timestamp()
         df.loc[record_id, "utc_last_access"] = curr_time
         df.loc[record_id, "access_times"].append(curr_time)
-        parse_lib.open_url(url=record_id, browser=config.BROWSER)
+        ArxivRecord._open_doc(record_id)
+
+    @staticmethod
+    def update_collection(record_list):
+        """Modifications to records that depend on collection."""
+        pass
+

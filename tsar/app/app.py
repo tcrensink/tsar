@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 This module contains high level management of the terminal interface:
 - Screen: contains view and view_model for a single window (e.g. search)
@@ -49,15 +50,15 @@ class App(object):
 
         # app screens
         self.screens = {}
-        self.screens["search"] = Screen(
-            shared_state=self.shared_state,
-            ViewModel=SearchViewModel,
-            View=SearchView
-        )
         self.screens["collections"] = Screen(
             shared_state=self.shared_state,
             ViewModel=CollectionsViewModel,
             View=CollectionsView
+        )
+        self.screens["search"] = Screen(
+            shared_state=self.shared_state,
+            ViewModel=SearchViewModel,
+            View=SearchView
         )
         self.update_state(initial_screen_name)
         self.shared_state["active_screen"] = self.screens[initial_screen_name]
@@ -83,6 +84,7 @@ class App(object):
         """Update shared_state when screen is changed."""
         if self.shared_state["active_screen"] == self.screens[screen_key]:
             return
+
         self.shared_state["prev_screen"] = self.shared_state["active_screen"]
         self.shared_state["active_screen"] = self.screens[screen_key]
         self.shared_state["application"].layout =\
