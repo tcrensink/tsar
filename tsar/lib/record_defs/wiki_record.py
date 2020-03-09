@@ -24,6 +24,9 @@ SCHEMA = {
 INDEX_MAPPING = {
     "mappings": {
         "properties": {
+            "path": {
+                "type": "text",
+            },
             "content": {
                 "type": "text",
                 "analyzer": "english"
@@ -60,7 +63,6 @@ class WikiRecord(RecordDef):
     @staticmethod
     def gen_record(path):
         """Parse doc into a record; return it."""
-
         record_id = parse_lib.resolve_path(path)
         record_id = str(record_id)
 
@@ -81,7 +83,7 @@ class WikiRecord(RecordDef):
         try:
             record["keywords"] = list(parse_lib.basic_text_to_keyword(raw_doc, 6))
         except Exception:
-            return None
+            record["keywords"] = []
         return record
 
     @staticmethod

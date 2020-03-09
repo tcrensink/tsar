@@ -20,6 +20,7 @@ Validations to require with ABC:
 - no additional fields are generated
 - base/record schema and index mapping are consistent (type check)
 - verify INDEX_MAPPING["mappings"]["content"][:]["type"] are in set ELASTICSEARCH_TYPES
+- handling of empty files/record values
 """
 from tsar import config
 from abc import ABC, abstractmethod
