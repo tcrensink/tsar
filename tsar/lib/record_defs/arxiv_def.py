@@ -36,6 +36,10 @@ SCHEMA = {
 INDEX_MAPPING = {
     "mappings": {
         "properties": {
+            "title": {
+                "type": "text",
+                "analyzer": "english"
+            },
             "content": {
                 "type": "text",
                 "analyzer": "english"
@@ -94,7 +98,8 @@ def gen_record_from_atom(content):
 
     # SCHEMA fields
     record["access_times"] = [curr_time]
-    record["keywords"] = list(parse_lib.basic_text_to_keyword(abstract, 6))
+    keyword_text = record["record_name"] + " " + abstract
+    record["keywords"] = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
     record["authors"] = [author.name for author in content.authors]
     record["publish_date"] = content.published
     return record
@@ -124,12 +129,12 @@ class ArxivRecord(RecordDef):
         return record
 
     @staticmethod
-    def gen_records(query_url=None):
+    def gen_records(query_url=None, **query_kwargs):
         """Return records associated with query params.
         ref: https://arxiv.org/help/api/user-manual#Appendices
         """
         if query_url is None:
-            query_url = recent_ml_and_ai_query_url()
+            query_url = recent_ml_and_ai_query_url(**query_kwargs)
 
         res = requests.get(url=query_url)
         results = atoma.parse_atom_bytes(res.content).entries
@@ -145,6 +150,7 @@ class ArxivRecord(RecordDef):
         """Generate search index entry for record."""
         record_id = record["record_id"]
         record_index = {}
+        record_index["title"] = record["record_name"]
         record_index["content"] = record["record_summary"]
         record_index["access_times"] = max(record["access_times"])
         record_index["keywords"] = record["keywords"]
