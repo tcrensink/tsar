@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 This module contains high level management of the terminal interface:
 - Screen: contains view and view_model for a single window (e.g. search)
