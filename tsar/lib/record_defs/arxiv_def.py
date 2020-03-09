@@ -92,8 +92,8 @@ def gen_record_from_atom(content):
     # BASE_SCHEMA fields
     record["record_id"] = content.id_
     record["record_type"] = RECORD_TYPE
-    record["record_name"] = content.title.value.replace("\n", "")
-    record["record_summary"] = content.summary.value.replace("\n", "")
+    record["record_name"] = content.title.value.replace("\n", " ")
+    record["record_summary"] = content.summary.value.replace("\n", " ")
     record["utc_last_access"] = curr_time
 
     # SCHEMA fields
