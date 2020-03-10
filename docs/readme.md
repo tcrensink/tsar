@@ -1,24 +1,20 @@
 (currently pre-release)
 
 # What is TSAR?
-TSAR is a frictionless terminal interface for large document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, spaced repetition), TSAR lets you access digital documents as an extension of your mind.
+TSAR is a frictionless terminal interface for interacting with your document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, annotation, spaced repetition), TSAR lets you access and manage your digital data as an extension of your mind.
 
 # Features
-**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch:
+**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
 
+**Workflow**: TSAR makes a distinction between *documents* (your files) and *records* (TSAR's text metadata for each document).  This separation of metadata and source data means TSAR can be used with any kind of file - plain text, markdown, web pages, images - while still using your favorite text editor/web browser to interact with documents directly.
 
-**Workflow**: TSAR makes a distinction between *documents* (source data of interest) and *records* (TSAR's text representation of each document).  Unlike many notetaking apps, TSAR does not define the format of your documents; it provides a standard interface for you to access them with your favorite text editor/web browser, etc.
+**Flexibility**: Keep multiple *collections* for semantically different document groups; each with custom search fields, syntax highighting, and preview behavior.  Customize TSAR default behavior, including  default browser, text editor and key bindings.
 
-**Extensibility**: The real power of TSAR lies in the definition of *Record Types*.  Use the included library of functions to define how metadata is generated/displayed from your source documents, or write your own.
-
-**Flexibility**:
-- Define multiple, semantically different *Collections* that can be explored independently, with distinct search indexing, syntax highighting, etc.
-- Define default browsers, text editors, and collections; create custom key bindings.  TSAR is designed to be optimized in your workflow
+**Extensibility**: The real power of TSAR lies in *Record Types*.  Use the included library of functions to define how TSAR handles your documents, or write your own.
 
 **Terminal Interface**: TSAR provides a terminal-based interface for ultimate efficiency.  It leverages the powerful prompt-toolkit library with features like auto-suggestion, autocompletion, and syntax highlighting to integrate directly into your workflow.
 
-**Learning tools (coming soon):**  TSAR's ultimate aim is to provide the strongest connection possible between your mind and your managed digital collections.  To that end, a host of curation tools are included to help learn the data, if desired.
-
+**Learning tools (coming soon):** The goal of TSAR is larger than just a low-friction data interface; TSAR aims to help you *think with* and *learn from* your data.  Students, researchers, and knowledge-workers will benefit from features like ultra-accessible "capture", and spaced-repetition review.
 
 # Example use-cases
 - **Journal/Personal Knowledge Base**: Catelog and curate knowledge accrued over the years.  Any document is only a few keystrokes away.
