@@ -97,7 +97,7 @@ def gen_record_from_atom(content):
     record["utc_last_access"] = curr_time
 
     # SCHEMA fields
-    record["access_times"] = [curr_time]
+    record["access_times"] = []
     keyword_text = record["record_name"] + " " + abstract
     record["keywords"] = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
     record["authors"] = [author.name for author in content.authors]
@@ -152,7 +152,9 @@ class ArxivRecord(RecordDef):
         record_index = {}
         record_index["title"] = record["record_name"]
         record_index["content"] = record["record_summary"]
-        record_index["access_times"] = max(record["access_times"])
+        record_index["access_times"] = record["access_times"]
+        record_index["authors"] = record["authors"]
+        record_index["publish_date"] = record["publish_date"]
         record_index["keywords"] = record["keywords"]
         return (record_id, record_index)
 
