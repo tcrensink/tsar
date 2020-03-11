@@ -46,14 +46,14 @@ INDEX_MAPPING = {
             },
             "access_times": {
                 "type": "date",
-                "format": "epoch_second",
+                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
             "keywords": {
                 "type": "keyword"
             },
             "publish_date": {
                 "type": "date",
-                "format": "epoch_second",
+                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
             "authors": {
                 "type": "text",
@@ -101,7 +101,7 @@ def gen_record_from_atom(content):
     keyword_text = record["record_name"] + " " + abstract
     record["keywords"] = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
     record["authors"] = [author.name for author in content.authors]
-    record["publish_date"] = content.published
+    record["publish_date"] = content.published.timestamp()
     return record
 
 

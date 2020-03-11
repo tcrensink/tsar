@@ -33,7 +33,7 @@ INDEX_MAPPING = {
             },
             "access_times": {
                 "type": "date",
-                "format": "epoch_second",
+                "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
             "keywords": {
                 "type": "keyword"
@@ -102,6 +102,7 @@ class WikiRecord(RecordDef):
         """Generate search index entry for record."""
         record_id = record["record_id"]
         record_index = {}
+        record_index["path"] = record_id
         record_index["content"] = record["content"]
         record_index["access_times"] = max(record["access_times"])
         record_index["keywords"] = record["keywords"]
