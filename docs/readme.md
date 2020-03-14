@@ -1,14 +1,16 @@
 (currently pre-release)
 
 # What is TSAR?
-TSAR is a frictionless terminal interface for interacting with your document collections.  With introspection tools (search, browse), and curation/learning tools (fast "capture" mode, annotation, spaced repetition), TSAR lets you access and manage your digital data as an extension of your mind.
+TSAR is a frictionless terminal interface for accessing your custom document collections.  With introspection tools (search as you type, browse) and curation/learning tools (annotation, spaced repetition), your document collections become an extension of your mind.
 
 # Features
-**Discovery**: search and browse documents as you type, using boolean operators, filtering, fuzzy search, wildcards, and regex.  Powered by elasticsearch.
+**Access**: search and browse documents with filtering, fuzzy search, wildcards, and more:
+<img align="center" src="./resources/search2.gif" width=90%>
 
-**Workflow**: TSAR makes a distinction between *documents* (your files) and *records* (TSAR's text metadata for each document).  This separation of metadata and source data means TSAR can be used with any kind of file - plain text, markdown, web pages, images - while still using your favorite text editor/web browser to interact with documents directly.
+**Workflow Integration**: TSAR makes a distinction between *documents* (your files) and *records* (document text metadata). This means you can use TSARs search/browse/annotation with any kind of document - markdown, web pages, even images - while still using your favorite text editor/web browser to interact with source documents directly:
+<img align="center" src="./resources/workflow1.gif" width=90%>
 
-**Flexibility**: Keep multiple *collections* for semantically different document groups; each with custom search fields, syntax highighting, and preview behavior.  Customize TSAR default behavior, including  default browser, text editor and key bindings.
+**Flexibility**: Create multiple *collections* of documents, each with custom search fields, syntax highighting, and preview behavior.  Customize TSAR default behavior, including  default browser, text editor and key bindings.
 
 **Extensibility**: The real power of TSAR lies in *Record Types*.  Use the included library of functions to define how TSAR handles your documents, or write your own.
 
