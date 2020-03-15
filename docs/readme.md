@@ -1,32 +1,27 @@
-(currently pre-release)
+(under development)
 
 # What is TSAR?
-TSAR is a frictionless terminal interface for accessing your custom document collections.  With introspection tools (search as you type, browse) and curation/learning tools (annotation, spaced repetition), your document collections become an extension of your mind.
-
-# Features
-**Access**: search and browse documents with filtering, fuzzy search, wildcards, and more:
-<img align="center" src="./resources/search2.gif" width=90%>
-
-**Workflow Integration**: TSAR makes a distinction between *documents* (your files) and *records* (document text metadata). This means you can use TSARs search/browse/annotation with any kind of document - markdown, web pages, even images - while still using your favorite text editor/web browser to interact with source documents directly:
-<img align="center" src="./resources/workflow1.gif" width=90%>
-
-**Flexibility**: Create multiple *collections* of documents, each with custom search fields, syntax highighting, and preview behavior.  Customize TSAR default behavior, including  default browser, text editor and key bindings.
-
-**Extensibility**: The real power of TSAR lies in *Record Types*.  Use the included library of functions to define how TSAR handles your documents, or write your own.
-
-**Terminal Interface**: TSAR provides a terminal-based interface for ultimate efficiency.  It leverages the powerful prompt-toolkit library with features like auto-suggestion, autocompletion, and syntax highlighting to integrate directly into your workflow.
-
-**Learning tools (coming soon):** The goal of TSAR is larger than just a low-friction data interface; TSAR aims to help you *think with* and *learn from* your data.  Students, researchers, and knowledge-workers will benefit from features like ultra-accessible "capture", and spaced-repetition review.
-
-# Example use-cases
-- **Journal/Personal Knowledge Base**: Catelog and curate knowledge accrued over the years.  Any document is only a few keystrokes away.
-- **Information Discovery**: Use TSAR to efficiently introspect external document repositories such as Arxiv or Github.
+TSAR is a productivity tool that aims to be a digital "extension of your mind" for interacting with more data than you can remember, such as a personal knowledge base (pkb), digital journal, or collection of notes.  It is a flexible, extensible, terminal interface for managing your digital documents *with maxmimal efficiency*.
 
 # Installation
-Requires Elasticsearch and several python dependencies; deployment coming soon.
+(coming soon)
+
+# Features
+- **Access**: Search as you type with fuzzy matching, wildcards, filters, and more.  Browse documents by similarity and use keyword tags.
+- **Workflow Integration**: TSAR integrates with your workflow: use your favorite web browser, editor, etc. when interacting directly with documents.
+- **Extensibility**: The real power of TSAR lies in *Record Types*.  Use the included record types to define how TSAR handles your documents, or write your own with the library of functions.
+- **Flexibility**: Customize key bindings, default screens, syntax highlighting for each collection.
+- **Study Tools**: Absorb information from your documents with spaced-repetition review.
+
+# Examples
+Search a collection of arxiv publications for papers on "knowledge graphs":
+<img align="center" src="./resources/search2.gif" width=90%>
+
+TSAR provides the same interface for "arxiv" webpage documents and "journal" markdown files.  Moving between them with ease.   
+<img align="center" src="./resources/workflow1.gif" width=90%>
 
 # Related
-TSAR grew out of a desire to create the perfect productivity tool for interacting with more data than you can remember easily.  Sources of inspiration and related tools include:
+TSAR is a vision for digital productivity inspired by many sources, including:
 
 - ["Getting Things Done"](https://gettingthingsdone.com) by David Allen
 - Emacs [org mode](https://orgmode.org)
