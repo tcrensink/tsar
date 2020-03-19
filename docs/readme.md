@@ -17,9 +17,6 @@ TSAR is a productivity tool that aims to be a digital "extension of your mind" f
 Search a collection of arxiv publications for papers on "knowledge graphs":
 <img align="center" src="./resources/search2.gif" width=90%>
 
-TSAR provides the same interface for "arxiv" webpage documents and "journal" markdown files.  Moving between them with ease.   
-<img align="center" src="./resources/workflow1.gif" width=90%>
-
 # Related
 TSAR is a vision for digital productivity inspired by many sources, including:
 
