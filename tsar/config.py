@@ -1,7 +1,8 @@
 """TSAR config file."""
+from tsar import REPO_PATH
 
 # SYSTEM INTEGRATION
-EDITOR = "/usr/local/bin/subl"
+EDITOR = "/usr/local/bin/code"
 BROWSER = "Safari"
 ELASTICSEARCH_PORT = 9200
 
@@ -15,11 +16,8 @@ GLOBAL_KB = {
     "search_screen": ("c-right"),
     "collections_screen": ("c-left"),
     "open_document": "enter",
+    "open_capture_doc": ("c-a"),
 }
 
 # STYLING
-SEARCH_RECORD_COLORS = {
-    'selected': 'bg:#144288',
-    'unselected': 'default'
-}
-
+SEARCH_RECORD_COLORS = {"selected": "bg:#144288", "unselected": "default"}
