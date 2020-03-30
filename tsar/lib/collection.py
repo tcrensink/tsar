@@ -13,7 +13,6 @@ from tsar import COLLECTIONS_FOLDER
 from tsar.lib import search
 from tsar.lib.record_def import RecordDef
 
-
 # must be imported to be recognized as subclasses...
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.record_defs.arxiv_def import ArxivRecord
