@@ -10,11 +10,12 @@ from pandas.io.json import json_normalize
 from tsar import MODULE_PATH, REPO_PATH
 from urllib.parse import quote_plus, unquote_plus
 from tsar.config import ELASTICSEARCH_PORT
-HOST = 'localhost'
+
+HOST = "localhost"
 BASE_URL = f"http://{HOST}:{ELASTICSEARCH_PORT}"
 
-ELASTICSEARCH_PATH = '/usr/local/bin/elasticsearch'
-SERVER_FILE = os.path.join(REPO_PATH, 'server.txt')
+ELASTICSEARCH_PATH = "/usr/local/bin/elasticsearch"
+SERVER_FILE = os.path.join(REPO_PATH, "server.txt")
 
 
 def encode_url_str(raw_url_string):
@@ -70,7 +71,7 @@ class Client(object):
 
     @property
     def return_indexes_summary_df(self):
-        res = self.session.get(self.base_url + '/_cat/indices?v')
+        res = self.session.get(self.base_url + "/_cat/indices?v")
         res.raise_for_status()
         table_values = [j.split() for j in res.text.splitlines()]
         columns = table_values[0][:]
@@ -105,9 +106,7 @@ class Client(object):
         """
         for r_id, r_ind in zip(record_ids, record_indexes):
             self.index_record(
-                record_id=r_id,
-                record_index=r_ind,
-                collection_name=collection_name
+                record_id=r_id, record_index=r_ind, collection_name=collection_name
             )
 
     def delete_record(self, record_id, collection_name):
@@ -119,11 +118,7 @@ class Client(object):
         return res
 
     def query(
-        self,
-        collection_name,
-        query_str="*",
-        default_fields="*",
-        num_results=12,
+        self, collection_name, query_str="*", default_fields="*", num_results=12,
     ):
         """Basic query using the lucene search syntax.
 
@@ -149,9 +144,7 @@ class Client(object):
         return results
 
     def new_index(
-        self,
-        collection_name,
-        mapping,
+        self, collection_name, mapping,
     ):
         """Crate elasticsearch index by name."""
         url = f"{self.base_url}/{collection_name}"
@@ -160,8 +153,7 @@ class Client(object):
         return res
 
     def drop_index(
-        self,
-        collection_name,
+        self, collection_name,
     ):
         """Delete an index by name."""
         url = f"{self.base_url}/{collection_name}"
@@ -178,9 +170,7 @@ class Client(object):
 
     def return_mapping(self, collection_name):
         """Return index mapping for collection."""
-        res = self.session.get(
-            self.base_url + f"/{collection_name}/_mapping/?pretty"
-        )
+        res = self.session.get(self.base_url + f"/{collection_name}/_mapping/?pretty")
         mapping = res.json()
         return mapping
 
@@ -191,7 +181,7 @@ class Client(object):
         """
         mapping = self.return_mapping(collection_name=collection_name)
         # extract fields, types from mapping:
-        properties = mapping[collection_name]['mappings']['properties']
+        properties = mapping[collection_name]["mappings"]["properties"]
         return properties
 
     def test_connection(self):

@@ -21,6 +21,7 @@ from prompt_toolkit.layout.processors import TabsProcessor
 from datetime import datetime
 from operator import itemgetter
 
+
 class SearchViewModel(object):
     """View model/business logic for search window.
 
@@ -39,15 +40,13 @@ class SearchViewModel(object):
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
-        self.preview_header = BufferControl(
-            focusable=False,
-        )
+        self.preview_header = BufferControl(focusable=False,)
         self.preview_header.buffer.text = "RECORD PREVIEW"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
-            input_processors=[TabsProcessor(tabstop=4, char1=' ', char2=' ')],
-            lexer=PygmentsLexer(self.RecordDef.preview_lexer)
+            input_processors=[TabsProcessor(tabstop=4, char1=" ", char2=" ")],
+            lexer=PygmentsLexer(self.RecordDef.preview_lexer),
         )
         self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
         self.preview_textcontrol.buffer.text = "(no result selected)"
@@ -101,10 +100,12 @@ class SearchViewModel(object):
         if self.index == -1:
             preview_str = "(no result selected)"
         else:
-            record = self.shared_state["active_collection"].df.loc[self.results[self.index]]
+            record = self.shared_state["active_collection"].df.loc[
+                self.results[self.index]
+            ]
 
             id_str = f"RECORD_ID:\t\t{record['record_id']}\n"
-            _kw_str = ', '.join(sorted(record['keywords']))
+            _kw_str = ", ".join(sorted(record["keywords"]))
             kw_str = f"KEYWORDS:\t\t{_kw_str}\n"
             date = datetime.fromtimestamp(record["utc_last_access"])
             _date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
@@ -122,14 +123,14 @@ class SearchViewModel(object):
         try:
             self.formatted_results[old_index] = (
                 self.style["unselected"],
-                self.formatted_results[old_index][1]
+                self.formatted_results[old_index][1],
             )
         except IndexError:
             pass
         try:
             self.formatted_results[new_index] = (
                 self.style["selected"],
-                self.formatted_results[new_index][1]
+                self.formatted_results[new_index][1],
             )
         except IndexError:
             pass
@@ -141,11 +142,13 @@ class SearchViewModel(object):
         """
         if len(results_list) != 0:
             # results_list = [f"{res}\n" for res in results_list]
-            result_names = self.shared_state['active_collection']\
-                .df.loc[results_list].record_name
+            result_names = (
+                self.shared_state["active_collection"].df.loc[results_list].record_name
+            )
             results_list = [f"{res}\n" for res in result_names]
-            formatted_results = [(self.style["unselected"], res)
-                                 for res in results_list]
+            formatted_results = [
+                (self.style["unselected"], res) for res in results_list
+            ]
         else:
             formatted_results = []
         return formatted_results
@@ -162,8 +165,9 @@ class SearchViewModel(object):
         - update status bar
         """
         try:
-            results = self.shared_state["active_collection"]\
-                .query_records(self.query_str)
+            results = self.shared_state["active_collection"].query_records(
+                self.query_str
+            )
             self.results = sorted(results, key=itemgetter(1), reverse=True)
         except Exception:
             self.results = {}
@@ -185,8 +189,7 @@ class SearchViewModel(object):
             record_id = self.results[self.index]
         else:
             pass
-        self.shared_state["active_collection"]\
-            .open_document(record_id=record_id)
+        self.shared_state["active_collection"].open_document(record_id=record_id)
         self._update_preview_content()
 
 
@@ -202,35 +205,23 @@ class SearchView(object):
         self.query_header = Window(
             FormattedTextControl(query_title_bar_text(self.shared_state)),
             height=1,
-            style="reverse"
+            style="reverse",
         )
 
         self.query_window = Window(
-            BufferControl(
-                self.view_model.query_buffer,
-            ),
-            height=1,
+            BufferControl(self.view_model.query_buffer,), height=1,
         )
-        results_window = Window(
-            self.view_model.results_textcontrol,
-            height=13
-        )
+        results_window = Window(self.view_model.results_textcontrol, height=13)
 
         preview_header = Window(
-            self.view_model.preview_header,
-            height=1,
-            style="reverse"
+            self.view_model.preview_header, height=1, style="reverse"
         )
 
         preview_window = Window(
-            self.view_model.preview_textcontrol,
-            height=22,
-            wrap_lines=True
+            self.view_model.preview_textcontrol, height=22, wrap_lines=True
         )
         status_window = Window(
-            self.view_model.status_textcontrol,
-            height=1,
-            style="reverse"
+            self.view_model.status_textcontrol, height=1, style="reverse"
         )
 
         # GENERATE LAYOUT
@@ -242,7 +233,7 @@ class SearchView(object):
                     results_window,
                     preview_header,
                     preview_window,
-                    status_window
+                    status_window,
                 ]
             ),
         )
@@ -274,8 +265,7 @@ class SearchView(object):
     def refresh_view(self):
         """Code when screen is changed."""
         # self.view_model.query_str = ""
-        self.query_header.content.text =\
-            query_title_bar_text(self.shared_state)
+        self.query_header.content.text = query_title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
 
@@ -288,7 +278,7 @@ def query_title_bar_text(shared_state):
     mapping = client.return_fields(coll_name)
     map_fields = mapping.keys()
 
-    fields_str = ' | '.join(map_fields)
+    fields_str = " | ".join(map_fields)
     str_value = f"QUERY    fields: {fields_str}"
     return str_value
 
@@ -310,8 +300,6 @@ if __name__ == "__main__":
         event.app.exit()
 
     application = Application(
-        layout=view.layout,
-        key_bindings=view.kb,
-        full_screen=True
+        layout=view.layout, key_bindings=view.kb, full_screen=True
     )
     application.run()

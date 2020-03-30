@@ -12,6 +12,7 @@ import pandas as pd
 from tsar import COLLECTIONS_FOLDER
 from tsar.lib import search
 from tsar.lib.record_def import RecordDef
+
 # must be imported to be recognized as subclasses...
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.record_defs.arxiv_def import ArxivRecord
@@ -24,8 +25,7 @@ DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_meta.pkl")
 
 def return_db_path(collection_name, folder=COLLECTIONS_FOLDER):
     """Return path for collection records df."""
-    records_path = os.path.join(
-        folder, collection_name, "records.pkl")
+    records_path = os.path.join(folder, collection_name, "records.pkl")
     return records_path
 
 
@@ -45,6 +45,7 @@ def return_record_def(record_type):
 
 class Data(object):
     """Class that contains collection records, meta data."""
+
     def __init__(self, collection, folder):
         self.db_path = return_db_path(collection, folder=folder)
         self.df = pd.read_pickle(self.db_path)
@@ -88,7 +89,7 @@ class Data(object):
         try:
             self.df.drop(record_id, inplace=True)
         except KeyError:
-            print('warning: no record to remove at {}'.format(record_id))
+            print("warning: no record to remove at {}".format(record_id))
 
     def write_db(self):
         """Write/save current state of the database to file."""
@@ -107,7 +108,7 @@ class Collection(object):
         collection_name,
         folder=COLLECTIONS_FOLDER,
         db_meta_path=DB_META_PATH,
-        client=None
+        client=None,
     ):
         search.Server().start()
         self.name = collection_name
@@ -123,7 +124,13 @@ class Collection(object):
             self.client = client
 
     @classmethod
-    def new(cls, collection_name, RecordDef, folder=COLLECTIONS_FOLDER, db_meta_path=DB_META_PATH):
+    def new(
+        cls,
+        collection_name,
+        RecordDef,
+        folder=COLLECTIONS_FOLDER,
+        db_meta_path=DB_META_PATH,
+    ):
         """Create a new collection.
 
         - open collections_df
@@ -152,21 +159,20 @@ class Collection(object):
             raise ValueError(f"collection with name {collection_name} already exists")
 
         # add row to df_collections
-        db_meta = db_meta.append(
-            pd.Series(meta_db_record, name=collection_name)
-        )
+        db_meta = db_meta.append(pd.Series(meta_db_record, name=collection_name))
         db_meta.to_pickle(db_meta_path)
 
         # now reasonbly certain collection objects don't exist: create Data, search index
         Data.new(collection_name, RecordDef, folder=folder)
         search.Client().new_index(
-            collection_name=collection_name,
-            mapping=RecordDef.index_mapping
+            collection_name=collection_name, mapping=RecordDef.index_mapping
         )
         return cls(collection_name, folder=folder, db_meta_path=db_meta_path)
 
     @classmethod
-    def drop(cls, collection_name, folder=COLLECTIONS_FOLDER, db_meta_path=DB_META_PATH):
+    def drop(
+        cls, collection_name, folder=COLLECTIONS_FOLDER, db_meta_path=DB_META_PATH
+    ):
         """Remove a collection.
 
         Try/except to avoid erring if index exists but db doesn't, etc.
@@ -198,9 +204,7 @@ class Collection(object):
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
         self.client.index_record(
-            record_id=record_id,
-            record_index=record_index,
-            collection_name=self.name
+            record_id=record_id, record_index=record_index, collection_name=self.name
         )
 
     def add_document(self, record_id):
@@ -220,13 +224,9 @@ class Collection(object):
             self.client.index_record(
                 record_id=record_id,
                 record_index=record_index,
-                collection_name=self.name
+                collection_name=self.name,
             )
         self.data.write_db()
-
-    def update_collection():
-        """Perform record, index updates that depend on collection of docs."""
-        self.RecordDef.update_collection()
 
     def remove_record(self, record_id):
         """Remove reocrd from collection."""
@@ -243,8 +243,7 @@ class Collection(object):
     def _raw_query(self, query_str):
         """Return raw query result json."""
         query_results = self.client.query(
-            collection_name=self.name,
-            query_str=query_str
+            collection_name=self.name, query_str=query_str
         )
         return query_results
 
@@ -260,7 +259,6 @@ class Collection(object):
 
         Write db as record access_times have been updated.
         """
-        record = self.df.loc[record_id]
         self.RecordDef.open_doc(df=self.df, record_id=record_id)
         self.data.write_db()
 

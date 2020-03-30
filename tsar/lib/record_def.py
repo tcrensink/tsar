@@ -22,10 +22,13 @@ Validations to require with ABC:
 - verify INDEX_MAPPING["mappings"]["content"][:]["type"] are in set ELASTICSEARCH_TYPES
 - handling of empty files/record values
 """
+
 from tsar import config
 from abc import ABC, abstractmethod
 import datetime
+import numpy as np
 from elasticsearch.serializer import JSONSerializer
+
 ELASTICSEARCH_TYPES = ("text", "keyword", "date", "long", "double", "boolean", "ip")
 
 """Fields required for all records, used by TSAR internals
@@ -57,6 +60,7 @@ DOC_EDITORS = {
 
 class SafeSerializer(JSONSerializer):
     """modify json serialization to handle sets"""
+
     def default(self, obj):
         if isinstance(obj, set):
             return list(obj)
@@ -72,6 +76,7 @@ class RecordDef(ABC):
     - `create_doc_from_selection` -> difficult to implement for doc type .png
 
     """
+
     # @abstractmethod
     # def __init__(self):
     #     pass
@@ -85,6 +90,7 @@ class RecordDef(ABC):
     @abstractmethod
     def gen_record_index(self, file):
         pass
+
     # some feature ideas below:
     # @abstractmethod
     # def save_local_doc(self, record_id):
