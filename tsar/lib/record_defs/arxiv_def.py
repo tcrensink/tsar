@@ -29,36 +29,25 @@ SCHEMA = {
     "access_times": list,
     "keywords": set,
     "authors": list,
-    "publish_date": float
+    "publish_date": float,
 }
 
 # elasticsearch mapping for content in each column
 INDEX_MAPPING = {
     "mappings": {
         "properties": {
-            "title": {
-                "type": "text",
-                "analyzer": "english"
-            },
-            "content": {
-                "type": "text",
-                "analyzer": "english"
-            },
+            "title": {"type": "text", "analyzer": "english"},
+            "content": {"type": "text", "analyzer": "english"},
             "access_times": {
                 "type": "date",
                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
-            "keywords": {
-                "type": "keyword"
-            },
+            "keywords": {"type": "keyword"},
             "publish_date": {
                 "type": "date",
                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
-            "authors": {
-                "type": "text",
-                "analyzer": "standard"
-            }
+            "authors": {"type": "text", "analyzer": "standard"},
         }
     }
 }
@@ -114,7 +103,7 @@ class ArxivRecord(RecordDef):
     schema.update(BASE_SCHEMA)
     index_mapping = INDEX_MAPPING
     preview_lexer = MarkdownLexer
-    preview_style = style_from_pygments_cls(get_style_by_name('solarizeddark'))
+    preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
     @staticmethod
     def gen_record(document_id):
@@ -175,4 +164,3 @@ class ArxivRecord(RecordDef):
     def update_collection(record_list):
         """Modifications to records that depend on collection."""
         pass
-

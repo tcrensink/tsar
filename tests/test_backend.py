@@ -16,6 +16,7 @@ from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.search import Client, Server
 from tsar import TESTS_FOLDER
 from pathlib import Path
+
 TEST_COLLECTIONS_FOLDER = "/tmp/test_Collections/"
 TEST_DATA_FOLDER = "/tmp/test_Data/"
 TEST_COLLECTION_NAME = "test_collection"
@@ -31,7 +32,7 @@ def test_Data_new():
     data = Data.new(
         collection_name=TEST_COLLECTION_NAME,
         RecordDef=WikiRecord,
-        folder=TEST_DATA_FOLDER
+        folder=TEST_DATA_FOLDER,
     )
     df_saved = pd.read_pickle(
         os.path.join(TEST_DATA_FOLDER, TEST_COLLECTION_NAME, "records.pkl")
@@ -45,10 +46,7 @@ def test_Data_add_record():
     - the record_id is in the index
     - the record keys and df columns are identical
     """
-    data = Data(
-        collection=TEST_COLLECTION_NAME,
-        folder=TEST_DATA_FOLDER
-    )
+    data = Data(collection=TEST_COLLECTION_NAME, folder=TEST_DATA_FOLDER)
     record = WikiRecord.gen_record(path=WIKI_RECORD_ID)
     data.update_record(record)
     data.write_db()
@@ -60,10 +58,7 @@ def test_Data_add_record():
 
 def test_Data_rm_record():
     """Verify remove added record."""
-    data = Data(
-        collection=TEST_COLLECTION_NAME,
-        folder=TEST_DATA_FOLDER
-    )
+    data = Data(collection=TEST_COLLECTION_NAME, folder=TEST_DATA_FOLDER)
     init_num_records = data.df.shape[0]
     data.rm_record(WIKI_RECORD_ID)
     num_records = data.df.shape[0]
@@ -72,10 +67,7 @@ def test_Data_rm_record():
 
 def test_Data_drop():
     """test deletion of Data objects"""
-    Data.drop(
-        collection_name=TEST_COLLECTION_NAME,
-        folder=TEST_DATA_FOLDER
-    )
+    Data.drop(collection_name=TEST_COLLECTION_NAME, folder=TEST_DATA_FOLDER)
     db_path = os.path.join(TEST_DATA_FOLDER, TEST_COLLECTION_NAME, "records.pkl")
     assert not os.path.exists(db_path)
 
@@ -83,10 +75,7 @@ def test_Data_drop():
 def test_Client_index_new():
     """Test search index creation"""
     client = Client()
-    res = client.new_index(
-        collection_name=TEST_INDEX,
-        mapping=WikiRecord.index_mapping
-    )
+    res = client.new_index(collection_name=TEST_INDEX, mapping=WikiRecord.index_mapping)
     res.raise_for_status()
     assert res.status_code == 200
 
@@ -99,9 +88,7 @@ def test_Client_index_record():
 
     client = Client()
     res = client.index_record(
-        record_id=record_id,
-        record_index=record_index,
-        collection_name=TEST_INDEX,
+        record_id=record_id, record_index=record_index, collection_name=TEST_INDEX,
     )
     res.raise_for_status()
     assert res.status_code == 201
@@ -111,10 +98,7 @@ def test_Client_rm_record():
     """Test search index creation."""
 
     client = Client()
-    res = client.delete_record(
-        record_id=WIKI_RECORD_ID,
-        collection_name=TEST_INDEX
-    )
+    res = client.delete_record(record_id=WIKI_RECORD_ID, collection_name=TEST_INDEX)
     res.raise_for_status()
     assert res.status_code == 200
 
@@ -122,9 +106,7 @@ def test_Client_rm_record():
 def test_Client_index_drop():
     """Test search index creation."""
     client = Client()
-    res = client.drop_index(
-        collection_name=TEST_INDEX,
-    )
+    res = client.drop_index(collection_name=TEST_INDEX,)
     res.raise_for_status()
     assert res.status_code == 200
 
@@ -135,7 +117,7 @@ def test_Collection_new():
         collection_name=TEST_COLLECTION_NAME,
         RecordDef=WikiRecord,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH
+        db_meta_path=TEST_DB_META_PATH,
     )
     db_meta = pd.read_pickle(TEST_DB_META_PATH)
     assert db_meta.equals(coll.db_meta)
@@ -146,7 +128,7 @@ def test_Collection_init():
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH
+        db_meta_path=TEST_DB_META_PATH,
     )
     assert isinstance(coll, Collection)
 
@@ -156,7 +138,7 @@ def test_Collection_add_document():
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH
+        db_meta_path=TEST_DB_META_PATH,
     )
     num_records_init = coll.df.shape[0]
     coll.add_document(WIKI_RECORD_ID)
@@ -169,7 +151,7 @@ def test_Collection_remove_record():
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH
+        db_meta_path=TEST_DB_META_PATH,
     )
     num_records_init = coll.df.shape[0]
     coll.remove_record(WIKI_RECORD_ID)
@@ -182,7 +164,7 @@ def test_Collection_drop():
     Collection.drop(
         collection_name=TEST_COLLECTION_NAME,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH
+        db_meta_path=TEST_DB_META_PATH,
     )
     db_meta = pd.read_pickle(TEST_DB_META_PATH)
     assert TEST_COLLECTION_NAME not in db_meta.index

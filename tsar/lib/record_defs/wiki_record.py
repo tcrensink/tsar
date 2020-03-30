@@ -24,29 +24,20 @@ SCHEMA = {
 INDEX_MAPPING = {
     "mappings": {
         "properties": {
-            "path": {
-                "type": "text",
-            },
-            "content": {
-                "type": "text",
-                "analyzer": "english"
-            },
+            "path": {"type": "text",},
+            "content": {"type": "text", "analyzer": "english"},
             "access_times": {
                 "type": "date",
                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
             },
-            "keywords": {
-                "type": "keyword"
-            }
+            "keywords": {"type": "keyword"},
         }
     }
 }
 
 DOC_VIEWER = config.EDITOR
 
-VALID_EXTENSIONS = (
-    ".md",
-)
+VALID_EXTENSIONS = (".md",)
 
 
 class WikiRecord(RecordDef):
@@ -58,7 +49,7 @@ class WikiRecord(RecordDef):
     schema.update(BASE_SCHEMA)
     index_mapping = INDEX_MAPPING
     preview_lexer = MarkdownLexer
-    preview_style = style_from_pygments_cls(get_style_by_name('solarizeddark'))
+    preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
     @staticmethod
     def gen_record(path):
