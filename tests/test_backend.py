@@ -10,12 +10,12 @@ Todo:
 https://docs.pytest.org/en/latest/tmpdir.html#the-tmpdir-factory-fixture
 """
 import os
+from pathlib import Path
 import pandas as pd
 from tsar.lib.collection import Data, Collection
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.search import Client, Server
 from tsar import TESTS_FOLDER
-from pathlib import Path
 
 TEST_COLLECTIONS_FOLDER = "/tmp/test_Collections/"
 TEST_DATA_FOLDER = "/tmp/test_Data/"
@@ -27,7 +27,7 @@ TEST_INDEX = "test_index"
 Server().start()
 
 
-def test_Data_new():
+def test_data_new():
     """test creation of Data object."""
     data = Data.new(
         collection_name=TEST_COLLECTION_NAME,
@@ -40,7 +40,7 @@ def test_Data_new():
     assert df_saved.equals(data.df)
 
 
-def test_Data_add_record():
+def test_data_add_record():
     """Add a data record, assert that:
 
     - the record_id is in the index
@@ -56,7 +56,7 @@ def test_Data_add_record():
     assert set(record.keys()) == set(data.df.columns)
 
 
-def test_Data_rm_record():
+def test_data_rm_record():
     """Verify remove added record."""
     data = Data(collection=TEST_COLLECTION_NAME, folder=TEST_DATA_FOLDER)
     init_num_records = data.df.shape[0]
@@ -65,14 +65,14 @@ def test_Data_rm_record():
     assert init_num_records - 1 == num_records
 
 
-def test_Data_drop():
+def test_data_drop():
     """test deletion of Data objects"""
     Data.drop(collection_name=TEST_COLLECTION_NAME, folder=TEST_DATA_FOLDER)
     db_path = os.path.join(TEST_DATA_FOLDER, TEST_COLLECTION_NAME, "records.pkl")
     assert not os.path.exists(db_path)
 
 
-def test_Client_index_new():
+def test_client_index_new():
     """Test search index creation"""
     client = Client()
     res = client.new_index(collection_name=TEST_INDEX, mapping=WikiRecord.index_mapping)
@@ -80,7 +80,7 @@ def test_Client_index_new():
     assert res.status_code == 200
 
 
-def test_Client_index_record():
+def test_client_index_record():
     """Test search index creation."""
 
     record = WikiRecord.gen_record(WIKI_RECORD_ID)
@@ -94,7 +94,7 @@ def test_Client_index_record():
     assert res.status_code == 201
 
 
-def test_Client_rm_record():
+def test_client_rm_record():
     """Test search index creation."""
 
     client = Client()
@@ -103,7 +103,7 @@ def test_Client_rm_record():
     assert res.status_code == 200
 
 
-def test_Client_index_drop():
+def test_client_index_drop():
     """Test search index creation."""
     client = Client()
     res = client.drop_index(collection_name=TEST_INDEX,)
@@ -111,7 +111,7 @@ def test_Client_index_drop():
     assert res.status_code == 200
 
 
-def test_Collection_new():
+def test_collection_new():
     """test collection creation."""
     coll = Collection.new(
         collection_name=TEST_COLLECTION_NAME,
@@ -123,7 +123,7 @@ def test_Collection_new():
     assert db_meta.equals(coll.db_meta)
 
 
-def test_Collection_init():
+def test_collection_init():
     """test adding document to collection."""
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
@@ -133,7 +133,7 @@ def test_Collection_init():
     assert isinstance(coll, Collection)
 
 
-def test_Collection_add_document():
+def test_collection_add_document():
     """test adding document to collection."""
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
@@ -146,7 +146,7 @@ def test_Collection_add_document():
     assert num_records_init + 1 == num_records_final
 
 
-def test_Collection_remove_record():
+def test_collection_remove_record():
     """test adding document to collection."""
     coll = Collection(
         collection_name=TEST_COLLECTION_NAME,
@@ -159,7 +159,7 @@ def test_Collection_remove_record():
     assert num_records_init - 1 == num_records_final
 
 
-def test_Collection_drop():
+def test_collection_drop():
     """Test deleting a collection."""
     Collection.drop(
         collection_name=TEST_COLLECTION_NAME,
