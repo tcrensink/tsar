@@ -4,16 +4,16 @@ This module contains high level management of the terminal interface:
 - Screen: contains view and view_model for a single window (e.g. search)
 - App: manages active view, app state, keybindings, and event loop
 """
-from prompt_toolkit.application import Application
+from tsar import CAPTURE_DOC_PATH
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
-from prompt_toolkit.key_binding import (
-    KeyBindings,
-    merge_key_bindings
-)
-from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN
+from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, EDITOR
+from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
+from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
+from tsar.lib.record_defs.parse_lib import open_textfile
+
 
 class Screen(object):
     """Define object necessary to determine app state and change view.
@@ -36,7 +36,7 @@ class App(object):
     def __init__(
         self,
         initial_collection_name=DEFAULT_COLLECTION,
-        initial_screen_name=DEFAULT_SCREEN
+        initial_screen_name=DEFAULT_SCREEN,
     ):
 
         # mutable/updatable object references across app.
@@ -53,12 +53,10 @@ class App(object):
         self.screens["collections"] = Screen(
             shared_state=self.shared_state,
             ViewModel=CollectionsViewModel,
-            View=CollectionsView
+            View=CollectionsView,
         )
         self.screens["search"] = Screen(
-            shared_state=self.shared_state,
-            ViewModel=SearchViewModel,
-            View=SearchView
+            shared_state=self.shared_state, ViewModel=SearchViewModel, View=SearchView
         )
         self.update_state(initial_screen_name)
         self.shared_state["active_screen"] = self.screens[initial_screen_name]
@@ -78,6 +76,11 @@ class App(object):
         @kb_global.add(GLOBAL_KB["collections_screen"])
         def collections_screen(event):
             self.update_state("collections")
+
+        @kb_global.add(GLOBAL_KB["open_capture_doc"])
+        def open_capture(event):
+            open_textfile(path=CAPTURE_DOC_PATH, editor=EDITOR)
+
         return kb_global
 
     def update_state(self, screen_key):
@@ -87,12 +90,13 @@ class App(object):
 
         self.shared_state["prev_screen"] = self.shared_state["active_screen"]
         self.shared_state["active_screen"] = self.screens[screen_key]
-        self.shared_state["application"].layout =\
-            self.shared_state["active_screen"].layout
+        self.shared_state["application"].layout = self.shared_state[
+            "active_screen"
+        ].layout
         self.shared_state["application"].key_bindings = merge_key_bindings(
             [
                 self.shared_state["active_screen"].key_bindings,
-                self.shared_state["global_kb"]
+                self.shared_state["global_kb"],
             ]
         )
         self.shared_state["active_screen"].refresh_view()
