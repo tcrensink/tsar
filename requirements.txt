@@ -1,0 +1,12 @@
+atoma
+elasticsearch
+ipdb
+ipython
+nltk
+numpy
+pandas
+prompt_toolkit
+pygments
+pygments-style-solarized
+pytest
+requests
