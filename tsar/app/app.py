@@ -13,6 +13,7 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.record_defs.parse_lib import open_textfile
+from tsar.lib.record_defs.wiki_record import WikiRecord
 
 
 class Screen(object):
@@ -46,6 +47,9 @@ class App(object):
         initial_collection_name=DEFAULT_COLLECTION,
         initial_screen_name=DEFAULT_SCREEN,
     ):
+
+        if DEFAULT_COLLECTION not in Collection.db_meta.index:
+            Collection.new(collection_name="default_collection", RecordDef=WikiRecord)
 
         # mutable/updatable object references across app.
         self.shared_state = {
