@@ -73,7 +73,8 @@ def basic_text_to_keyword(raw_text, N):
 
     tokenizes, filters to alphabetical, top N scoring sqrt(freq)*word_length
     """
-    words = nltk.word_tokenize(raw_text)
+    words = raw_text.split()
+    # words = nltk.word_tokenize(raw_text)
     words = [word.lower() for word in words if word.isalpha()]
     word_counts = dict(Counter(words))
     df = pd.DataFrame.from_dict(word_counts, columns=["count"], orient="index")

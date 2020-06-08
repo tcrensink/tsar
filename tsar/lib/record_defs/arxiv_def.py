@@ -17,7 +17,7 @@ from tsar.lib.record_defs import parse_lib
 from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from pygments.styles import get_style_by_name
-import atoma
+import arxiv
 import requests
 
 SERIALIZER = SafeSerializer()
@@ -67,30 +67,28 @@ def recent_ml_and_ai_query_url(
     return query
 
 
-def gen_record_from_atom(content):
-    """Parse arxiv result in atom XML format.
-
-    e.g.:
-    res = requests.get(arxiv_query_url)
-    content = atoma.parse_atom_bytes(res.content).entries[0].
-    """
-    abstract = content.summary.value
+def gen_record_from_arxiv(arxiv_dict):
+    """Parse arxiv package result into a record."""
+    abstract = arxiv_dict["summary"]
+    title = arxiv_dict["title"]
     curr_time = parse_lib.utc_now_timestamp()
 
-    record = {}
-    # BASE_SCHEMA fields
-    record["record_id"] = content.id_
-    record["record_type"] = RECORD_TYPE
-    record["record_name"] = content.title.value.replace("\n", " ")
-    record["record_summary"] = content.summary.value.replace("\n", " ")
-    record["utc_last_access"] = curr_time
-
-    # SCHEMA fields
-    record["access_times"] = []
-    keyword_text = record["record_name"] + " " + abstract
-    record["keywords"] = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
-    record["authors"] = [author.name for author in content.authors]
-    record["publish_date"] = content.published.timestamp()
+    keyword_text = "{} {}".format(title, abstract)
+    keywords = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
+    publish_date = datetime(*arxiv_dict["published_parsed"][:6]).timestamp()
+    record = {
+        # BASE SCHEMA fields:
+        "record_id": arxiv_dict["id"],
+        "record_type": RECORD_TYPE,
+        "record_name": title,
+        "record_summary": abstract,
+        "utc_last_accss": curr_time,
+        # SCHEMA fields
+        "access_times": [],
+        "keywords": keywords,
+        "authors": arxiv_dict["authors"],
+        "publish_date": publish_date,
+    }
     return record
 
 
@@ -109,12 +107,13 @@ class ArxivRecord(RecordDef):
     def gen_record(document_id):
         """Parse doc_id (url) into record and return it.
 
+        # example doc_id: https://arxiv.org/abs/1810.04805
         ref: https://arxiv.org/help/api/user-manual#_calling_the_api
-        # url = 'http://export.arxiv.org/api/query?id_list=1311.5600'
+        # api url = 'http://export.arxiv.org/api/query?id_list=1311.5600'
         """
-        res = requests.get(document_id)
-        content = atoma.parse_atom_bytes(res.content).entries[0]
-        record = gen_record_from_atom(content)
+        paper_id = document_id.split("/")[-1]
+        record_dict = arxiv.query(id_list=[paper_id])[-1]
+        record = gen_record_from_arxiv(record_dict)
         return record
 
     @staticmethod
@@ -122,17 +121,7 @@ class ArxivRecord(RecordDef):
         """Return records associated with query params.
         ref: https://arxiv.org/help/api/user-manual#Appendices
         """
-        if query_url is None:
-            query_url = recent_ml_and_ai_query_url(**query_kwargs)
-
-        res = requests.get(url=query_url)
-        results = atoma.parse_atom_bytes(res.content).entries
-
-        records = []
-        for content in results:
-            record = gen_record_from_atom(content)
-            records.append(record)
-        return records
+        raise NotImplementedError
 
     @staticmethod
     def gen_record_index(record):
