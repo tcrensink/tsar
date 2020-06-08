@@ -75,7 +75,8 @@ def gen_record_from_arxiv(arxiv_dict):
 
     keyword_text = "{} {}".format(title, abstract)
     keywords = list(parse_lib.basic_text_to_keyword(keyword_text, 6))
-    publish_date = datetime(*arxiv_dict["published_parsed"][:6]).timestamp()
+    publish_date = int(datetime(*arxiv_dict["published_parsed"][:6]).timestamp())
+
     record = {
         # BASE SCHEMA fields:
         "record_id": arxiv_dict["id"],

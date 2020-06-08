@@ -1,6 +1,7 @@
 # rebuild image
 build:
-	docker build --network=host -t tsar .
+	docker build -t tsar .
+	# docker build --network=host -t tsar .
 
 # get bash shell in container
 shell_only:

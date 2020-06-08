@@ -4,10 +4,12 @@ FROM ubuntu:18.04
 RUN apt-get update && \
     apt-get install -y \
     binutils \
+    curl \
     dpkg \
     git \
     iputils-ping \
     less \
+    nano \
     python3.7 \
     python3-pip \
     sudo \
@@ -24,11 +26,15 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.7.
 RUN ln -s /usr/bin/python3.7 /usr/bin/python
 
 # cd to "/opt", install python deps, copy
-WORKDIR /opt
+ENV APP_PATH=/opt
+WORKDIR $APP_PATH
 COPY ./requirements.txt .
 RUN python -m pip install -r requirements.txt
 COPY . .
 ENV PYTHONPATH="."
+
+# overwrite elasticsearch config file with host config file
+COPY --chown=root:elasticsearch ./elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 
 ENV PORT=9200
 EXPOSE 9200

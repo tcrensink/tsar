@@ -45,7 +45,7 @@ class Server(object):
                 "service elasticsearch start".split(), capture_output=False
             )
             while True:
-                res = Client().test_connection()
+                res = client.test_connection()
                 if res:
                     return
 
