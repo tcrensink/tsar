@@ -1,15 +1,28 @@
-# NOTES FOR OPTIONS IN MAKEFILE:
-# share network with host
-#
-_build:
+# rebuild image
+build:
 	docker build --network=host -t tsar .
 
-run:
+# get bash shell in container
+shell_only:
+	docker run \
+		-it \
+		--rm \
+		--volume="$(shell pwd):/opt" \
+		--volume="${HOME}/.ipython:/root/.ipython" \
+		tsar \
+		bash
+
+shell: build shell_only
+
+run_only:
 	docker run \
 		-it \
 		--rm \
 		-v $(shell pwd):/opt \
-		tsar \
-		bash
+		tsar
 
-build: _build run
+run: build run_only
+
+# (broken example)
+# lintfix:
+# 	docker run --rm -v $(shell pwd):/code -w /code unibeautify/black -v .
