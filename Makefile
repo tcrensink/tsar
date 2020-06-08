@@ -1,7 +1,7 @@
 # rebuild image
+# docker build --network=host -t tsar .
 build:
 	docker build -t tsar .
-	# docker build --network=host -t tsar .
 
 # get bash shell in container
 shell_only:
@@ -19,7 +19,7 @@ run_only:
 	docker run \
 		-it \
 		--rm \
-		-v $(shell pwd):/opt \
+		--volume="$(shell pwd):/opt" \
 		tsar
 
 run: build run_only

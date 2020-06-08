@@ -83,7 +83,7 @@ def gen_record_from_arxiv(arxiv_dict):
         "record_type": RECORD_TYPE,
         "record_name": title,
         "record_summary": abstract,
-        "utc_last_accss": curr_time,
+        "utc_last_access": curr_time,
         # SCHEMA fields
         "access_times": [],
         "keywords": keywords,
