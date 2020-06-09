@@ -30,7 +30,7 @@ cluster.name: tsar
 #
 # Path to directory where to store the data (separate multiple locations by comma):
 #
-path.data: /opt/resources/elasticsearch/lib
+path.data: /opt/resources/elasticsearch/data
 #
 # Path to log files:
 #

@@ -34,7 +34,7 @@ COPY . .
 ENV PYTHONPATH="."
 
 # overwrite elasticsearch config file with host config file
-COPY --chown=root:elasticsearch ./elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+COPY --chown=root:elasticsearch ./resources/elasticsearch/* /etc/elasticsearch/
 
 ENV PORT=9200
 EXPOSE 9200

@@ -8,8 +8,9 @@ shell_only:
 	docker run \
 		-it \
 		--rm \
-		--volume="$(shell pwd):/opt" \
-		--volume="${HOME}/.ipython:/root/.ipython" \
+		--volume="$(shell pwd):/opt:cached" \
+		--volume="${HOME}/.ipython:/root/.ipython:cached" \
+		--memory="5g" \
 		tsar \
 		bash
 
