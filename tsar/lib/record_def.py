@@ -70,16 +70,7 @@ class SafeSerializer(JSONSerializer):
 
 
 class RecordDef(ABC):
-    """The abstract base class that defines the interface for a record.
-
-    Some abstractmethods are optional, and may be implemented with `pass`.  Examples:
-    - `create_doc_from_selection` -> difficult to implement for doc type .png
-
-    """
-
-    # @abstractmethod
-    # def __init__(self):
-    #     pass
+    """The abstract base class that defines the interface for a record."""
 
     @staticmethod
     @abstractmethod
@@ -89,6 +80,11 @@ class RecordDef(ABC):
     @staticmethod
     @abstractmethod
     def gen_record_index(self, file):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def open_doc(self, record):
         pass
 
     # some feature ideas below:
