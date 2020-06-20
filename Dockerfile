@@ -48,10 +48,5 @@ ENV KEY_PATH="$KEY_FOLDER/id_rsa"
 RUN eval "$(ssh-agent -s)" && ssh-add $KEY_PATH && \
     ssh-keyscan -H host.docker.internal >> /opt/.ssh/known_hosts && \
     ln -s  /opt/.ssh /root/.ssh
-# RUN ssh-keyscan -H host.docker.internal >> /opt/.ssh/known_hosts
-# RUN ln -s  /opt/.ssh /root/.ssh
 
 # CMD ["tsar"]
-
-# RUN service elasticsearch start
-# curl -X GET "http://localhost:9200"
