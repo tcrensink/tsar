@@ -99,7 +99,7 @@ if __name__ == "__main__":
     view_model = CollectionsViewModel(shared_state)
     view = CollectionsView(view_model)
 
-    @view.kb.add("c-c")
+    @view.kb.add("c-q")
     def _(event):
         event.app.exit()
 

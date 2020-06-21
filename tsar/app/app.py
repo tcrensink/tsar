@@ -7,6 +7,7 @@ This module contains high level management of the terminal interface:
 from tsar import CAPTURE_DOC_PATH
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
+from tsar.app.add_document_window import AddDocumentView, AddDocumentViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, EDITOR
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -71,6 +72,11 @@ class App(object):
                 ViewModel=SearchViewModel,
                 View=SearchView,
             ),
+            "add_document": Screen(
+                shared_state=self.shared_state,
+                ViewModel=AddDocumentViewModel,
+                View=AddDocumentView,
+            ),
         }
         self.update_state(initial_screen_name)
         self.shared_state["active_screen"] = self.screens[initial_screen_name]
@@ -94,6 +100,10 @@ class App(object):
         @kb_global.add(GLOBAL_KB["open_capture_doc"])
         def open_capture(event):
             open_textfile(path=CAPTURE_DOC_PATH, editor=EDITOR)
+
+        @kb_global.add("c-w")
+        def add_screen(event):
+            self.update_state("add_document")
 
         return kb_global
 

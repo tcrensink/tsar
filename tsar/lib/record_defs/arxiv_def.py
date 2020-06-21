@@ -70,7 +70,7 @@ def recent_ml_and_ai_query_url(
 def gen_record_from_arxiv(arxiv_dict):
     """Parse arxiv package result into a record."""
     abstract = arxiv_dict["summary"]
-    title = arxiv_dict["title"]
+    title = arxiv_dict["title"].replace("\n", "")
     curr_time = parse_lib.utc_now_timestamp()
 
     keyword_text = "{} {}".format(title, abstract)

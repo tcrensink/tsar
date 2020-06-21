@@ -1,9 +1,4 @@
-"""
-module for search screen.
-
-query string search syntax:
-https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax
-"""
+"""Window for adding a document to the current collection."""
 
 from __future__ import unicode_literals
 from prompt_toolkit.application import Application
@@ -22,26 +17,27 @@ from datetime import datetime
 from operator import itemgetter
 
 
-class SearchViewModel(object):
-    """View model/business logic for search window.
+def dummy(dummy_str):
+    import ipdb
 
-    - prompt-toolkit query, results, preview, status elements as attributes
-    - generates results from search_page query string
-    - formats results for display
-    - handles index of selected result
-    - generates preview of selected record
-    """
+    ipdb.set_trace()
+
+
+class AddDocumentViewModel(object):
+    """View model/business logic for add_doc window."""
 
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
         self.RecordDef = self.shared_state["active_collection"].RecordDef
-        self.query_buffer = Buffer(name="query_buffer", multiline=False)
-        # callback function that links query to results:
-        self.query_buffer.on_text_changed += self.update_results
+        self.input_buffer = Buffer(
+            name="input_buffer", multiline=False, accept_handler=self.add_document
+        )
+        # callback function that links input to results:
+        self.input_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_header = BufferControl(focusable=False,)
-        self.preview_header.buffer.text = "RECORD PREVIEW"
+        self.preview_header.buffer.text = "DOCUMENT PREVIEW"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -49,7 +45,7 @@ class SearchViewModel(object):
             lexer=PygmentsLexer(self.RecordDef.preview_lexer),
         )
         self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
-        self.preview_textcontrol.buffer.text = "(no result selected)"
+        self.preview_textcontrol.buffer.text = "(no document selected)"
         self.status_textcontrol = FormattedTextControl()
         self.style = style
         # value -1 indicates no result is currently selected
@@ -60,14 +56,14 @@ class SearchViewModel(object):
         self.update_results()
 
     @property
-    def query_str(self):
-        return self.query_buffer.text
+    def input_text(self):
+        return self.input_buffer.text
 
-    @query_str.setter
-    def query_str(self, new_query_str):
+    @input_text.setter
+    def input_text(self, new_input_text):
         """computes results when set
         """
-        self.query_buffer.text = new_query_str
+        self.input_buffer.text = new_input_text
 
     @property
     def index(self):
@@ -98,7 +94,7 @@ class SearchViewModel(object):
         """update preview content based on index
         """
         if self.index == -1:
-            preview_str = "(no result selected)"
+            preview_str = "(no document selected)"
         else:
             record = self.shared_state["active_collection"].df.loc[
                 self.results[self.index]
@@ -154,62 +150,52 @@ class SearchViewModel(object):
         return formatted_results
 
     def update_results(self, passthrough="dummy_arg"):
-        """call back function updates results when query text changes
+        """call back function updates results when input text changes
         - signature required to be callable from prompt_toolkit callback
 
-        - set results based on query
-        - set formatted results (default formatting)
-        - update index to 0 (-1 if no results)
-            - updates selected record
-            - updates preview of selected record
-        - update status bar
+        """
+        pass
+        # try:
+        #     record = self.RecordDef.gen_record(self.input_text)
+        #     self.preview_textcontrol.buffer.text = "something here"
+        # except ValueError:
+        #     self.preview_textcontrol.buffer.text = "nothing here"
+
+    def add_document(self, record_id):
+        """Add document associated with record_id.
+
+        behavior governed by accept_handler of Buffer:
+        https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html?highlight=accept_handler#module-prompt_toolkit.buffer
+
+        if bool(return_val) buffer text is erased, otherwise retained.
         """
         try:
-            results = self.shared_state["active_collection"].query_records(
-                self.query_str
-            )
-            self.results = sorted(results, key=itemgetter(1), reverse=True)
+            self.shared_state["active_collection"].add_document(record_id=record_id)
+
+            return_val = None
         except Exception:
-            self.results = {}
-            self.status_textcontrol.text = "(invalid query)"
-        else:
-            self.formatted_results = self._apply_default_format(self.results)
-            self.results_textcontrol.text = self.formatted_results
-            self.index = 0
-            self.status_textcontrol.text = (
-                f"showing {len(self.results)} of "
-                f"{self.shared_state['active_collection'].df.shape[0]} records.    "
-                f"(ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
-            )
-
-    def open_selected(self):
-        """open selected record
-        """
-        if len(self.results) > 0:
-            record_id = self.results[self.index]
-        else:
             pass
-        self.shared_state["active_collection"].open_document(record_id=record_id)
-        self._update_preview_content()
+            return_val = True
+        return return_val
 
 
-class SearchView(object):
+class AddDocumentView(object):
     """Bind input, visual elements to search_view_model logic. """
 
-    def __init__(self, search_view_model):
+    def __init__(self, add_document_view_model):
 
-        self.view_model = search_view_model
+        self.view_model = add_document_view_model
         self.shared_state = self.view_model.shared_state
 
         # layout components:
-        self.query_header = Window(
-            FormattedTextControl(query_title_bar_text(self.shared_state)),
+        self.window_header = Window(
+            FormattedTextControl(title_bar_text(self.shared_state)),
             height=1,
             style="reverse",
         )
 
         self.query_window = Window(
-            BufferControl(self.view_model.query_buffer,), height=1,
+            BufferControl(self.view_model.input_buffer,), height=1,
         )
         results_window = Window(self.view_model.results_textcontrol, height=13)
 
@@ -228,7 +214,7 @@ class SearchView(object):
         self.layout = Layout(
             HSplit(
                 [
-                    self.query_header,
+                    self.window_header,
                     self.query_window,
                     results_window,
                     preview_header,
@@ -252,35 +238,21 @@ class SearchView(object):
 
         @self.kb.add("escape")
         def _(event):
-            self.view_model.query_str = ""
-
-        @self.kb.add("enter")
-        def _(event):
-            """open selected record"""
-            try:
-                self.view_model.open_selected()
-            except Exception:
-                self.view_model.status_textcontrol.text = "(no doc selected)"
+            self.view_model.input_text = ""
 
     def refresh_view(self):
         """Code when screen is changed."""
-        # self.view_model.query_str = ""
-        self.query_header.content.text = query_title_bar_text(self.shared_state)
+        # self.view_model.input_text = ""
+        self.window_header.content.text = title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
 
 
-def query_title_bar_text(shared_state):
+def title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
     # cols = shared_state["active_collection"].df.columns
-    client = shared_state["active_collection"].client
-    coll_name = shared_state["active_collection"].name
-    mapping = client.return_fields(coll_name)
-    map_fields = mapping.keys()
-
-    fields_str = " | ".join(map_fields)
-    str_value = f"QUERY    fields: {fields_str}"
-    return str_value
+    title_str = "Add document to: {}".format(shared_state["active_collection"].name)
+    return title_str
 
 
 if __name__ == "__main__":
@@ -292,8 +264,8 @@ if __name__ == "__main__":
         "application": Application(),
     }
 
-    view_model = SearchViewModel(shared_state)
-    view = SearchView(view_model)
+    view_model = AddDocumentViewModel(shared_state)
+    view = AddDocumentView(view_model)
 
     @view.kb.add("c-q")
     def _(event):
