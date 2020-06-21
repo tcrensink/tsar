@@ -156,6 +156,8 @@ class AddDocumentViewModel(object):
         """
         # this tries to preview the record; will fail if slow
         try:
+            import random
+
             record = self.RecordDef.gen_record(self.input_text)
             summary_text = record["record_summary"]
             self.preview_textcontrol.buffer.text = summary_text

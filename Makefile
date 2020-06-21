@@ -8,9 +8,9 @@ build:
 	docker build --network=host -t tsar .
 
 # rebuild, start shell in container
-shell_no_build:
+shell:
 	docker run \
-		--name tsar \
+		--name tsar_shell \
 		-e HOST_USER=${USER} \
 		--rm \
 		-it \
@@ -21,19 +21,16 @@ shell_no_build:
 		tsar \
 		bash
 
-shell: build shell_no_build
-
 # rebuild, run app in container
-dev_no_build:
+run:
 	docker run \
-		--name tsar_dev \
-		-it \
+		--name tsar \
 		-e HOST_USER=${USER} \
 		--rm \
-		--volume="$(shell pwd):/opt" \
+		-itd \
+		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
+		--detach-keys="ctrl-c" \
 		tsar \
 		bash
-
-dev: build dev_no_build
