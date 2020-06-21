@@ -35,7 +35,7 @@ class AddDocumentViewModel(object):
         )
         # callback function that links input to results:
         self.input_buffer.on_text_changed += self.update_results
-        self.results_textcontrol = FormattedTextControl("(no results)")
+        self.results_textcontrol = FormattedTextControl("")
         self.preview_header = BufferControl(focusable=False,)
         self.preview_header.buffer.text = "DOCUMENT PREVIEW"
 
@@ -154,12 +154,15 @@ class AddDocumentViewModel(object):
         - signature required to be callable from prompt_toolkit callback
 
         """
-        pass
-        # try:
-        #     record = self.RecordDef.gen_record(self.input_text)
-        #     self.preview_textcontrol.buffer.text = "something here"
-        # except ValueError:
-        #     self.preview_textcontrol.buffer.text = "nothing here"
+        # this tries to preview the record; will fail if slow
+        try:
+            record = self.RecordDef.gen_record(self.input_text)
+            summary_text = record["record_summary"]
+            self.preview_textcontrol.buffer.text = summary_text
+        except Exception as e:
+            self.preview_textcontrol.buffer.text = "(unable to generate record) " + str(
+                random.random()
+            )
 
     def add_document(self, record_id):
         """Add document associated with record_id.

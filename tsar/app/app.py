@@ -101,7 +101,7 @@ class App(object):
         def open_capture(event):
             open_textfile(path=CAPTURE_DOC_PATH, editor=EDITOR)
 
-        @kb_global.add("c-w")
+        @kb_global.add("c-a")
         def add_screen(event):
             self.update_state("add_document")
 
