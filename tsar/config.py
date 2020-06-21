@@ -7,12 +7,12 @@ BROWSER = "Safari"
 ELASTICSEARCH_PORT = 9200
 
 # TSAR CONTENT DEFAULTS
-DEFAULT_COLLECTION = "arxiv"
+DEFAULT_COLLECTION = "default_collection"
 DEFAULT_SCREEN = "search"
 
 # GLOBAL KEY BINDINGS
 GLOBAL_KB = {
-    "exit": "c-c",
+    "exit": "c-q",
     "search_screen": ("c-right"),
     "collections_screen": ("c-left"),
     "open_document": "enter",

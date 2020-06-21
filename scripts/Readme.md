@@ -1,0 +1,1 @@
+This folder includes scripts for initial installation or connecting to a host

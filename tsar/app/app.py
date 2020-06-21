@@ -13,6 +13,7 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.record_defs.parse_lib import open_textfile
+from tsar.lib.record_defs.wiki_record import WikiRecord
 
 
 class Screen(object):
@@ -31,13 +32,23 @@ class Screen(object):
 
 
 class App(object):
-    """Contains MVVM style views, view models, and keybindings."""
+    """Contains MVVM style views, view models, and keybindings.
+
+    Organization:
+    - shared_state includes the prompt_toolkit application and state values shared globally in App
+    - shared_state includes values that may be modified by a Screen for example
+    - self.screens contains Screen objects, e.g. search_screen or collections_screen.  These contain layouts
+    - app.layout is dynamically bound to Screen layouts in app.update_state().  Screens have their own global logic which is also called.
+    - calls to app.update_state are defined (and triggered) via app._return_global_keybindings()
+    """
 
     def __init__(
         self,
         initial_collection_name=DEFAULT_COLLECTION,
         initial_screen_name=DEFAULT_SCREEN,
     ):
+        if "default_collection" not in Collection.db_meta.index:
+            Collection.new(collection_name="default_collection", RecordDef=WikiRecord)
 
         # mutable/updatable object references across app.
         self.shared_state = {
@@ -49,15 +60,18 @@ class App(object):
         }
 
         # app screens
-        self.screens = {}
-        self.screens["collections"] = Screen(
-            shared_state=self.shared_state,
-            ViewModel=CollectionsViewModel,
-            View=CollectionsView,
-        )
-        self.screens["search"] = Screen(
-            shared_state=self.shared_state, ViewModel=SearchViewModel, View=SearchView
-        )
+        self.screens = {
+            "collections": Screen(
+                shared_state=self.shared_state,
+                ViewModel=CollectionsViewModel,
+                View=CollectionsView,
+            ),
+            "search": Screen(
+                shared_state=self.shared_state,
+                ViewModel=SearchViewModel,
+                View=SearchView,
+            ),
+        }
         self.update_state(initial_screen_name)
         self.shared_state["active_screen"] = self.screens[initial_screen_name]
 

@@ -28,14 +28,11 @@ def encode_url_str(raw_url_string):
 
 
 class Server(object):
-    """ElasticSearch server class.
+    """ElasticSearch Server. """
 
-    methods to add:
-    - n documents in index: /index/_count
-    """
-
-    def __init__(self, es_app=ELASTICSEARCH_PATH, server_file=SERVER_FILE):
-        self.app = es_app
+    def __init__(
+        self, server_file=SERVER_FILE,
+    ):
         self.server_file = server_file
 
     def start(self):
@@ -44,20 +41,21 @@ class Server(object):
         if client.test_connection():
             return
         else:
-            cmd = f"{self.app} -d -p {self.server_file}"
-            _ = subprocess.call(cmd.split(" "))
+            _ = subprocess.run(
+                "service elasticsearch start".split(), capture_output=False
+            )
             while True:
-                res = Client().test_connection()
+                res = client.test_connection()
                 if res:
                     return
 
-    def shutdown(self):
+    def stop(self):
         """shutdown service."""
-        raise NotImplementedError()
+        _ = subprocess.run("service elasticsearch stop".split(), capture_output=False)
 
     def status(self):
         """Status of server."""
-        raise NotImplementedError()
+        _ = subprocess.run("service elasticsearch status".split(), capture_output=False)
 
 
 class Client(object):

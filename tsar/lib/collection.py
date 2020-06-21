@@ -3,9 +3,6 @@
 - Collection class: high level interface for attribute objects DataBase, Client, Browser, RecordDef, etc.
 
 - Lookup functions to find associated RecordDef
-
-TODO:
-- Collection.new() check if collection exists first
 """
 import os
 import pandas as pd
@@ -21,6 +18,7 @@ from requests import HTTPError
 
 # df that contains summary info for all collections
 DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_meta.pkl")
+META_DB_COLS = ["record_type", "creation_date"]
 
 
 def return_db_path(collection_name, folder=COLLECTIONS_FOLDER):
@@ -103,33 +101,27 @@ class Collection(object):
     handles collection-level methods e.g. tf/idf keyword generation.
     """
 
-    def __init__(
-        self,
-        collection_name,
-        folder=COLLECTIONS_FOLDER,
-        db_meta_path=DB_META_PATH,
-        client=None,
-    ):
-        search.Server().start()
+    client = search.Client()
+    search.Server().start()
+    db_meta_path = DB_META_PATH
+    try:
+        db_meta = pd.read_pickle(db_meta_path)
+    except FileNotFoundError:
+        db_meta_folder = os.path.dirname(db_meta_path)
+        os.makedirs(db_meta_folder) if not os.path.exists(db_meta_folder) else None
+        db_meta = pd.DataFrame(columns=META_DB_COLS)
+        db_meta.index.name = "collection"
+
+    def __init__(self, collection_name, folder=COLLECTIONS_FOLDER):
         self.name = collection_name
         self.data = Data(self.name, folder=folder)
         self.df = self.data.df
-        self.db_meta = pd.read_pickle(db_meta_path)
         self.record_type = self.db_meta.loc[collection_name].record_type
         self.RecordDef = return_record_def(self.record_type)
 
-        if client is None:
-            self.client = search.Client()
-        else:
-            self.client = client
-
     @classmethod
     def new(
-        cls,
-        collection_name,
-        RecordDef,
-        folder=COLLECTIONS_FOLDER,
-        db_meta_path=DB_META_PATH,
+        cls, collection_name, RecordDef, folder=COLLECTIONS_FOLDER,
     ):
         """Create a new collection.
 
@@ -142,37 +134,31 @@ class Collection(object):
         - if collection by name doesn't exist:
             - add new entry to collections_db (create as needed)
         """
-        search.Server().start()
+        if collection_name in cls.db_meta.index:
+            raise ValueError(f"collection with name {collection_name} already exists")
+
         meta_db_record = {
             "record_type": RecordDef.record_type,
             "creation_date": datetime.datetime.utcnow(),
         }
-        try:
-            db_meta = pd.read_pickle(db_meta_path)
-        except FileNotFoundError:
-            db_meta_folder = os.path.dirname(db_meta_path)
-            os.makedirs(db_meta_folder) if not os.path.exists(db_meta_folder) else None
-            db_meta = pd.DataFrame(columns=meta_db_record.keys())
-            db_meta.index.name = "collection"
-
-        if collection_name in db_meta.index:
-            raise ValueError(f"collection with name {collection_name} already exists")
+        if set(meta_db_record.keys()) != set(META_DB_COLS):
+            raise ValueError("invalid schema for new meta_db record")
 
         # add row to df_collections
-        db_meta = db_meta.append(pd.Series(meta_db_record, name=collection_name))
-        db_meta.to_pickle(db_meta_path)
+        cls.db_meta = cls.db_meta.append(
+            pd.Series(meta_db_record, name=collection_name)
+        )
+        cls.db_meta.to_pickle(cls.db_meta_path)
 
         # now reasonbly certain collection objects don't exist: create Data, search index
         Data.new(collection_name, RecordDef, folder=folder)
-        search.Client().new_index(
+        cls.client.new_index(
             collection_name=collection_name, mapping=RecordDef.index_mapping
         )
-        return cls(collection_name, folder=folder, db_meta_path=db_meta_path)
+        return cls(collection_name, folder=folder)
 
     @classmethod
-    def drop(
-        cls, collection_name, folder=COLLECTIONS_FOLDER, db_meta_path=DB_META_PATH
-    ):
+    def drop(cls, collection_name, folder=COLLECTIONS_FOLDER):
         """Remove a collection.
 
         Try/except to avoid erring if index exists but db doesn't, etc.
@@ -180,30 +166,22 @@ class Collection(object):
         try:
             Data.drop(collection_name, folder=folder)
         except Exception:
-            pass
+            print("unable to locate collection db.")
         try:
-            db_meta = pd.read_pickle(db_meta_path)
-            db_meta = db_meta.drop(collection_name)
-            db_meta.to_pickle(db_meta_path)
+            cls.db_meta.drop(collection_name, inplace=True)
         except Exception:
-            pass
+            print("unable to update db_meta.")
         try:
-            search.Client().drop_index(collection_name)
+            cls.client.drop_index(collection_name)
         except HTTPError:
-            pass
-
-    @classmethod
-    def return_collections_df(cls, db_meta_path=DB_META_PATH):
-        """List all available collections."""
-        df = pd.read_pickle(db_meta_path)
-        return df
+            print("error dropping collection from search index.")
 
     def _add_document(self, record_id):
         """add record without saving."""
         record = self.RecordDef.gen_record(record_id)
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
-        self.client.index_record(
+        type(self).client.index_record(
             record_id=record_id, record_index=record_index, collection_name=self.name
         )
 
