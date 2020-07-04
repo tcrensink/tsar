@@ -9,6 +9,7 @@ from tsar.lib.record_defs import parse_lib
 from pygments.lexers.markup import MarkdownLexer
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from pygments.styles import get_style_by_name
+from tsar.lib.ssh_utils import SSHClient
 
 SERIALIZER = SafeSerializer()
 
@@ -43,6 +44,7 @@ VALID_EXTENSIONS = (".md",)
 class WikiRecord(RecordDef):
     """Defines wiki doc -> wiki_record and downstream processing."""
 
+    ssh_client = SSHClient()
     record_type = RECORD_TYPE
     base_schema = BASE_SCHEMA
     schema = SCHEMA
@@ -51,12 +53,30 @@ class WikiRecord(RecordDef):
     preview_lexer = MarkdownLexer
     preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
+    @classmethod
+    def preview_document(cls, preview_str):
+        """Preview available files based on host path (e.g. ls -A1)."""
+        document_preview = parse_lib.return_file_contents(
+            preview_str, ssh_client=WikiRecord.ssh_client
+        )
+        return document_preview
+
+    @classmethod
+    def preview_documents(cls, preview_str):
+        """Preview available files based on host path (e.g. ls -A1)."""
+
+        preview_str = f"{preview_str}*"
+        documents_preview = parse_lib.list_folder_contents(
+            preview_str, ssh_client=WikiRecord.ssh_client
+        )
+        return documents_preview
+
     @staticmethod
     def gen_record(path):
         """Parse doc into a record; return it."""
-        record_id = parse_lib.resolve_path(path)
-        record_id = str(record_id)
-
+        # record_id = parse_lib.resolve_path(path)
+        # record_id = str(record_id)
+        record_id = path
         raw_doc = parse_lib.return_raw_doc(record_id)
         file_info = parse_lib.file_meta_data(record_id)
 

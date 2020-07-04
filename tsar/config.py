@@ -12,11 +12,12 @@ DEFAULT_SCREEN = "search"
 
 # GLOBAL KEY BINDINGS
 GLOBAL_KB = {
-    "exit": "c-q",
-    "search_screen": ("c-right"),
-    "collections_screen": ("c-left"),
+    "exit": "c-c",
+    "collections_screen": ("c-a"),
+    "add_document": ("c-d"),
+    "search_screen": ("c-s"),
+    "open_capture_doc": ("c-z"),
     "open_document": "enter",
-    "open_capture_doc": ("c-a"),
 }
 
 # STYLING

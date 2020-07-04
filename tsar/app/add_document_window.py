@@ -17,19 +17,12 @@ from datetime import datetime
 from operator import itemgetter
 
 
-def dummy(dummy_str):
-    import ipdb
-
-    ipdb.set_trace()
-
-
 class AddDocumentViewModel(object):
     """View model/business logic for add_doc window."""
 
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.RecordDef = self.shared_state["active_collection"].RecordDef
         self.input_buffer = Buffer(
             name="input_buffer", multiline=False, accept_handler=self.add_document
         )
@@ -54,6 +47,11 @@ class AddDocumentViewModel(object):
         # FormattedText results:
         self.formatted_results = self._apply_default_format(self.results)
         self.update_results()
+
+    @property
+    def RecordDef(self):
+        record_def = self.shared_state["active_collection"].RecordDef
+        return record_def
 
     @property
     def input_text(self):
@@ -152,21 +150,15 @@ class AddDocumentViewModel(object):
     def update_results(self, passthrough="dummy_arg"):
         """call back function updates results when input text changes
         - signature required to be callable from prompt_toolkit callback
-
         """
-        # this tries to preview the record; will fail if slow
-        try:
-            import random
+        documents_preview = self.RecordDef.preview_documents(self.input_text)
+        # self.input_text = str(self.RecordDef)
+        self.results_textcontrol.text = documents_preview
 
-            record = self.RecordDef.gen_record(self.input_text)
-            summary_text = record["record_summary"]
-            self.preview_textcontrol.buffer.text = summary_text
-        except Exception as e:
-            self.preview_textcontrol.buffer.text = "(unable to generate record) " + str(
-                random.random()
-            )
+        document_preview = self.RecordDef.preview_document(self.input_text)
+        self.preview_textcontrol.buffer.text = document_preview
 
-    def add_document(self, record_id):
+    def add_document(self, input_buffer, state=[0]):
         """Add document associated with record_id.
 
         behavior governed by accept_handler of Buffer:
@@ -175,13 +167,13 @@ class AddDocumentViewModel(object):
         if bool(return_val) buffer text is erased, otherwise retained.
         """
         try:
+            record_id = input_buffer.text
             self.shared_state["active_collection"].add_document(record_id=record_id)
+            self.preview_textcontrol.buffer.text = "\nDocument added!"
 
-            return_val = None
-        except Exception:
-            pass
-            return_val = True
-        return return_val
+        except Exception as e:
+            msg = f"unable to add document: \n{e}"
+            self.preview_textcontrol.buffer.text = msg
 
 
 class AddDocumentView(object):

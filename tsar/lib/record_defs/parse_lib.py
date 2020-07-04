@@ -1,59 +1,91 @@
 """
-library of parsing functions and utilities used by record_defs
+library of parsing functions and utilities used by record_defs.
+
+All file handling should be done from host machine via ssh.
+Environment variables $HOME, $USER defined to match host in tsar/__init__.py
+for pathlib handling.
 """
 import subprocess
+from subprocess import PIPE
 import os
 import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
-from pathlib import Path
+
+# from pathlib import Path
 from datetime import datetime
+from tsar.lib import ssh_utils
+
+SSH_TO_HOST = "ssh {}@host.docker.internal".format(os.environ["HOST_USER"])
+
+IS_FILE = "test -f {}"
+IS_DIR = "test -d {}"
+
+
+def return_file_contents(path_string, ssh_client=None):
+    """Return string of file contents on remote host.
+
+    e.g.: path_string = "~/test.py" -> string of file contents.
+    """
+    if not ssh_client:
+        ssh_client = ssh_utils.SSHClient()
+    cmd = f"cat {path_string}"
+    _, stdout, _ = ssh_client.exec_command(cmd)
+    listed_contents = stdout.read().decode()
+    return listed_contents
+
+
+def list_folder_contents(path_string, ssh_client=None):
+    """Return string of folder contents on remote host.
+
+    e.g.: path_string = "~/*.py" -> string with list of
+    python files in home dir.
+    """
+    if not ssh_client:
+        ssh_client = ssh_utils.SSHClient()
+    cmd = f"ls -d1 {path_string}"
+    _, stdout, _ = ssh_client.exec_command(cmd)
+    listed_contents = stdout.read().decode()
+    return listed_contents
 
 
 def return_files(folder, extensions=None):
-    """Return all file paths within folder for the given file extensions."""
-    if isinstance(extensions, str):
-        raise TypeError("extensions should be a list, tuple, or set.")
+    """Return list of files in folder with extensions.
 
-    folder = resolve_path(folder)
-    if not folder.is_dir():
-        raise ValueError("a folder is needed to generate records.")
+    Currently for macos only.
+    """
+    cmd = f"{SSH_TO_HOST} find {folder} -type f"
 
-    paths = []
-    for root, dirs, files in os.walk(folder):
-        curr_paths = [resolve_path(os.path.join(root, f)) for f in files]
-        if extensions:
-            curr_paths = [str(p) for p in curr_paths if p.suffix in set(extensions)]
-        else:
-            curr_paths = [str(p) for p in curr_paths]
-        paths.extend(curr_paths)
-
+    if extensions:
+        extensions = ["." + ext.lstrip(".") for ext in extensions]
+        extensions_str = " -o ".join([f"-iname '\*{ext}'" for ext in extensions])
+        cmd = f"{cmd} {extensions_str}"
+    print(cmd)
+    proc = subprocess.run(cmd, shell=True, stdout=PIPE)
+    paths = proc.stdout.decode().splitlines()
     return paths
-
-
-def resolve_path(path):
-    """Resolve path, including relative, tilde, and env vars."""
-    resolved_path = Path(path).expanduser().resolve()
-    return resolved_path
 
 
 def open_textfile(path, editor):
     """Open text file with editor."""
-    cmd = f"{editor} {path}".split(" ")
-    subprocess.Popen(cmd).wait()
+    cmd = f"{SSH_TO_HOST} {editor} {path}".split(" ")
+    subprocess.Popen(cmd)
 
 
-def open_url(url, browser):
+def open_url(url, browser, ssh_client=None):
     """Open url in browser."""
-    cmd = f"open {url} -a {browser}"
-    subprocess.Popen(cmd, shell=True).wait()
+    if not ssh_client:
+        ssh_client = ssh_utils.SSHClient()
+    cmd = f"open -a {browser} {url} && osascript -e 'tell application \"{browser}\" to activate'"
+    ssh_client.exec_command(cmd)
 
 
 def return_raw_doc(path):
     """Return text doc as a string."""
-    with open(path, "r") as fp:
-        text = fp.read()
+    cmd = f"{SSH_TO_HOST} test -f {path} && cat {path}"
+    proc = subprocess.run(cmd, shell=True, stdout=PIPE)
+    text = proc.stdout.decode()
     return text
 
 
@@ -63,7 +95,8 @@ def file_base_features(path, record_type):
     base_feature_dict = {
         "record_id": path,
         "record_type": record_type,
-        "utc_last_access": os.stat(path).st_atime,
+        # "utc_last_access": os.stat(path).st_atime,
+        "utc_last_access": 1600000000.0,
     }
     return base_feature_dict
 
@@ -93,12 +126,16 @@ def file_meta_data(path):
     st_size: in bytes
     st_ctime: last change to file metadata
     """
-    info = os.stat(path)
+    # info = os.stat(path)
     info_dict = {
-        "st_atime": info.st_atime,
-        "st_mtime": info.st_mtime,
-        "st_ctime": info.st_ctime,
-        "st_size": info.st_size,
+        "st_atime": 1600000000.0,
+        "st_mtime": 1600000000.0,
+        "st_ctime": 1600000000.0,
+        "st_size": 1600000000.0,
+        # "st_atime": info.st_atime,
+        # "st_mtime": info.st_mtime,
+        # "st_ctime": info.st_ctime,
+        # "st_size": info.st_size,
     }
     return info_dict
 

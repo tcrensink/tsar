@@ -9,6 +9,7 @@ import pandas as pd
 from tsar import COLLECTIONS_FOLDER
 from tsar.lib import search
 from tsar.lib.record_def import RecordDef
+from tsar.lib import ssh_utils
 
 # must be imported to be recognized as subclasses...
 from tsar.lib.record_defs.wiki_record import WikiRecord
@@ -103,6 +104,7 @@ class Collection(object):
 
     client = search.Client()
     search.Server().start()
+    ssh_client = ssh_utils.SSHClient()
     db_meta_path = DB_META_PATH
     try:
         db_meta = pd.read_pickle(db_meta_path)

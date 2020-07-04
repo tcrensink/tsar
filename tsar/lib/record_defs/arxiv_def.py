@@ -104,6 +104,16 @@ class ArxivRecord(RecordDef):
     preview_lexer = MarkdownLexer
     preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
+    @classmethod
+    def preview_document(cls, preview_str):
+        """"""
+        return "no preview available"
+
+    @classmethod
+    def preview_documents(cls, preview_str):
+        """"""
+        return "no preview available"
+
     @staticmethod
     def gen_record(document_id):
         """Parse doc_id (url) into record and return it.

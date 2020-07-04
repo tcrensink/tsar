@@ -35,7 +35,6 @@ class SearchViewModel(object):
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.RecordDef = self.shared_state["active_collection"].RecordDef
         self.query_buffer = Buffer(name="query_buffer", multiline=False)
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
@@ -58,6 +57,11 @@ class SearchViewModel(object):
         # FormattedText results:
         self.formatted_results = self._apply_default_format(self.results)
         self.update_results()
+
+    @property
+    def RecordDef(self):
+        record_def = self.shared_state["active_collection"].RecordDef
+        return record_def
 
     @property
     def query_str(self):
