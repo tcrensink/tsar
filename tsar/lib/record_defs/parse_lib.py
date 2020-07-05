@@ -5,88 +5,114 @@ All file handling should be done from host machine via ssh.
 Environment variables $HOME, $USER defined to match host in tsar/__init__.py
 for pathlib handling.
 """
-import subprocess
-from subprocess import PIPE
+# import subprocess
+# from subprocess import PIPE
 import os
 import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
+import fnmatch
 
 # from pathlib import Path
 from datetime import datetime
-from tsar.lib import ssh_utils
-
-SSH_TO_HOST = "ssh {}@host.docker.internal".format(os.environ["HOST_USER"])
-
-IS_FILE = "test -f {}"
-IS_DIR = "test -d {}"
+from tsar.lib.ssh_utils import SSHClient
 
 
-def return_file_contents(path_string, ssh_client=None):
+def resolve_path(path_str, sftp_client=None):
+    """Attempt to generate canonical path from path string.
+
+    Examples:
+    ~/test ->               /Users/trensink/test
+    ./test ->               /Users/trensink/test
+    /Users/trensink/test -> /Users/trensink/test
+    ../trensink/test ->     /Users/trensink/test
+    """
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+    home_folder = os.environ["HOST_HOME"]
+    sftp_client.chdir(home_folder)
+
+    if path_str.startswith("~"):
+        path_str = path_str.replace("~", home_folder, 1)
+    path_str = sftp_client.normalize(path_str)
+    return path_str
+
+
+def return_file_contents(path_string, sftp_client=None):
     """Return string of file contents on remote host.
 
     e.g.: path_string = "~/test.py" -> string of file contents.
     """
-    if not ssh_client:
-        ssh_client = ssh_utils.SSHClient()
-    cmd = f"cat {path_string}"
-    _, stdout, _ = ssh_client.exec_command(cmd)
-    listed_contents = stdout.read().decode()
-    return listed_contents
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+    contents = sftp_client.file(path_string)
+    contents_str = contents.read().decode()
+    return contents_str
 
 
-def list_folder_contents(path_string, ssh_client=None):
-    """Return string of folder contents on remote host.
+def list_folder_contents(path_string, sftp_client=None):
+    """Return contents of longest valid folder on remote host.
 
-    e.g.: path_string = "~/*.py" -> string with list of
-    python files in home dir.
+    E.g.,  ./git/my_re -> <contents of ./git>
     """
-    if not ssh_client:
-        ssh_client = ssh_utils.SSHClient()
-    cmd = f"ls -d1 {path_string}"
-    _, stdout, _ = ssh_client.exec_command(cmd)
-    listed_contents = stdout.read().decode()
-    return listed_contents
+    path_string = resolve_path(path_string, sftp_client)
+
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+
+    try:
+        contents_list = sftp_client.listdir(path_string)
+    except FileNotFoundError:
+        contents_list = sftp_client.listdir(path_string.rsplit("/", 1)[0])
+
+    contents_str = "\n".join(contents_list)
+    return contents_str
 
 
-def return_files(folder, extensions=None):
+def return_files(folder, extensions=None, sftp_client=None):
     """Return list of files in folder with extensions.
 
     Currently for macos only.
     """
-    cmd = f"{SSH_TO_HOST} find {folder} -type f"
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
 
-    if extensions:
-        extensions = ["." + ext.lstrip(".") for ext in extensions]
-        extensions_str = " -o ".join([f"-iname '\*{ext}'" for ext in extensions])
-        cmd = f"{cmd} {extensions_str}"
-    print(cmd)
-    proc = subprocess.run(cmd, shell=True, stdout=PIPE)
-    paths = proc.stdout.decode().splitlines()
+    paths = []
+    # if extensions:
+    # extensions = ["." + ext.lstrip(".") for ext in extensions]
+    # extensions_str = " -o ".join([f"-iname '\*{ext}'" for ext in extensions])
+    # cmd = f"{cmd} {extensions_str}"
+
+    # _, stdout, _ = ssh_client.exec_command(cmd)
+    # paths = stdout.read().decode().splitlines()
     return paths
 
 
-def open_textfile(path, editor):
+def open_textfile(path, editor, sftp_client=None):
     """Open text file with editor."""
-    cmd = f"{SSH_TO_HOST} {editor} {path}".split(" ")
-    subprocess.Popen(cmd)
+    if not ssh_client:
+        ssh_client = SSHClient()
+    cmd = f"{editor} {path}"
+    ssh_client.exec_command(cmd)
 
 
-def open_url(url, browser, ssh_client=None):
+def open_url(url, browser, sftp_client=None):
     """Open url in browser."""
     if not ssh_client:
-        ssh_client = ssh_utils.SSHClient()
+        ssh_client = SSHClient()
     cmd = f"open -a {browser} {url} && osascript -e 'tell application \"{browser}\" to activate'"
     ssh_client.exec_command(cmd)
 
 
-def return_raw_doc(path):
+def return_raw_doc(path, sftp_client=None):
     """Return text doc as a string."""
-    cmd = f"{SSH_TO_HOST} test -f {path} && cat {path}"
-    proc = subprocess.run(cmd, shell=True, stdout=PIPE)
-    text = proc.stdout.decode()
-    return text
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+    # cmd = f"{SSH_TO_HOST} test -f {path} && cat {path}"
+    # proc = subprocess.run(cmd, shell=True, stdout=PIPE)
+    # text = proc.stdout.decode()
+    # return text
 
 
 def file_base_features(path, record_type):
