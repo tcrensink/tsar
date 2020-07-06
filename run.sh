@@ -1,6 +1,6 @@
 # /bin/bash
 NAME='tsar'
-TSAR_PATH="/Users/trensink/git/my_repos/tsar/"
+TSAR_PATH="$(pwd)"
 
 # start "run" container if not running already
 [[ $(docker ps -f "name=$NAME" --format '{{.Names}}') == $NAME ]] ||
