@@ -53,6 +53,7 @@ class App(object):
 
         # mutable/updatable object references across app.
         self.shared_state = {
+            "Collection": Collection,
             "active_collection": Collection(initial_collection_name),
             "active_screen": None,
             "prev_screen": None,
