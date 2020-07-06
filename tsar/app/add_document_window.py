@@ -30,7 +30,7 @@ class AddDocumentViewModel(object):
         self.input_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("")
         self.preview_header = BufferControl(focusable=False,)
-        self.preview_header.buffer.text = "DOCUMENT PREVIEW"
+        self.preview_header.buffer.text = "preview"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -181,7 +181,7 @@ class AddDocumentViewModel(object):
 
 
 class AddDocumentView(object):
-    """Bind input, visual elements to search_view_model logic. """
+    """Bind input, visual elements to add_doc_view_model logic. """
 
     def __init__(self, add_document_view_model):
 
@@ -251,13 +251,13 @@ class AddDocumentView(object):
 
 def title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
-    # cols = shared_state["active_collection"].df.columns
-    title_str = "Add document to: {}".format(shared_state["active_collection"].name)
+    collection_name = shared_state["active_collection"].name
+    title_str = f"ADD: {collection_name}"
     return title_str
 
 
 if __name__ == "__main__":
-    """stand-alone version of the search window for debugging."""
+    """stand-alone version of the add_document window for debugging."""
 
     shared_state = {
         "active_collection": Collection(DEFAULT_COLLECTION),

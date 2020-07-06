@@ -40,7 +40,7 @@ class SearchViewModel(object):
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_header = BufferControl(focusable=False,)
-        self.preview_header.buffer.text = "RECORD PREVIEW"
+        self.preview_header.buffer.text = "preview"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -182,8 +182,8 @@ class SearchViewModel(object):
             self.index = 0
             self.status_textcontrol.text = (
                 f"showing {len(self.results)} of "
-                f"{self.shared_state['active_collection'].df.shape[0]} records.    "
-                f"(ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
+                f"{self.shared_state['active_collection'].df.shape[0]} records   "
+                f"syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
             )
 
     def open_selected(self):
@@ -282,8 +282,8 @@ def query_title_bar_text(shared_state):
     mapping = client.return_fields(coll_name)
     map_fields = mapping.keys()
 
-    fields_str = " | ".join(map_fields)
-    str_value = f"QUERY    fields: {fields_str}"
+    fields_str = ", ".join(map_fields)
+    str_value = f"QUERY: {coll_name}  ({fields_str})"
     return str_value
 
 

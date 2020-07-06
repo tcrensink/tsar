@@ -30,7 +30,7 @@ class CollectionsViewModel(object):
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_header = BufferControl(focusable=False,)
-        self.preview_header.buffer.text = "RECORD PREVIEW"
+        self.preview_header.buffer.text = "preview"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -150,8 +150,7 @@ class CollectionsViewModel(object):
             self.index = 0
             self.status_textcontrol.text = (
                 f"showing {len(self.results)} of "
-                f"{self.shared_state['Collection'].db_meta().shape[0]} records.    "
-                f"(ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
+                f"{self.shared_state['Collection'].db_meta().shape[0]} collections"
             )
 
     def select_collection(self):
@@ -165,16 +164,16 @@ class CollectionsViewModel(object):
 
 
 class CollectionsView(object):
-    """Bind input, visual elements to search_view_model logic. """
+    """Bind input, visual elements to collections_view_model logic. """
 
-    def __init__(self, search_view_model):
+    def __init__(self, collections_view_model):
 
-        self.view_model = search_view_model
+        self.view_model = collections_view_model
         self.shared_state = self.view_model.shared_state
 
         # layout components:
         self.query_header = Window(
-            FormattedTextControl(query_title_bar_text(self.shared_state)),
+            FormattedTextControl(return_title_bar_text(self.shared_state)),
             height=1,
             style="reverse",
         )
@@ -231,26 +230,23 @@ class CollectionsView(object):
             try:
                 self.view_model.select_collection()
             except Exception:
-                self.view_model.status_textcontrol.text = "(no doc selected)"
+                self.view_model.status_textcontrol.text = "(no collection selected)"
 
     def refresh_view(self):
         """Code when screen is changed."""
-        # self.view_model.query_str = ""
-        self.query_header.content.text = query_title_bar_text(self.shared_state)
+        self.query_header.content.text = return_title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
 
 
-def query_title_bar_text(shared_state):
+def return_title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
-    collection_names = shared_state["Collection"].db_meta().index
-    collection_name_str = " | ".join(collection_names)
-    str_value = f"COLLECTIONS: {collection_name_str}"
+    str_value = f"COLLECTIONS"
     return str_value
 
 
 if __name__ == "__main__":
-    """stand-alone version of the search window for debugging."""
+    """stand-alone version of the collections window for debugging."""
 
     shared_state = {
         "Collection": Collection,
