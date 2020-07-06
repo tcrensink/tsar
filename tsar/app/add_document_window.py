@@ -24,7 +24,7 @@ class AddDocumentViewModel(object):
 
         self.shared_state = shared_state
         self.input_buffer = Buffer(
-            name="input_buffer", multiline=False, accept_handler=self.add_document
+            name="input_buffer", multiline=False, accept_handler=self.add_document,
         )
         # callback function that links input to results:
         self.input_buffer.on_text_changed += self.update_results
@@ -151,12 +151,17 @@ class AddDocumentViewModel(object):
         """call back function updates results when input text changes
         - signature required to be callable from prompt_toolkit callback
         """
-        documents_preview = self.RecordDef.preview_documents(self.input_text)
-        # self.input_text = str(self.RecordDef)
-        self.results_textcontrol.text = documents_preview
+        try:
+            preview = self.RecordDef.preview_document(self.input_text)
+        except Exception:
+            preview = "(no preview available)"
+        try:
+            results = self.RecordDef.preview_documents(self.input_text)
+        except Exception:
+            results = "(no results found)"
+        self.results_textcontrol.text = results
 
-        document_preview = self.RecordDef.preview_document(self.input_text)
-        self.preview_textcontrol.buffer.text = document_preview
+        self.preview_textcontrol.buffer.text = preview
 
     def add_document(self, input_buffer, state=[0]):
         """Add document associated with record_id.

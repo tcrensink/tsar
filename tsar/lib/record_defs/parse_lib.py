@@ -52,12 +52,11 @@ def return_file_contents(path_string, sftp_client=None):
 
 
 def list_folder_contents(path_string, sftp_client=None):
-    """Return contents of longest valid folder on remote host.
+    """Return contents of longest valid folder on host.
 
-    E.g.,  ./git/my_re -> <contents of ./git>
+    E.g.,  ./git/xxxx -> <list of files in ./git>
     """
     path_string = resolve_path(path_string, sftp_client)
-
     if not sftp_client:
         sftp_client = SSHClient().open_sftp()
 
@@ -65,9 +64,7 @@ def list_folder_contents(path_string, sftp_client=None):
         contents_list = sftp_client.listdir(path_string)
     except FileNotFoundError:
         contents_list = sftp_client.listdir(path_string.rsplit("/", 1)[0])
-
-    contents_str = "\n".join(contents_list)
-    return contents_str
+    return contents_list
 
 
 def return_files(folder, extensions=None, sftp_client=None):
@@ -89,7 +86,7 @@ def return_files(folder, extensions=None, sftp_client=None):
     return paths
 
 
-def open_textfile(path, editor, sftp_client=None):
+def open_textfile(path, editor, ssh_client=None):
     """Open text file with editor."""
     if not ssh_client:
         ssh_client = SSHClient()
@@ -103,16 +100,6 @@ def open_url(url, browser, sftp_client=None):
         ssh_client = SSHClient()
     cmd = f"open -a {browser} {url} && osascript -e 'tell application \"{browser}\" to activate'"
     ssh_client.exec_command(cmd)
-
-
-def return_raw_doc(path, sftp_client=None):
-    """Return text doc as a string."""
-    if not sftp_client:
-        sftp_client = SSHClient().open_sftp()
-    # cmd = f"{SSH_TO_HOST} test -f {path} && cat {path}"
-    # proc = subprocess.run(cmd, shell=True, stdout=PIPE)
-    # text = proc.stdout.decode()
-    # return text
 
 
 def file_base_features(path, record_type):

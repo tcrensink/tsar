@@ -18,7 +18,7 @@ import datetime
 from requests import HTTPError
 
 # df that contains summary info for all collections
-DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_meta.pkl")
+DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_db.pkl")
 META_DB_COLS = ["record_type", "creation_date"]
 
 
@@ -105,21 +105,36 @@ class Collection(object):
     client = search.Client()
     search.Server().start()
     ssh_client = ssh_utils.SSHClient()
-    db_meta_path = DB_META_PATH
-    try:
-        db_meta = pd.read_pickle(db_meta_path)
-    except FileNotFoundError:
-        db_meta_folder = os.path.dirname(db_meta_path)
-        os.makedirs(db_meta_folder) if not os.path.exists(db_meta_folder) else None
-        db_meta = pd.DataFrame(columns=META_DB_COLS)
-        db_meta.index.name = "collection"
+    db_path = DB_META_PATH
 
     def __init__(self, collection_name, folder=COLLECTIONS_FOLDER):
         self.name = collection_name
         self.data = Data(self.name, folder=folder)
         self.df = self.data.df
-        self.record_type = self.db_meta.loc[collection_name].record_type
+        self.record_type = self.db_meta().loc[collection_name].record_type
         self.RecordDef = return_record_def(self.record_type)
+
+    @classmethod
+    def db_meta(cls):
+        """Return db_meta from db_path."""
+        try:
+            db_meta = pd.read_pickle(cls.db_path)
+        except FileNotFoundError:
+            print(f"no db found at {cls.db_path}")
+        return db_meta
+
+    @classmethod
+    def create_db_meta(cls):
+        """Create a new db_meta at specified path if it doesn't exist."""
+        if os.path.exists(cls.db_path):
+            raise FileExistsError
+        else:
+            db_meta_folder = os.path.dirname(cls.db_path)
+            if not os.path.exists(db_meta_folder):
+                os.makedirs(db_meta_folder)
+            db_meta = pd.DataFrame(columns=META_DB_COLS)
+            db_meta.index.name = "collection"
+            db_meta.to_pickle(cls.db_path)
 
     @classmethod
     def new(
@@ -136,7 +151,7 @@ class Collection(object):
         - if collection by name doesn't exist:
             - add new entry to collections_db (create as needed)
         """
-        if collection_name in cls.db_meta.index:
+        if collection_name in cls.db_meta().index:
             raise ValueError(f"collection with name {collection_name} already exists")
 
         meta_db_record = {
@@ -147,10 +162,8 @@ class Collection(object):
             raise ValueError("invalid schema for new meta_db record")
 
         # add row to df_collections
-        cls.db_meta = cls.db_meta.append(
-            pd.Series(meta_db_record, name=collection_name)
-        )
-        cls.db_meta.to_pickle(cls.db_meta_path)
+        db_meta = cls.db_meta().append(pd.Series(meta_db_record, name=collection_name))
+        db_meta.to_pickle(cls.db_path)
 
         # now reasonbly certain collection objects don't exist: create Data, search index
         Data.new(collection_name, RecordDef, folder=folder)
@@ -170,7 +183,8 @@ class Collection(object):
         except Exception:
             print("unable to locate collection db.")
         try:
-            cls.db_meta.drop(collection_name, inplace=True)
+            cls.db_meta().drop(collection_name, inplace=True)
+            cls.db_meta().to_pickle(cls.db_path)
         except Exception:
             print("unable to update db_meta.")
         try:

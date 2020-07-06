@@ -21,7 +21,7 @@ class CollectionsViewModel(object):
     def __init__(self, shared_state):
 
         self.shared_state = shared_state
-        self.collection_names = tuple(shared_state["active_collection"].db_meta.index)
+        self.collection_names = tuple(shared_state["active_collection"].db_meta().index)
 
 
 class CollectionsView(object):
