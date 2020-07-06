@@ -114,8 +114,8 @@ def test_client_index_drop():
 def test_collection_new():
     """test collection creation."""
     Collection.db_path = TEST_DB_META_PATH
+    Collection.drop_db_meta()
     Collection.create_db_meta()
-    # Collection.db_meta = pd.read_pickle(TEST_DB_META_PATH)
     coll = Collection.new(
         collection_name=TEST_COLLECTION_NAME,
         RecordDef=WikiRecord,
@@ -158,6 +158,7 @@ def test_collection_remove_record():
 
 def test_collection_drop():
     """Test deleting a collection."""
+    Collection.db_path = TEST_DB_META_PATH
     Collection.drop(
         collection_name=TEST_COLLECTION_NAME, folder=TEST_COLLECTIONS_FOLDER,
     )

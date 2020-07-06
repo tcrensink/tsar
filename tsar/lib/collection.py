@@ -138,6 +138,14 @@ class Collection(object):
             db_meta.to_pickle(cls.db_path)
 
     @classmethod
+    def drop_db_meta(cls):
+        """Remove db_meta at specified path if it exists."""
+        if os.path.exists(cls.db_path):
+            os.remove(cls.db_path)
+        else:
+            print(f"no db_meta found at {cls.db_path}")
+
+    @classmethod
     def new(
         cls, collection_name, RecordDef, folder=COLLECTIONS_FOLDER,
     ):
@@ -184,8 +192,8 @@ class Collection(object):
         except Exception:
             print("unable to locate collection db.")
         try:
-            cls.db_meta().drop(collection_name, inplace=True)
-            cls.db_meta().to_pickle(cls.db_path)
+            df = cls.db_meta().drop(collection_name)
+            df.to_pickle(cls.db_path)
         except Exception:
             print("unable to update db_meta.")
         try:
