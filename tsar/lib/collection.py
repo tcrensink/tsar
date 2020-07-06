@@ -121,6 +121,7 @@ class Collection(object):
             db_meta = pd.read_pickle(cls.db_path)
         except FileNotFoundError:
             print(f"no db found at {cls.db_path}")
+            db_meta = None
         return db_meta
 
     @classmethod

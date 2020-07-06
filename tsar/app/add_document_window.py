@@ -160,7 +160,6 @@ class AddDocumentViewModel(object):
         except Exception:
             results = "(no results found)"
         self.results_textcontrol.text = results
-
         self.preview_textcontrol.buffer.text = preview
 
     def add_document(self, input_buffer, state=[0]):
