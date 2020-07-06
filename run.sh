@@ -1,10 +1,11 @@
 # /bin/bash
 NAME='tsar'
+TSAR_PATH="$(pwd)"
 
-# conditionally start container
+# start "run" container if not running already
 [[ $(docker ps -f "name=$NAME" --format '{{.Names}}') == $NAME ]] ||
-(cd ../../ && make run)
+(cd $TSAR_PATH && make run)
 
-docker attach tsar --detach-keys="ctrl-c"
+docker attach tsar --detach-keys="ctrl-v"
 # see: https://tldp.org/HOWTO/Keyboard-and-Console-HOWTO-4.html
 echo -e \\033c

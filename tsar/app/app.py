@@ -7,6 +7,7 @@ This module contains high level management of the terminal interface:
 from tsar import CAPTURE_DOC_PATH
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
+from tsar.app.add_document_window import AddDocumentView, AddDocumentViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, EDITOR
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -47,11 +48,12 @@ class App(object):
         initial_collection_name=DEFAULT_COLLECTION,
         initial_screen_name=DEFAULT_SCREEN,
     ):
-        if "default_collection" not in Collection.db_meta.index:
+        if "default_collection" not in Collection.db_meta().index:
             Collection.new(collection_name="default_collection", RecordDef=WikiRecord)
 
         # mutable/updatable object references across app.
         self.shared_state = {
+            "Collection": Collection,
             "active_collection": Collection(initial_collection_name),
             "active_screen": None,
             "prev_screen": None,
@@ -70,6 +72,11 @@ class App(object):
                 shared_state=self.shared_state,
                 ViewModel=SearchViewModel,
                 View=SearchView,
+            ),
+            "add_document": Screen(
+                shared_state=self.shared_state,
+                ViewModel=AddDocumentViewModel,
+                View=AddDocumentView,
             ),
         }
         self.update_state(initial_screen_name)
@@ -94,6 +101,10 @@ class App(object):
         @kb_global.add(GLOBAL_KB["open_capture_doc"])
         def open_capture(event):
             open_textfile(path=CAPTURE_DOC_PATH, editor=EDITOR)
+
+        @kb_global.add(GLOBAL_KB["add_document"])
+        def add_screen(event):
+            self.update_state("add_document")
 
         return kb_global
 

@@ -72,6 +72,16 @@ class SafeSerializer(JSONSerializer):
 class RecordDef(ABC):
     """The abstract base class that defines the interface for a record."""
 
+    @classmethod
+    @abstractmethod
+    def preview_document(preview_str):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def preview_documents(preview_str):
+        pass
+
     @staticmethod
     @abstractmethod
     def gen_record(self, file):

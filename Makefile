@@ -7,33 +7,34 @@
 build:
 	docker build --network=host -t tsar .
 
-# rebuild, start shell in container
-shell_no_build:
+# rebuild, run app in container
+run: build
 	docker run \
+		-p 8888:8888 \
 		--name tsar \
 		-e HOST_USER=${USER} \
+		-e HOST_DIR=$(shell pwd) \
+		-e HOST_HOME=${HOME} \
 		--rm \
-		-it \
+		-idt \
 		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
-		--detach-keys="ctrl-c" \
 		tsar \
 		bash
 
-shell: build shell_no_build
-
-# rebuild, run app in container
-dev_no_build:
+# services command line arguments from host
+shell: build
 	docker run \
-		--name tsar_dev \
-		-it \
+		-p 8888:8888 \
+		--name tsar \
 		-e HOST_USER=${USER} \
+		-e HOST_DIR=$(shell pwd) \
+		-e HOST_HOME=${HOME} \
 		--rm \
-		--volume="$(shell pwd):/opt" \
+		-idt \
+		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		tsar \
 		bash
-
-dev: build dev_no_build

@@ -35,13 +35,12 @@ class SearchViewModel(object):
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.RecordDef = self.shared_state["active_collection"].RecordDef
         self.query_buffer = Buffer(name="query_buffer", multiline=False)
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_header = BufferControl(focusable=False,)
-        self.preview_header.buffer.text = "RECORD PREVIEW"
+        self.preview_header.buffer.text = "preview"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
@@ -58,6 +57,11 @@ class SearchViewModel(object):
         # FormattedText results:
         self.formatted_results = self._apply_default_format(self.results)
         self.update_results()
+
+    @property
+    def RecordDef(self):
+        record_def = self.shared_state["active_collection"].RecordDef
+        return record_def
 
     @property
     def query_str(self):
@@ -178,8 +182,8 @@ class SearchViewModel(object):
             self.index = 0
             self.status_textcontrol.text = (
                 f"showing {len(self.results)} of "
-                f"{self.shared_state['active_collection'].df.shape[0]} records.    "
-                f"(ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
+                f"{self.shared_state['active_collection'].df.shape[0]} records   "
+                f"syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
             )
 
     def open_selected(self):
@@ -278,8 +282,8 @@ def query_title_bar_text(shared_state):
     mapping = client.return_fields(coll_name)
     map_fields = mapping.keys()
 
-    fields_str = " | ".join(map_fields)
-    str_value = f"QUERY    fields: {fields_str}"
+    fields_str = ", ".join(map_fields)
+    str_value = f"QUERY: {coll_name}  ({fields_str})"
     return str_value
 
 
@@ -295,7 +299,7 @@ if __name__ == "__main__":
     view_model = SearchViewModel(shared_state)
     view = SearchView(view_model)
 
-    @view.kb.add("c-c")
+    @view.kb.add("c-q")
     def _(event):
         event.app.exit()
 

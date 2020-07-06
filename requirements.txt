@@ -5,6 +5,7 @@ ipython
 nltk
 numpy
 pandas
+paramiko
 prompt_toolkit
 pygments
 pygments-style-solarized

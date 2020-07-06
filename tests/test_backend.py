@@ -15,13 +15,13 @@ import pandas as pd
 from tsar.lib.collection import Data, Collection
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.search import Client, Server
-from tsar import TESTS_FOLDER
+from tsar import HOST_TESTS_FOLDER
 
 TEST_COLLECTIONS_FOLDER = "/tmp/test_Collections/"
 TEST_DATA_FOLDER = "/tmp/test_Data/"
 TEST_COLLECTION_NAME = "test_collection"
-TEST_DB_META_PATH = TEST_COLLECTIONS_FOLDER + "meta_df.pkl"
-FIXTURES_FOLDER = os.path.join(TESTS_FOLDER, "fixtures")
+TEST_DB_META_PATH = TEST_COLLECTIONS_FOLDER + "meta_db.pkl"
+FIXTURES_FOLDER = os.path.join(HOST_TESTS_FOLDER, "fixtures")
 WIKI_RECORD_ID = os.path.join(FIXTURES_FOLDER, "wiki_doc.md")
 TEST_INDEX = "test_index"
 Server().start()
@@ -113,22 +113,23 @@ def test_client_index_drop():
 
 def test_collection_new():
     """test collection creation."""
+    Collection.db_path = TEST_DB_META_PATH
+    Collection.drop_db_meta()
+    Collection.create_db_meta()
     coll = Collection.new(
         collection_name=TEST_COLLECTION_NAME,
         RecordDef=WikiRecord,
         folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH,
     )
-    db_meta = pd.read_pickle(TEST_DB_META_PATH)
-    assert db_meta.equals(coll.db_meta)
+    coll_db = pd.read_pickle(TEST_DB_META_PATH)
+    assert coll_db.equals(coll.db_meta())
 
 
 def test_collection_init():
     """test adding document to collection."""
+    Collection.db_path = TEST_DB_META_PATH
     coll = Collection(
-        collection_name=TEST_COLLECTION_NAME,
-        folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH,
+        collection_name=TEST_COLLECTION_NAME, folder=TEST_COLLECTIONS_FOLDER,
     )
     assert isinstance(coll, Collection)
 
@@ -136,9 +137,7 @@ def test_collection_init():
 def test_collection_add_document():
     """test adding document to collection."""
     coll = Collection(
-        collection_name=TEST_COLLECTION_NAME,
-        folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH,
+        collection_name=TEST_COLLECTION_NAME, folder=TEST_COLLECTIONS_FOLDER,
     )
     num_records_init = coll.df.shape[0]
     coll.add_document(WIKI_RECORD_ID)
@@ -149,9 +148,7 @@ def test_collection_add_document():
 def test_collection_remove_record():
     """test adding document to collection."""
     coll = Collection(
-        collection_name=TEST_COLLECTION_NAME,
-        folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH,
+        collection_name=TEST_COLLECTION_NAME, folder=TEST_COLLECTIONS_FOLDER,
     )
     num_records_init = coll.df.shape[0]
     coll.remove_record(WIKI_RECORD_ID)
@@ -161,10 +158,9 @@ def test_collection_remove_record():
 
 def test_collection_drop():
     """Test deleting a collection."""
+    Collection.db_path = TEST_DB_META_PATH
     Collection.drop(
-        collection_name=TEST_COLLECTION_NAME,
-        folder=TEST_COLLECTIONS_FOLDER,
-        db_meta_path=TEST_DB_META_PATH,
+        collection_name=TEST_COLLECTION_NAME, folder=TEST_COLLECTIONS_FOLDER,
     )
     db_meta = pd.read_pickle(TEST_DB_META_PATH)
     assert TEST_COLLECTION_NAME not in db_meta.index

@@ -1,6 +1,4 @@
-"""
-module for collections screen.
-"""
+"""Window for adding a document to the current collection."""
 
 from __future__ import unicode_literals
 from prompt_toolkit.application import Application
@@ -19,24 +17,28 @@ from datetime import datetime
 from operator import itemgetter
 
 
-class CollectionsViewModel(object):
-    """View model/business logic for collections window (based on SearchViewModel)."""
+class AddDocumentViewModel(object):
+    """View model/business logic for add_doc window."""
 
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.query_buffer = Buffer(name="query_buffer", multiline=False)
-        # callback function that links query to results:
-        self.query_buffer.on_text_changed += self.update_results
-        self.results_textcontrol = FormattedTextControl("(no results)")
+        self.input_buffer = Buffer(
+            name="input_buffer", multiline=False, accept_handler=self.add_document,
+        )
+        # callback function that links input to results:
+        self.input_buffer.on_text_changed += self.update_results
+        self.results_textcontrol = FormattedTextControl("")
         self.preview_header = BufferControl(focusable=False,)
         self.preview_header.buffer.text = "preview"
 
         self.preview_textcontrol = BufferControl(
             focusable=False,
             input_processors=[TabsProcessor(tabstop=4, char1=" ", char2=" ")],
+            lexer=PygmentsLexer(self.RecordDef.preview_lexer),
         )
-        self.preview_textcontrol.buffer.text = "(no result selected)"
+        self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
+        self.preview_textcontrol.buffer.text = "(no document selected)"
         self.status_textcontrol = FormattedTextControl()
         self.style = style
         # value -1 indicates no result is currently selected
@@ -47,14 +49,19 @@ class CollectionsViewModel(object):
         self.update_results()
 
     @property
-    def query_str(self):
-        return self.query_buffer.text
+    def RecordDef(self):
+        record_def = self.shared_state["active_collection"].RecordDef
+        return record_def
 
-    @query_str.setter
-    def query_str(self, new_query_str):
+    @property
+    def input_text(self):
+        return self.input_buffer.text
+
+    @input_text.setter
+    def input_text(self, new_input_text):
         """computes results when set
         """
-        self.query_buffer.text = new_query_str
+        self.input_buffer.text = new_input_text
 
     @property
     def index(self):
@@ -82,14 +89,24 @@ class CollectionsViewModel(object):
         self._update_selected_result(old_index, new_index)
 
     def _update_preview_content(self):
-        """Update preview content based on index."""
+        """update preview content based on index
+        """
         if self.index == -1:
-            preview_str = "(no result selected)"
+            preview_str = "(no document selected)"
         else:
-            record = (
-                self.shared_state["Collection"].db_meta().loc[self.results[self.index]]
-            )
-            preview_str = str(record)
+            record = self.shared_state["active_collection"].df.loc[
+                self.results[self.index]
+            ]
+
+            id_str = f"RECORD_ID:\t\t{record['record_id']}\n"
+            _kw_str = ", ".join(sorted(record["keywords"]))
+            kw_str = f"KEYWORDS:\t\t{_kw_str}\n"
+            date = datetime.fromtimestamp(record["utc_last_access"])
+            _date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+            access_date_str = f"LAST ACCESS:\t{_date_str}\n"
+            summary_str = f"\n{record['record_summary']}"
+            preview_str = id_str + kw_str + access_date_str + summary_str
+
         self.preview_textcontrol.buffer.text = preview_str
 
     def _update_selected_result(self, old_index, new_index):
@@ -118,7 +135,10 @@ class CollectionsViewModel(object):
         print formatted results using print_formatted_text
         """
         if len(results_list) != 0:
-            result_names = results_list
+            # results_list = [f"{res}\n" for res in results_list]
+            result_names = (
+                self.shared_state["active_collection"].df.loc[results_list].record_name
+            )
             results_list = [f"{res}\n" for res in result_names]
             formatted_results = [
                 (self.style["unselected"], res) for res in results_list
@@ -128,58 +148,55 @@ class CollectionsViewModel(object):
         return formatted_results
 
     def update_results(self, passthrough="dummy_arg"):
-        """call back function updates results when query text changes
+        """call back function updates results when input text changes
         - signature required to be callable from prompt_toolkit callback
-
-        - set results based on query
-        - set formatted results (default formatting)
-        - update index to 0 (-1 if no results)
-            - updates selected record
-            - updates preview of selected record
-        - update status bar
         """
         try:
-            results = self.shared_state["Collection"].db_meta().index
-            self.results = sorted(results)
+            preview = self.RecordDef.preview_document(self.input_text)
         except Exception:
-            self.results = {}
-            self.status_textcontrol.text = "(invalid query)"
-        else:
-            self.formatted_results = self._apply_default_format(self.results)
-            self.results_textcontrol.text = self.formatted_results
-            self.index = 0
-            self.status_textcontrol.text = (
-                f"showing {len(self.results)} of "
-                f"{self.shared_state['Collection'].db_meta().shape[0]} collections"
-            )
+            preview = "(no preview available)"
+        try:
+            results = self.RecordDef.preview_documents(self.input_text)
+        except Exception:
+            results = "(no results found)"
+        self.results_textcontrol.text = results
+        self.preview_textcontrol.buffer.text = preview
 
-    def select_collection(self):
-        """Set active collection."""
-        if len(self.results) > 0:
-            collection = self.results[self.index]
-        else:
-            pass
-        self.shared_state["active_collection"] = Collection(collection_name=collection)
-        self._update_preview_content()
+    def add_document(self, input_buffer, state=[0]):
+        """Add document associated with record_id.
+
+        behavior governed by accept_handler of Buffer:
+        https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html?highlight=accept_handler#module-prompt_toolkit.buffer
+
+        if bool(return_val) buffer text is erased, otherwise retained.
+        """
+        try:
+            record_id = input_buffer.text
+            self.shared_state["active_collection"].add_document(record_id=record_id)
+            self.preview_textcontrol.buffer.text = "\nDocument added!"
+
+        except Exception as e:
+            msg = f"unable to add document: \n{e}"
+            self.preview_textcontrol.buffer.text = msg
 
 
-class CollectionsView(object):
-    """Bind input, visual elements to collections_view_model logic. """
+class AddDocumentView(object):
+    """Bind input, visual elements to add_doc_view_model logic. """
 
-    def __init__(self, collections_view_model):
+    def __init__(self, add_document_view_model):
 
-        self.view_model = collections_view_model
+        self.view_model = add_document_view_model
         self.shared_state = self.view_model.shared_state
 
         # layout components:
-        self.query_header = Window(
-            FormattedTextControl(return_title_bar_text(self.shared_state)),
+        self.window_header = Window(
+            FormattedTextControl(title_bar_text(self.shared_state)),
             height=1,
             style="reverse",
         )
 
         self.query_window = Window(
-            BufferControl(self.view_model.query_buffer,), height=1,
+            BufferControl(self.view_model.input_buffer,), height=1,
         )
         results_window = Window(self.view_model.results_textcontrol, height=13)
 
@@ -198,7 +215,7 @@ class CollectionsView(object):
         self.layout = Layout(
             HSplit(
                 [
-                    self.query_header,
+                    self.window_header,
                     self.query_window,
                     results_window,
                     preview_header,
@@ -222,41 +239,34 @@ class CollectionsView(object):
 
         @self.kb.add("escape")
         def _(event):
-            self.view_model.query_str = ""
-
-        @self.kb.add("enter")
-        def _(event):
-            """set active collection"""
-            try:
-                self.view_model.select_collection()
-            except Exception:
-                self.view_model.status_textcontrol.text = "(no collection selected)"
+            self.view_model.input_text = ""
 
     def refresh_view(self):
         """Code when screen is changed."""
-        self.query_header.content.text = return_title_bar_text(self.shared_state)
+        # self.view_model.input_text = ""
+        self.window_header.content.text = title_bar_text(self.shared_state)
         self.view_model.update_results()
         self.layout.focus(self.query_window)
 
 
-def return_title_bar_text(shared_state):
+def title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
-    str_value = f"COLLECTIONS"
-    return str_value
+    collection_name = shared_state["active_collection"].name
+    title_str = f"ADD: {collection_name}"
+    return title_str
 
 
 if __name__ == "__main__":
-    """stand-alone version of the collections window for debugging."""
+    """stand-alone version of the add_document window for debugging."""
 
     shared_state = {
-        "Collection": Collection,
         "active_collection": Collection(DEFAULT_COLLECTION),
         "active_screen": None,
         "application": Application(),
     }
 
-    view_model = CollectionsViewModel(shared_state)
-    view = CollectionsView(view_model)
+    view_model = AddDocumentViewModel(shared_state)
+    view = AddDocumentView(view_model)
 
     @view.kb.add("c-q")
     def _(event):
