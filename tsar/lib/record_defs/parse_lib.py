@@ -68,14 +68,10 @@ def list_folder_contents(path_string, sftp_client=None):
 
 
 def return_files(folder, extensions=None, sftp_client=None):
-    """Return list of files in folder with extensions.
-
-    Currently for macos only.
-    """
+    """Return list of files in folder with extensions."""
     if not sftp_client:
         sftp_client = SSHClient().open_sftp()
-
-    paths = []
+    # paths = []
     # if extensions:
     # extensions = ["." + ext.lstrip(".") for ext in extensions]
     # extensions_str = " -o ".join([f"-iname '\*{ext}'" for ext in extensions])
@@ -83,7 +79,8 @@ def return_files(folder, extensions=None, sftp_client=None):
 
     # _, stdout, _ = ssh_client.exec_command(cmd)
     # paths = stdout.read().decode().splitlines()
-    return paths
+    # return paths
+    raise NotImplementedError
 
 
 def open_textfile(path, editor, ssh_client=None):

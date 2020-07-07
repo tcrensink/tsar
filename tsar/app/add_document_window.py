@@ -243,7 +243,7 @@ class AddDocumentView(object):
 
             except Exception as e:
                 msg = f"unable to add document: \n{e}"
-                self.preview_textcontrol.buffer.text = msg
+                self.view_model.preview_textcontrol.buffer.text = msg
 
     def refresh_view(self):
         """Code when screen is changed."""
