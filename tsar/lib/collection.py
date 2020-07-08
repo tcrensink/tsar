@@ -232,7 +232,13 @@ class Collection(object):
         self.data.write_db()
 
     def remove_record(self, record_id):
-        """Remove reocrd from collection."""
+        """Remove record from collection; inverse of add_document."""
+        self.data.rm_record(record_id)
+        self.data.write_db()
+        self.client.delete_record(record_id, collection_name=self.name)
+
+    def remove_records(self, record_id):
+        """Remove records from collection; inverse of add_documents"""
         self.data.rm_record(record_id)
         self.data.write_db()
         self.client.delete_record(record_id, collection_name=self.name)

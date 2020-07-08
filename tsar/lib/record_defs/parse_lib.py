@@ -12,7 +12,7 @@ import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
-import fnmatch
+from stat import S_ISDIR, S_ISREG
 
 # from pathlib import Path
 from datetime import datetime
@@ -68,22 +68,35 @@ def list_folder_contents(path_string, sftp_client=None):
 
 
 def return_files(folder, extensions=None, sftp_client=None):
-    """Return list of files in folder with extensions.
+    """Return list of files in folder with extension."""
+    if isinstance(extensions, str):
+        extensions = [extensions]
+    for extension in extensions:
+        if not extension.startswith("."):
+            raise ValueError("valid extensions start with a '.'")
+    extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
 
-    Currently for macos only.
-    """
     if not sftp_client:
         sftp_client = SSHClient().open_sftp()
 
-    paths = []
-    # if extensions:
-    # extensions = ["." + ext.lstrip(".") for ext in extensions]
-    # extensions_str = " -o ".join([f"-iname '\*{ext}'" for ext in extensions])
-    # cmd = f"{cmd} {extensions_str}"
+    # recursively walk through folders to get all files with extension
+    folder = resolve_path(folder, sftp_client)
+    files = []
 
-    # _, stdout, _ = ssh_client.exec_command(cmd)
-    # paths = stdout.read().decode().splitlines()
-    return paths
+    def get_files(folder, files=files):
+        folder_contents = sftp_client.listdir_attr(folder)
+        for entry in folder_contents:
+            mode = entry.st_mode
+            fname = os.path.join(folder, entry.filename).lower()
+            if S_ISDIR(mode):
+                get_files(fname)
+            elif S_ISREG(mode):
+                file_ext = fname.split(".", 1)[-1]
+                if extensions is None or file_ext in extensions:
+                    files.append(fname)
+
+    get_files(folder)
+    return files
 
 
 def open_textfile(path, editor, ssh_client=None):

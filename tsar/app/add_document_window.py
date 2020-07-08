@@ -23,9 +23,7 @@ class AddDocumentViewModel(object):
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.input_buffer = Buffer(
-            name="input_buffer", multiline=False, accept_handler=self.add_document,
-        )
+        self.input_buffer = Buffer(name="input_buffer", multiline=False,)
         # callback function that links input to results:
         self.input_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("")
@@ -162,7 +160,7 @@ class AddDocumentViewModel(object):
         self.results_textcontrol.text = results
         self.preview_textcontrol.buffer.text = preview
 
-    def add_document(self, input_buffer, state=[0]):
+    def add_document(self, record_id):
         """Add document associated with record_id.
 
         behavior governed by accept_handler of Buffer:
@@ -170,14 +168,9 @@ class AddDocumentViewModel(object):
 
         if bool(return_val) buffer text is erased, otherwise retained.
         """
-        try:
-            record_id = input_buffer.text
-            self.shared_state["active_collection"].add_document(record_id=record_id)
-            self.preview_textcontrol.buffer.text = "\nDocument added!"
-
-        except Exception as e:
-            msg = f"unable to add document: \n{e}"
-            self.preview_textcontrol.buffer.text = msg
+        # record_id = input_buffer.text
+        self.shared_state["active_collection"].add_document(record_id=record_id)
+        self.preview_textcontrol.buffer.text = "Document added!"
 
 
 class AddDocumentView(object):
@@ -240,6 +233,17 @@ class AddDocumentView(object):
         @self.kb.add("escape")
         def _(event):
             self.view_model.input_text = ""
+
+        @self.kb.add("enter")
+        def _(event):
+            """open selected record"""
+            try:
+                record_id = self.view_model.input_buffer.text
+                self.view_model.add_document(record_id=record_id)
+
+            except Exception as e:
+                msg = f"unable to add document: \n{e}"
+                self.view_model.preview_textcontrol.buffer.text = msg
 
     def refresh_view(self):
         """Code when screen is changed."""
