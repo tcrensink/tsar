@@ -271,10 +271,7 @@ class Collection(object):
         self.RecordDef.open_doc(df=self.df, record_id=record_id)
         self.data.write_db()
 
-    def open_capture_buffer(self):
-        """Open buffer for 'capture' interface."""
-        pass
-
-    def browse_records(self, target_record):
-        """Return records associated with target_record"""
-        pass
+    def query_source(self, query_str):
+        """Return records from query_str from source associated with record def."""
+        records = self.RecordDef.query_source(query_str)
+        return records

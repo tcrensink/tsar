@@ -10,7 +10,7 @@ build:
 # rebuild, run app in container
 run: build
 	docker run \
-		-p 8888:8888 \
+		-p 8137:8137 \
 		--name tsar \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
@@ -26,7 +26,7 @@ run: build
 # services command line arguments from host
 shell: build
 	docker run \
-		-p 8888:8888 \
+		-p 8137:8137 \
 		--name tsar \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \

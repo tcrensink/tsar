@@ -79,21 +79,11 @@ class RecordDef(ABC):
 
         Examples:
         query_str="~/my_markdown_docs"
-            returns list of records associated with files
+            return records associated with files in folder as parsed by RecordDef
 
         query_str="http://export.arxiv.org/api/query?search_query=all:electron+AND+all:proton"
             returns records for all docs associated with query_str
         """
-        pass
-
-    @classmethod
-    @abstractmethod
-    def preview_document(preview_str):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def preview_documents(preview_str):
         pass
 
     @staticmethod

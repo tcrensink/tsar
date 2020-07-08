@@ -14,7 +14,8 @@ DEFAULT_SCREEN = "search"
 GLOBAL_KB = {
     "exit": "c-c",
     "collections_screen": ("c-a"),
-    "add_document": ("c-d"),
+    # "add_document": ("c-d"),
+    "source_query": ("c-d"),
     "search_screen": ("c-s"),
     "open_capture_doc": ("c-z"),
     "open_document": "enter",
