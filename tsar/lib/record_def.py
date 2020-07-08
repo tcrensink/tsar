@@ -74,6 +74,20 @@ class RecordDef(ABC):
 
     @classmethod
     @abstractmethod
+    def query_source(query_str):
+        """Return records from source based on query_str.
+
+        Examples:
+        query_str="~/my_markdown_docs"
+            returns list of records associated with files
+
+        query_str="http://export.arxiv.org/api/query?search_query=all:electron+AND+all:proton"
+            returns records for all docs associated with query_str
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
     def preview_document(preview_str):
         pass
 
@@ -84,29 +98,28 @@ class RecordDef(ABC):
 
     @staticmethod
     @abstractmethod
-    def gen_record(self, file):
+    def gen_record(self, doc_reference):
+        """Generate record for doc associated with doc_reference.
+
+        doc_reference may not be unique, but is expected to return
+        a uri in the record_id to avoid record duplication.
+
+        Example:
+        doc_reference = "~/my_file.txt"
+            record_id -> /Users/username/my_file.txt
+        doc_reference = "$HOME/my_file.txt"
+            record_id -> /Users/username/my_file.txt
+        """
         pass
 
     @staticmethod
     @abstractmethod
-    def gen_record_index(self, file):
+    def gen_record_index(self, record):
+        """Generate a search index record in elasticsearch for the record."""
         pass
 
     @staticmethod
     @abstractmethod
-    def open_doc(self, record):
+    def open_doc(self, record_id):
+        """Open a document associated with record_id."""
         pass
-
-    # some feature ideas below:
-    # @abstractmethod
-    # def save_local_doc(self, record_id):
-    #     """For Arxiv, this would save the pdf locally."""
-
-    # @abstractmethod
-    # def
-
-    # def _validate_parser(self, parse_func, **kwargs):
-    #     """verify parser generates record according to schema"""
-
-    # def _validate_search_mapping(self):
-    #     """verify search mapping inputs match schema fields, etc."""
