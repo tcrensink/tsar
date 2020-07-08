@@ -98,14 +98,13 @@ class QuerySourceViewModel(object):
             record = self.results[self.index]
 
             id_str = f"RECORD_ID:\t\t{record['record_id']}\n"
-            preview_str = str(id_str) * 10
-            # _kw_str = ", ".join(sorted(record["keywords"]))
-            # kw_str = f"KEYWORDS:\t\t{_kw_str}\n"
-            # date = datetime.fromtimestamp(record["utc_last_access"])
-            # _date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
-            # access_date_str = f"LAST ACCESS:\t{_date_str}\n"
-            # summary_str = f"\n{record['record_summary']}"
-            # preview_str = id_str + kw_str + access_date_str + summary_str
+            _kw_str = ", ".join(sorted(record["keywords"]))
+            kw_str = f"KEYWORDS:\t\t{_kw_str}\n"
+            date = datetime.fromtimestamp(record["utc_last_access"])
+            _date_str = datetime.strftime(date, "%Y-%m-%d %H:%M:%S")
+            access_date_str = f"LAST ACCESS:\t{_date_str}\n"
+            summary_str = f"\n{record['record_summary']}"
+            preview_str = id_str + kw_str + access_date_str + summary_str
 
         self.preview_textcontrol.buffer.text = preview_str
 

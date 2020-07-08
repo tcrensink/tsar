@@ -7,7 +7,6 @@ This module contains high level management of the terminal interface:
 from tsar import CAPTURE_DOC_PATH
 from tsar.lib.collection import Collection
 from tsar.app.search_window import SearchView, SearchViewModel
-from tsar.app.add_document_window import AddDocumentView, AddDocumentViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.app.query_source_window import QuerySourceView, QuerySourceViewModel
 from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, EDITOR
@@ -73,11 +72,6 @@ class App(object):
                 shared_state=self.shared_state,
                 ViewModel=SearchViewModel,
                 View=SearchView,
-            ),
-            "add_document": Screen(
-                shared_state=self.shared_state,
-                ViewModel=AddDocumentViewModel,
-                View=AddDocumentView,
             ),
             "source_query": Screen(
                 shared_state=self.shared_state,
