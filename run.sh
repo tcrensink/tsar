@@ -1,6 +1,7 @@
-# /bin/bash
+#! /bin/bash
 NAME='tsar'
-TSAR_PATH="$(pwd)"
+# get directory of repo, following symlinks
+TSAR_PATH="$(dirname "$(readlink -f "$0")")"
 
 # start "run" container if not running already
 [[ $(docker ps -f "name=$NAME" --format '{{.Names}}') == $NAME ]] ||

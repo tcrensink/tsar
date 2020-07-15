@@ -42,11 +42,7 @@ COPY --chown=root:elasticsearch ./resources/elasticsearch/* /etc/elasticsearch/
 # # create executable alias
 RUN ln -s /opt/tsar/app/app.py /usr/bin/tsar
 
-# set up credentials for ssh tunneling to host
-ENV KEY_FOLDER="/opt/.ssh"
-ENV KEY_PATH="$KEY_FOLDER/id_rsa"
-RUN eval "$(ssh-agent -s)" && ssh-add $KEY_PATH && \
-    ssh-keyscan -H host.docker.internal >> /opt/.ssh/known_hosts && \
-    ln -s  /opt/.ssh /root/.ssh
-
-# CMD ["tsar"]
+# Add public key to known hosts
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh && \
+    ssh-keyscan host.docker.internal >> /root/.ssh/known_hosts

@@ -15,15 +15,16 @@ run: build
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
 		-e HOST_HOME=${HOME} \
+		--mount type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock \
+		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
 		--rm \
 		-idt \
 		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		tsar \
-		bash
+		python /opt/tsar/app/app.py
 
-# services command line arguments from host
 shell: build
 	docker run \
 		-p 8888:8888 \
@@ -31,8 +32,10 @@ shell: build
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
 		-e HOST_HOME=${HOME} \
+		--mount type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock \
+		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
 		--rm \
-		-idt \
+		-it \
 		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
