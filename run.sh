@@ -1,6 +1,6 @@
-# /bin/bash
+#! /bin/bash
 NAME='tsar'
-TSAR_PATH="$(pwd)"
+TSAR_PATH=`dirname $0`
 
 # start "run" container if not running already
 [[ $(docker ps -f "name=$NAME" --format '{{.Names}}') == $NAME ]] ||
