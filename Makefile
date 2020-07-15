@@ -23,7 +23,7 @@ run: build
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		tsar \
-		bash
+		python /opt/tsar/app/app.py
 
 shell: build
 	docker run \
@@ -35,7 +35,7 @@ shell: build
 		--mount type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock \
 		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
 		--rm \
-		-idt \
+		-it \
 		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
