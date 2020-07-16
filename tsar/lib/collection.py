@@ -112,7 +112,7 @@ class Collection(object):
         try:
             db_meta = pd.read_pickle(cls.db_path)
         except FileNotFoundError:
-            print(f"no db found at {cls.db_path}, creating new one.")
+            print(f"no db found at {cls.db_path}, creating empty db_meta.")
             cls.create_db_meta()
             db_meta = pd.read_pickle(cls.db_path)
         return db_meta
@@ -131,6 +131,14 @@ class Collection(object):
             db_meta.to_pickle(cls.db_path)
 
     @classmethod
+    def drop_db_meta(cls):
+        """Remove db_meta at specified path if it exists."""
+        if os.path.exists(cls.db_path):
+            os.remove(cls.db_path)
+        else:
+            print(f"no db_meta found at {cls.db_path}")
+
+    @classmethod
     def new(
         cls, collection_name, RecordDef, folder=COLLECTIONS_FOLDER,
     ):
@@ -146,7 +154,6 @@ class Collection(object):
             raise ValueError("invalid schema for new meta_db record")
 
         # add row to df_collections
-
         db_meta = cls.db_meta().append(pd.Series(meta_db_record, name=collection_name))
         db_meta.to_pickle(cls.db_path)
 
