@@ -27,7 +27,7 @@ run: build
 
 shell: build
 	docker run \
-		-p 8888:8888 \
+		-p 8137:8137 \
 		--name tsar \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
