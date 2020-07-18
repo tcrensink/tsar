@@ -256,15 +256,36 @@ class QuerySourceView(object):
         @self.kb.add("s-tab")
         def _(event):
             """add all records to collection."""
-            coll = self.shared_state["active_collection"]
-            for record in self.view_model.results:
-                coll.add_document(record_id=record["record_id"])
 
-        # @self.kb.add("s-right")
-        # def _(event):
-        #     """add specific record to collection."""
-        #     coll = shared_state["active_collection"]
-        #     coll.add_document(record_id=record["record_id"])
+            N = len(self.view_model.results)
+            coll = self.shared_state["active_collection"]
+            self.view_model.status_textcontrol.text = (
+                f"adding {N} records to {coll.name}..."
+            )
+            count = 0
+            for record in self.view_model.results:
+                try:
+                    coll.add_document(record_id=record["record_id"])
+                    count += 1
+                except Exception:
+                    pass
+            self.view_model.status_textcontrol.text = (
+                f"added {count} records to {coll.name}."
+            )
+
+        @self.kb.add("s-right")
+        def _(event):
+            """add specific record to collection."""
+
+            record_id = self.view_model.results[self.view_model.index]["record_id"]
+            coll = self.shared_state["active_collection"]
+            self.view_model.status_textcontrol.text = (
+                f"adding {record_id} records to {coll.name}..."
+            )
+            coll.add_document(record_id=record_id)
+            self.view_model.status_textcontrol.text = (
+                f"added {record_id} to {coll.name}"
+            )
 
     def refresh_view(self):
         """Code when screen is changed."""

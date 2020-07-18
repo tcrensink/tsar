@@ -56,7 +56,7 @@ INDEX_MAPPING = {
 def recent_ml_and_ai_query_url(
     fields=["cs.AI", "cs.LG", "cs.CL", "cs.NE"],
     sort_method="lastUpdatedDate",
-    max_results=4000,
+    max_results=4,
 ):
     """Return query string for recent ml/ai papers."""
     base_query = "http://export.arxiv.org/api/query?search_query="
@@ -118,11 +118,10 @@ class ArxivRecord(RecordDef):
         return record
 
     @staticmethod
-    def gen_records(query_url=None, **query_kwargs):
+    def query_source(query_url=None, **query_kwargs):
         """Return records associated with query params.
         ref: https://arxiv.org/help/api/user-manual#Appendices
         """
-        raise NotImplementedError
 
     @staticmethod
     def gen_record_index(record):

@@ -201,14 +201,23 @@ class Collection(object):
         except HTTPError:
             print("error dropping collection from search index.")
 
-    def _add_document(self, record_id):
-        """add record without saving."""
-        record = self.RecordDef.gen_record(record_id)
+    def _add_record(self, record):
+        """Add a given record to the collection."""
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
         type(self).client.index_record(
             record_id=record_id, record_index=record_index, collection_name=self.name
         )
+
+    def add_record(self, record):
+        """Add a given record to the collection, save the database."""
+        self._add_record(record)
+        self.data.write_db()
+
+    def _add_document(self, record_id):
+        """Generate a record from record_id and add it to the collection."""
+        record = self.RecordDef.gen_record(record_id)
+        self._add_record(record)
 
     def add_document(self, record_id):
         """Add a record to the collection."""
@@ -230,6 +239,20 @@ class Collection(object):
                 collection_name=self.name,
             )
         self.data.write_db()
+
+    def query_source(self, *args, **kwargs):
+        """Generate record(s) from an external source.
+
+        A source, query_str, and **kwargs together imply a collection of records, a convenience
+        tool when many records are desired to get at once.  It remains generic so as not to
+        put constraints on how this may be implemented by record_def.
+
+        Examples:
+        "/Users/username/Documents", {"file_extensions":[".txt"]} -> All text files in Documents
+        "some_query_string" {"params": [1, 20, 4]} -> all records associated with a web query
+        """
+        records_list = self.RecordDef.query_source(*args, **kwargs)
+        return records_list
 
     def remove_record(self, record_id):
         """Remove record from collection; inverse of add_document."""
@@ -270,8 +293,3 @@ class Collection(object):
         """
         self.RecordDef.open_doc(df=self.df, record_id=record_id)
         self.data.write_db()
-
-    def query_source(self, query_str):
-        """Return records from query_str from source associated with record def."""
-        records = self.RecordDef.query_source(query_str)
-        return records
