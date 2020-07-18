@@ -106,11 +106,11 @@ def open_textfile(path, editor, ssh_client=None):
     ssh_client.exec_command(cmd)
 
 
-def open_url(url, browser, sftp_client=None):
+def open_url(url, browser, ssh_client=None):
     """Open url in browser."""
     if not ssh_client:
         ssh_client = SSHClient()
-    cmd = f"open -a {browser} {url} && osascript -e 'tell application \"{browser}\" to activate'"
+    cmd = f"open -a {browser} {url}"
     ssh_client.exec_command(cmd)
 
 
