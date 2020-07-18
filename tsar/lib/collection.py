@@ -22,31 +22,11 @@ DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_db.pkl")
 META_DB_COLS = ["record_type", "creation_date"]
 
 
-def return_db_path(collection_name, folder=COLLECTIONS_FOLDER):
-    """Return path for collection records df."""
-    records_path = os.path.join(folder, collection_name, "records.pkl")
-    return records_path
-
-
-def return_record_def(record_type):
-    """Return record_def from record type."""
-
-    for record_def in RecordDef.__subclasses__():
-        if record_def.record_type == record_type:
-            return record_def
-    raise Exception(
-        (
-            f"No record found for type {record_type} "
-            "(import of associated RecordDef in collection.py directly)."
-        )
-    )
-
-
 class Data(object):
     """Class that contains collection records, meta data."""
 
     def __init__(self, collection, folder):
-        self.db_path = return_db_path(collection, folder=folder)
+        self.db_path = self.return_db_path(collection, folder=folder)
         self.df = pd.read_pickle(self.db_path)
 
     @classmethod
@@ -54,7 +34,7 @@ class Data(object):
         """Create dbs associated with collection before instantiating object.
 
         """
-        db_path = return_db_path(collection_name, folder=folder)
+        db_path = cls.return_db_path(collection_name, folder=folder)
         db_folder = os.path.dirname(db_path)
 
         # create folders as needed, empty df
@@ -68,10 +48,19 @@ class Data(object):
 
     @classmethod
     def drop(cls, collection_name, folder):
-        """Delete df associated with a collection."""
-        db_path = return_db_path(collection_name, folder=folder)
+        """Delete df associated with a collection and remove folder if empty."""
+        db_path = cls.return_db_path(collection_name, folder=folder)
         if os.path.exists(db_path):
             os.remove(db_path)
+        if len(os.listdir(folder)) == 0:
+            os.remove(folder)
+
+    @staticmethod
+    def return_db_path(collection_name, folder=COLLECTIONS_FOLDER):
+        """Return path for collection records df."""
+        records_path = os.path.join(folder, collection_name, "records.pkl")
+        records_path = records_path.replace(" ", "_")
+        return records_path
 
     def update_record(self, record):
         """Add or update a record in the df."""
@@ -105,23 +94,27 @@ class Collection(object):
     client = search.Client()
     search.Server().start()
     ssh_client = ssh_utils.SSHClient()
-    db_path = DB_META_PATH
+    collections_folder = COLLECTIONS_FOLDER
+    db_path = os.path.join(collections_folder, "db_meta.pkl")
 
-    def __init__(self, collection_name, folder=COLLECTIONS_FOLDER):
+    def __init__(self, collection_name):
         self.name = collection_name
-        self.data = Data(self.name, folder=folder)
+        self.data = Data(self.name, folder=Collection.collections_folder)
         self.df = self.data.df
         self.record_type = self.db_meta().loc[collection_name].record_type
-        self.RecordDef = return_record_def(self.record_type)
+        self.RecordDef = self.return_record_def(self.record_type)
 
     @classmethod
     def db_meta(cls):
-        """Return db_meta from db_path."""
+        """Generate db_meta from db_path."""
+
+        db_meta_folder = os.path.dirname(cls.collections_folder)
         try:
             db_meta = pd.read_pickle(cls.db_path)
         except FileNotFoundError:
-            print(f"no db found at {cls.db_path}")
-            db_meta = None
+            print(f"no db found at {cls.db_path}, creating empty db_meta.")
+            cls.create_db_meta()
+            db_meta = pd.read_pickle(cls.db_path)
         return db_meta
 
     @classmethod
@@ -149,17 +142,7 @@ class Collection(object):
     def new(
         cls, collection_name, RecordDef, folder=COLLECTIONS_FOLDER,
     ):
-        """Create a new collection.
-
-        - open collections_df
-            - create folders if they don't exist
-            - create empty df if it doesn't exist
-        - add row in collection_df (if it already exists, abort)
-
-        - create new Data object
-        - if collection by name doesn't exist:
-            - add new entry to collections_db (create as needed)
-        """
+        """Create a new collection. """
         if collection_name in cls.db_meta().index:
             raise ValueError(f"collection with name {collection_name} already exists")
 
@@ -179,7 +162,7 @@ class Collection(object):
         cls.client.new_index(
             collection_name=collection_name, mapping=RecordDef.index_mapping
         )
-        return cls(collection_name, folder=folder)
+        return cls(collection_name=collection_name)
 
     @classmethod
     def drop(cls, collection_name, folder=COLLECTIONS_FOLDER):
@@ -201,8 +184,23 @@ class Collection(object):
         except HTTPError:
             print("error dropping collection from search index.")
 
-    def _add_record(self, record):
-        """Add a given record to the collection."""
+    @staticmethod
+    def return_record_def(record_type):
+        """Return record_def from record type."""
+
+        for record_def in RecordDef.__subclasses__():
+            if record_def.record_type == record_type:
+                return record_def
+        raise Exception(
+            (
+                f"No record found for type {record_type} "
+                "(import of associated RecordDef in collection.py directly)."
+            )
+        )
+
+    def _add_document(self, record_id):
+        """add record without saving."""
+        record = self.RecordDef.gen_record(record_id)
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
         type(self).client.index_record(
