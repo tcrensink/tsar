@@ -56,7 +56,7 @@ INDEX_MAPPING = {
 def recent_ml_and_ai_query_url(
     fields=["cs.AI", "cs.LG", "cs.CL", "cs.NE"],
     sort_method="lastUpdatedDate",
-    max_results=4000,
+    max_results=4,
 ):
     """Return query string for recent ml/ai papers."""
     base_query = "http://export.arxiv.org/api/query?search_query="
@@ -104,16 +104,6 @@ class ArxivRecord(RecordDef):
     preview_lexer = MarkdownLexer
     preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
-    @classmethod
-    def preview_document(cls, preview_str):
-        """"""
-        return "no preview available"
-
-    @classmethod
-    def preview_documents(cls, preview_str):
-        """"""
-        return "no preview available"
-
     @staticmethod
     def gen_record(document_id):
         """Parse doc_id (url) into record and return it.
@@ -128,11 +118,10 @@ class ArxivRecord(RecordDef):
         return record
 
     @staticmethod
-    def gen_records(query_url=None, **query_kwargs):
+    def query_source(query_url=None, **query_kwargs):
         """Return records associated with query params.
         ref: https://arxiv.org/help/api/user-manual#Appendices
         """
-        raise NotImplementedError
 
     @staticmethod
     def gen_record_index(record):

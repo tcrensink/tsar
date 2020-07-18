@@ -1,4 +1,9 @@
-"""Window for adding a document to the current collection."""
+"""
+module for window to query a documents source.
+
+query string search syntax:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax
+"""
 
 from __future__ import unicode_literals
 from prompt_toolkit.application import Application
@@ -17,16 +22,15 @@ from datetime import datetime
 from operator import itemgetter
 
 
-class AddDocumentViewModel(object):
-    """View model/business logic for add_doc window."""
+class QuerySourceViewModel(object):
+    """View model/business logic for query source window."""
 
     def __init__(self, shared_state, style=SEARCH_RECORD_COLORS):
 
         self.shared_state = shared_state
-        self.input_buffer = Buffer(name="input_buffer", multiline=False,)
-        # callback function that links input to results:
-        self.input_buffer.on_text_changed += self.update_results
-        self.results_textcontrol = FormattedTextControl("")
+        self.query_buffer = Buffer(name="query_buffer", multiline=False)
+
+        self.results_textcontrol = FormattedTextControl("(no results)")
         self.preview_header = BufferControl(focusable=False,)
         self.preview_header.buffer.text = "preview"
 
@@ -36,7 +40,7 @@ class AddDocumentViewModel(object):
             lexer=PygmentsLexer(self.RecordDef.preview_lexer),
         )
         self.preview_textcontrol.lexer.style = self.RecordDef.preview_style
-        self.preview_textcontrol.buffer.text = "(no document selected)"
+        self.preview_textcontrol.buffer.text = "(no result selected)"
         self.status_textcontrol = FormattedTextControl()
         self.style = style
         # value -1 indicates no result is currently selected
@@ -44,7 +48,6 @@ class AddDocumentViewModel(object):
         self.results = []
         # FormattedText results:
         self.formatted_results = self._apply_default_format(self.results)
-        self.update_results()
 
     @property
     def RecordDef(self):
@@ -52,14 +55,14 @@ class AddDocumentViewModel(object):
         return record_def
 
     @property
-    def input_text(self):
-        return self.input_buffer.text
+    def query_str(self):
+        return self.query_buffer.text
 
-    @input_text.setter
-    def input_text(self, new_input_text):
+    @query_str.setter
+    def query_str(self, new_query_str):
         """computes results when set
         """
-        self.input_buffer.text = new_input_text
+        self.query_buffer.text = new_query_str
 
     @property
     def index(self):
@@ -90,11 +93,9 @@ class AddDocumentViewModel(object):
         """update preview content based on index
         """
         if self.index == -1:
-            preview_str = "(no document selected)"
+            preview_str = "(no result selected)"
         else:
-            record = self.shared_state["active_collection"].df.loc[
-                self.results[self.index]
-            ]
+            record = self.results[self.index]
 
             id_str = f"RECORD_ID:\t\t{record['record_id']}\n"
             _kw_str = ", ".join(sorted(record["keywords"]))
@@ -133,10 +134,7 @@ class AddDocumentViewModel(object):
         print formatted results using print_formatted_text
         """
         if len(results_list) != 0:
-            # results_list = [f"{res}\n" for res in results_list]
-            result_names = (
-                self.shared_state["active_collection"].df.loc[results_list].record_name
-            )
+            result_names = [res["record_name"] for res in results_list]
             results_list = [f"{res}\n" for res in result_names]
             formatted_results = [
                 (self.style["unselected"], res) for res in results_list
@@ -145,51 +143,64 @@ class AddDocumentViewModel(object):
             formatted_results = []
         return formatted_results
 
-    def update_results(self, passthrough="dummy_arg"):
-        """call back function updates results when input text changes
+    def update_results(self):
+        """Call back function updates results.
         - signature required to be callable from prompt_toolkit callback
+
+        - set results based on query
+        - set formatted results (default formatting)
+        - update index to 0 (-1 if no results)
+            - updates selected record
+            - updates preview of selected record
+        - update status bar
         """
         try:
-            preview = self.RecordDef.preview_document(self.input_text)
+            results = self.shared_state["active_collection"].query_source(
+                self.query_str
+            )
+            self.results = results
+
         except Exception:
-            preview = "(no preview available)"
-        try:
-            results = self.RecordDef.preview_documents(self.input_text)
-        except Exception:
-            results = "(no results found)"
-        self.results_textcontrol.text = results
-        self.preview_textcontrol.buffer.text = preview
+            self.results = {}
+            self.status_textcontrol.text = "(invalid query)"
+        else:
+            self.formatted_results = self._apply_default_format(self.results)
+            self.results_textcontrol.text = self.formatted_results
+            self.index = 0
+            self.status_textcontrol.text = (
+                f"showing {len(self.results)} of "
+                f"{self.shared_state['active_collection'].df.shape[0]} records   "
+                f"syntax: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax)"
+            )
 
-    def add_document(self, record_id):
-        """Add document associated with record_id.
-
-        behavior governed by accept_handler of Buffer:
-        https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html?highlight=accept_handler#module-prompt_toolkit.buffer
-
-        if bool(return_val) buffer text is erased, otherwise retained.
+    def open_selected(self):
+        """open selected record
         """
-        # record_id = input_buffer.text
-        self.shared_state["active_collection"].add_document(record_id=record_id)
-        self.preview_textcontrol.buffer.text = "Document added!"
+        if len(self.results) > 0:
+            record_id = self.results[self.index]
+        else:
+            pass
+        self.shared_state["active_collection"].open_document(record_id=record_id)
+        self._update_preview_content()
 
 
-class AddDocumentView(object):
-    """Bind input, visual elements to add_doc_view_model logic. """
+class QuerySourceView(object):
+    """Bind input, visual elements to query_view_model logic. """
 
-    def __init__(self, add_document_view_model):
+    def __init__(self, query_view_model):
 
-        self.view_model = add_document_view_model
+        self.view_model = query_view_model
         self.shared_state = self.view_model.shared_state
 
         # layout components:
-        self.window_header = Window(
-            FormattedTextControl(title_bar_text(self.shared_state)),
+        self.query_header = Window(
+            FormattedTextControl(query_title_bar_text(self.shared_state)),
             height=1,
             style="reverse",
         )
 
         self.query_window = Window(
-            BufferControl(self.view_model.input_buffer,), height=1,
+            BufferControl(self.view_model.query_buffer,), height=1,
         )
         results_window = Window(self.view_model.results_textcontrol, height=13)
 
@@ -208,7 +219,7 @@ class AddDocumentView(object):
         self.layout = Layout(
             HSplit(
                 [
-                    self.window_header,
+                    self.query_header,
                     self.query_window,
                     results_window,
                     preview_header,
@@ -232,36 +243,67 @@ class AddDocumentView(object):
 
         @self.kb.add("escape")
         def _(event):
-            self.view_model.input_text = ""
+            self.view_model.query_str = ""
 
         @self.kb.add("enter")
         def _(event):
-            """open selected record"""
+            """generate records from source."""
             try:
-                record_id = self.view_model.input_buffer.text
-                self.view_model.add_document(record_id=record_id)
+                self.view_model.update_results()
+            except Exception:
+                self.view_model.status_textcontrol.text = "(no results available)"
 
-            except Exception as e:
-                msg = f"unable to add document: \n{e}"
-                self.view_model.preview_textcontrol.buffer.text = msg
+        @self.kb.add("s-tab")
+        def _(event):
+            """add all records to collection."""
+
+            N = len(self.view_model.results)
+            coll = self.shared_state["active_collection"]
+            self.view_model.status_textcontrol.text = (
+                f"adding {N} records to {coll.name}..."
+            )
+            count = 0
+            for record in self.view_model.results:
+                try:
+                    coll.add_document(record_id=record["record_id"])
+                    count += 1
+                except Exception:
+                    pass
+            self.view_model.status_textcontrol.text = (
+                f"added {count} records to {coll.name}."
+            )
+
+        @self.kb.add("s-right")
+        def _(event):
+            """add specific record to collection."""
+
+            record_id = self.view_model.results[self.view_model.index]["record_id"]
+            coll = self.shared_state["active_collection"]
+            self.view_model.status_textcontrol.text = (
+                f"adding {record_id} records to {coll.name}..."
+            )
+            coll.add_document(record_id=record_id)
+            self.view_model.status_textcontrol.text = (
+                f"added {record_id} to {coll.name}"
+            )
 
     def refresh_view(self):
         """Code when screen is changed."""
-        # self.view_model.input_text = ""
-        self.window_header.content.text = title_bar_text(self.shared_state)
-        self.view_model.update_results()
+        # self.view_model.query_str = ""
+        self.query_header.content.text = query_title_bar_text(self.shared_state)
+        # self.view_model.update_results()
         self.layout.focus(self.query_window)
 
 
-def title_bar_text(shared_state):
+def query_title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
-    collection_name = shared_state["active_collection"].name
-    title_str = f"ADD: {collection_name}"
-    return title_str
+    coll_name = shared_state["active_collection"].name
+    str_value = f"RECORDS FROM SOURCE: {coll_name}"
+    return str_value
 
 
 if __name__ == "__main__":
-    """stand-alone version of the add_document window for debugging."""
+    """stand-alone version of the search window for debugging."""
 
     shared_state = {
         "active_collection": Collection(DEFAULT_COLLECTION),
@@ -269,8 +311,8 @@ if __name__ == "__main__":
         "application": Application(),
     }
 
-    view_model = AddDocumentViewModel(shared_state)
-    view = AddDocumentView(view_model)
+    view_model = QuerySourceViewModel(shared_state)
+    view = QuerySourceView(view_model)
 
     @view.kb.add("c-q")
     def _(event):

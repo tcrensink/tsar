@@ -54,25 +54,6 @@ class WikiRecord(RecordDef):
     preview_lexer = MarkdownLexer
     preview_style = style_from_pygments_cls(get_style_by_name("solarizeddark"))
 
-    @classmethod
-    def preview_document(cls, preview_str):
-        """Preview available files based on host path (e.g. ls -A1)."""
-        document_preview = parse_lib.return_file_contents(
-            preview_str, sftp_client=WikiRecord.sftp_client
-        )
-        return document_preview
-
-    @classmethod
-    def preview_documents(cls, preview_str):
-        """Preview available files based on host path (e.g. ls -A1)."""
-
-        preview_str = f"{preview_str}"
-        documents_preview = parse_lib.list_folder_contents(
-            preview_str, sftp_client=WikiRecord.sftp_client
-        )
-        documents_preview = "\n".join(documents_preview)
-        return documents_preview
-
     @staticmethod
     def gen_record(path):
         """Parse doc into a record; return it."""
@@ -97,15 +78,17 @@ class WikiRecord(RecordDef):
             record["keywords"] = []
         return record
 
-    @staticmethod
-    def gen_records(folder):
+    @classmethod
+    def query_source(cls, folder):
         """Return records for docs of valid extension within a folder."""
-        paths = parse_lib.return_files(folder, extensions=VALID_EXTENSIONS)
+        paths = parse_lib.return_files(
+            folder, extensions=VALID_EXTENSIONS, sftp_client=cls.sftp_client
+        )
         records = []
         for path in paths:
             record = WikiRecord.gen_record(path)
-            if record:
-                records.append(record)
+            # if record:
+            records.append(record)
         return records
 
     @staticmethod

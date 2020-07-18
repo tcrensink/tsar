@@ -79,47 +79,32 @@ class RecordDef(ABC):
 
         Examples:
         query_str="~/my_markdown_docs"
-            returns list of records associated with files
+            return records associated with files in folder as parsed by RecordDef
 
         query_str="http://export.arxiv.org/api/query?search_query=all:electron+AND+all:proton"
             returns records for all docs associated with query_str
         """
         pass
 
-    @classmethod
-    @abstractmethod
-    def preview_document(preview_str):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def preview_documents(preview_str):
-        pass
-
     @staticmethod
     @abstractmethod
-    def gen_record(self, doc_reference):
+    def gen_record(doc_id):
         """Generate record for doc associated with doc_reference.
 
-        doc_reference may not be unique, but is expected to return
-        a uri in the record_id to avoid record duplication.
-
-        Example:
-        doc_reference = "~/my_file.txt"
-            record_id -> /Users/username/my_file.txt
-        doc_reference = "$HOME/my_file.txt"
-            record_id -> /Users/username/my_file.txt
+        doc_id specifies a document, but may not be a unique label.  For example, if ../my_file and
+        ~/my_file point to the same file, they are valid doc_ids (whereas record_id is expected to be a unique
+        reference, e.g. /users/username/my_file.)
         """
         pass
 
     @staticmethod
     @abstractmethod
-    def gen_record_index(self, record):
+    def gen_record_index(record):
         """Generate a search index record in elasticsearch for the record."""
         pass
 
     @staticmethod
     @abstractmethod
-    def open_doc(self, record_id):
+    def open_doc(record_id):
         """Open a document associated with record_id."""
         pass

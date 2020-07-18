@@ -5,8 +5,6 @@ All file handling should be done from host machine via ssh.
 Environment variables $HOME, $USER defined to match host in tsar/__init__.py
 for pathlib handling.
 """
-# import subprocess
-# from subprocess import PIPE
 import os
 import nltk
 import pandas as pd
@@ -84,6 +82,7 @@ def return_files(folder, extensions=None, sftp_client=None):
     files = []
 
     def get_files(folder, files=files):
+
         folder_contents = sftp_client.listdir_attr(folder)
         for entry in folder_contents:
             mode = entry.st_mode
