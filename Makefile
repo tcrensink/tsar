@@ -39,5 +39,6 @@ shell: build
 		--volume="$(shell pwd):/opt:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
+		--detach-keys="ctrl-v" \
 		tsar \
 		bash
