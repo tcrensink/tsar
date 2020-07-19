@@ -6,7 +6,8 @@
 """
 import os
 import pandas as pd
-from tsar import COLLECTIONS_FOLDER
+from tsar import COLLECTIONS_FOLDER, HOST_REPO_PATH
+from tsar.config import DEFAULT_COLLECTION
 from tsar.lib import search
 from tsar.lib.record_def import RecordDef
 from tsar.lib import ssh_utils
@@ -20,6 +21,17 @@ from requests import HTTPError
 # df that contains summary info for all collections
 DB_META_PATH = os.path.join(COLLECTIONS_FOLDER, "collections_db.pkl")
 META_DB_COLS = ["record_type", "creation_date"]
+
+
+def gen_default_collection(
+    collection_name=DEFAULT_COLLECTION, 
+    record_def=WikiRecord,
+    default_source=os.path.join(HOST_REPO_PATH, "docs/help_docs"),
+):
+    default_coll = Collection.new(collection_name=collection_name, RecordDef=record_def)
+    records = default_coll.query_source(default_source)
+    for record in records:
+        default_coll.add_record(record)
 
 
 class Data(object):

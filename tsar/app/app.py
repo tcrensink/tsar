@@ -5,7 +5,7 @@ This module contains high level management of the terminal interface:
 - App: manages active view, app state, keybindings, and event loop
 """
 from tsar import CAPTURE_DOC_PATH
-from tsar.lib.collection import Collection
+from tsar.lib.collection import Collection, gen_default_collection
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.app.query_source_window import QuerySourceView, QuerySourceViewModel
@@ -49,8 +49,8 @@ class App(object):
         initial_screen_name=DEFAULT_SCREEN,
     ):
         if DEFAULT_COLLECTION not in Collection.db_meta().index:
-            default_coll = Collection.new(collection_name=DEFAULT_COLLECTION, RecordDef=WikiRecord)
-            default_coll.add_document("./")
+            print("generating default collection, `{}`...".format(DEFAULT_COLLECTION))
+            gen_default_collection()
         # mutable/updatable object references across app.
         self.shared_state = {
             "Collection": Collection,
