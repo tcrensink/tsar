@@ -87,7 +87,6 @@ class WikiRecord(RecordDef):
         records = []
         for path in paths:
             record = WikiRecord.gen_record(path)
-            # if record:
             records.append(record)
         return records
 

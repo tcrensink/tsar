@@ -74,8 +74,8 @@ class RecordDef(ABC):
 
     @classmethod
     @abstractmethod
-    def query_source(query_str):
-        """Return records from source based on query_str.
+    def query_source(cls, query_str):
+        """Return list of records from source based on query_str.
 
         Examples:
         query_str="~/my_markdown_docs"

@@ -298,7 +298,7 @@ class QuerySourceView(object):
 def query_title_bar_text(shared_state):
     """return text for title bar, updated when screen changes."""
     coll_name = shared_state["active_collection"].name
-    str_value = f"RECORDS FROM SOURCE: {coll_name}"
+    str_value = f"QUERY SOURCE: {coll_name}"
     return str_value
 
 
