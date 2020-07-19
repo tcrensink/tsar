@@ -198,9 +198,13 @@ class Collection(object):
             )
         )
 
-    def _add_document(self, record_id):
-        """add record without saving."""
+    def add_document(self, record_id):
+        """Add a record to the collection."""
         record = self.RecordDef.gen_record(record_id)
+        self.add_record(record)
+
+    def _add_record(self, record):
+        """Generate record from record_id; add to collection but don't save."""
         (record_id, record_index) = self.RecordDef.gen_record_index(record)
         self.data.update_record(record)
         type(self).client.index_record(
@@ -210,32 +214,6 @@ class Collection(object):
     def add_record(self, record):
         """Add a given record to the collection, save the database."""
         self._add_record(record)
-        self.data.write_db()
-
-    def _add_document(self, record_id):
-        """Generate a record from record_id and add it to the collection."""
-        record = self.RecordDef.gen_record(record_id)
-        self._add_record(record)
-
-    def add_document(self, record_id):
-        """Add a record to the collection."""
-        self._add_document(record_id)
-        self.data.write_db()
-
-    def add_documents(self, source=None, **kwargs):
-        """Performantly add multiple documents from a given source (e.g. folder).
-
-        source -> documents conversion is defined in the RecordDef
-        """
-        records = self.RecordDef.gen_records(source, **kwargs)
-        for record in records:
-            (record_id, record_index) = self.RecordDef.gen_record_index(record)
-            self.data.update_record(record)
-            self.client.index_record(
-                record_id=record_id,
-                record_index=record_index,
-                collection_name=self.name,
-            )
         self.data.write_db()
 
     def query_source(self, *args, **kwargs):
