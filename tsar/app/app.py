@@ -48,9 +48,9 @@ class App(object):
         initial_collection_name=DEFAULT_COLLECTION,
         initial_screen_name=DEFAULT_SCREEN,
     ):
-        if "default_collection" not in Collection.db_meta().index:
-            Collection.new(collection_name="default_collection", RecordDef=WikiRecord)
-
+        if DEFAULT_COLLECTION not in Collection.db_meta().index:
+            default_coll = Collection.new(collection_name=DEFAULT_COLLECTION, RecordDef=WikiRecord)
+            default_coll.add_document("./")
         # mutable/updatable object references across app.
         self.shared_state = {
             "Collection": Collection,
