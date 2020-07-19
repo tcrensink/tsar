@@ -6,7 +6,6 @@ Environment variables $HOME, $USER defined to match host in tsar/__init__.py
 for pathlib handling.
 """
 import os
-import nltk
 import pandas as pd
 from collections import Counter
 import numpy as np
@@ -132,7 +131,6 @@ def basic_text_to_keyword(raw_text, N):
     tokenizes, filters to alphabetical, top N scoring sqrt(freq)*word_length
     """
     words = raw_text.split()
-    # words = nltk.word_tokenize(raw_text)
     words = [word.lower() for word in words if word.isalpha()]
     word_counts = dict(Counter(words))
     df = pd.DataFrame.from_dict(word_counts, columns=["count"], orient="index")
