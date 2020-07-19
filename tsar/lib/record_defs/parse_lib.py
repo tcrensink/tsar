@@ -17,13 +17,13 @@ from tsar.lib.ssh_utils import SSHClient
 
 
 def resolve_path(path_str, sftp_client=None):
-    """Attempt to generate canonical path from path string.
+    """Generate canonical path from path string.
 
-    Examples:
-    ~/test ->               /Users/trensink/test
-    ./test ->               /Users/trensink/test
-    /Users/trensink/test -> /Users/trensink/test
-    ../trensink/test ->     /Users/trensink/test
+    All paths assumed relative to $HOME. Expected behavior:
+    ~/test ->               /Users/username/test
+    ./test ->               /Users/username/test
+    /Users/username/test -> /Users/username/test
+    ../username/test ->     /Users/username/test
     """
     if not sftp_client:
         sftp_client = SSHClient().open_sftp()

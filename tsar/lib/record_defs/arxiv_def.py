@@ -118,11 +118,16 @@ class ArxivRecord(RecordDef):
         return record
 
     @staticmethod
-    def query_source(query_str="", max_results=50, **query_kwargs):
+    def query_source(query_str="", max_results=20, **query_kwargs):
         """Return records associated with query params.
         ref: https://arxiv.org/help/api/user-manual#Appendices
         """
-        results = arxiv.query(query=query_str, max_results=max_results, **query_kwargs)
+        results = arxiv.query(
+            query=query_str, 
+            max_results=max_results, 
+            sort_by="relevance", 
+            **query_kwargs,
+        )
         records = [gen_record_from_arxiv(res) for res in results]
         return records
 

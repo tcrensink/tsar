@@ -283,7 +283,7 @@ def query_title_bar_text(shared_state):
     map_fields = mapping.keys()
 
     fields_str = ", ".join(map_fields)
-    str_value = f"QUERY: {coll_name}  ({fields_str})"
+    str_value = f"QUERY COLLECTION: {coll_name}  ({fields_str})"
     return str_value
 
 
