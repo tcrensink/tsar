@@ -30,11 +30,11 @@ cluster.name: tsar
 #
 # Path to directory where to store the data (separate multiple locations by comma):
 #
-path.data: /opt/resources/elasticsearch/data
+path.data: /Users/trensink/git/my_repos/tsar/resources/elasticsearch/data
 #
 # Path to log files:
 #
-path.logs: /opt/resources/elasticsearch/logs
+path.logs: /Users/trensink/git/my_repos/tsar/resources/elasticsearch/logs
 #
 # ----------------------------------- Memory -----------------------------------
 #

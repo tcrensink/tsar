@@ -5,7 +5,10 @@
 # see also: reattach_shell.sh in ./resources
 
 build:
-	docker build --network=host -t tsar .
+	docker build \
+		--network=host \
+		-t tsar . \
+		--build-arg tsar_folder=$(shell pwd)
 
 # rebuild, run app in container
 run: build
@@ -19,11 +22,11 @@ run: build
 		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
 		--rm \
 		-idt \
-		--volume="$(shell pwd):/opt:cached" \
+		--volume="${HOME}:${HOME}:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		tsar \
-		python /opt/tsar/app/app.py
+		python "$(shell pwd)/tsar/app/app.py"
 
 shell: build
 	docker run \
@@ -36,7 +39,7 @@ shell: build
 		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
 		--rm \
 		-it \
-		--volume="$(shell pwd):/opt:cached" \
+		--volume="${HOME}:${HOME}:cached" \
 		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		--detach-keys="ctrl-v" \

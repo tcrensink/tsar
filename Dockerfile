@@ -26,21 +26,23 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.7.
 # link specific python version to "python"
 RUN ln -s /usr/bin/python3.7 /usr/bin/python
 
-# cd to "/opt", install python deps, copy
-ENV APP_PATH=/opt
+# cd to tsar directory, install python deps, copy
+ARG tsar_folder
+ENV APP_PATH=$tsar_folder
 WORKDIR $APP_PATH
-COPY ./requirements.txt .
+
+COPY requirements.txt requirements.txt
 RUN python -m pip install -r requirements.txt
-COPY . .
 ENV PYTHONPATH=$APP_PATH
 
 # # overwrite elasticsearch config file with host config file
+COPY ./resources ./resources
 COPY --chown=root:elasticsearch ./resources/elasticsearch/* /etc/elasticsearch/
 
-# # ENV PORT=9200
-# # EXPOSE 9200
-# # create executable alias
-RUN ln -s /opt/tsar/app/app.py /usr/bin/tsar
+# ENV PORT=9200
+# EXPOSE 9200
+# create executable alias
+RUN ln -s $APP_PATH/tsar/app/app.py /usr/bin/tsar
 
 # Add public key to known hosts
 RUN mkdir -p /root/.ssh && \
