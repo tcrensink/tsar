@@ -16,7 +16,7 @@ from datetime import datetime
 from tsar.lib.ssh_utils import SSHClient
 
 
-def resolve_path(path_str, sftp_client=None):
+def resolve_path(path_str):
     """Generate canonical path from path string.
 
     All paths assumed relative to $HOME. Expected behavior:
@@ -25,26 +25,19 @@ def resolve_path(path_str, sftp_client=None):
     /Users/username/test -> /Users/username/test
     ../username/test ->     /Users/username/test
     """
-    if not sftp_client:
-        sftp_client = SSHClient().open_sftp()
     home_folder = os.environ["HOST_HOME"]
-    sftp_client.chdir(home_folder)
-
-    if path_str.startswith("~"):
-        path_str = path_str.replace("~", home_folder, 1)
-    path_str = sftp_client.normalize(path_str)
+    path_str = path_str.replace("~", home_folder, 1)
+    path_str = os.path.normpath(path_str)
     return path_str
 
 
-def return_file_contents(path_string, sftp_client=None):
+def return_file_contents(path_string):
     """Return string of file contents on remote host.
 
     e.g.: path_string = "~/test.py" -> string of file contents.
     """
-    if not sftp_client:
-        sftp_client = SSHClient().open_sftp()
-    contents = sftp_client.file(path_string)
-    contents_str = contents.read().decode()
+    with open(path_string) as fp:
+        contents_str = fp.read()
     return contents_str
 
 
@@ -64,7 +57,7 @@ def list_folder_contents(path_string, sftp_client=None):
     return contents_list
 
 
-def return_files(folder, extensions=None, sftp_client=None):
+def return_files_over_ssh(folder, extensions=None, sftp_client=None):
     """Return list of files in folder with extension."""
     if isinstance(extensions, str):
         extensions = [extensions]
@@ -94,6 +87,25 @@ def return_files(folder, extensions=None, sftp_client=None):
                     files.append(fname)
 
     get_files(folder)
+    return files
+
+
+def return_files(folder, extensions=[]):
+    """Return list of files in folder with extension."""
+    if isinstance(extensions, str):
+        extensions = [extensions]
+    for extension in extensions:
+        if not extension.startswith("."):
+            raise ValueError("valid extensions start with a '.'")
+    extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
+
+    # recursively walk through folders to get all files with extension
+    folder = resolve_path(folder)
+    files = []
+    for dirpath, dirnames, filenames in os.walk(folder):
+        curr_files = [resolve_path(os.path.join(dirpath, fn)) for fn in filenames]
+        curr_files = [fn for fn in curr_files if fn.split(".")[-1] in extensions]
+        files.extend(curr_files)
     return files
 
 
