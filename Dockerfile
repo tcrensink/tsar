@@ -35,8 +35,7 @@ COPY requirements.txt requirements.txt
 RUN python -m pip install -r requirements.txt
 ENV PYTHONPATH=$APP_PATH
 
-# # overwrite elasticsearch config file with host config file
-COPY ./resources ./resources
+# overwrite elasticsearch config file with host config file
 COPY --chown=root:elasticsearch ./resources/elasticsearch/* /etc/elasticsearch/
 
 # ENV PORT=9200
