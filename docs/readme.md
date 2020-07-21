@@ -1,17 +1,30 @@
-(under development)
+(macos alpha version coming soon)
 
 # What is TSAR?
-TSAR is a productivity tool that aims to be a digital "extension of your mind" for interacting with more data than you can remember, such as a personal knowledge base (pkb), digital journal, or collection of notes.  It is a flexible, extensible, terminal interface for managing your digital documents *with maxmimal efficiency*.
+TSAR makes your digital document an extension of your mind. Use it as a personal knowledge base (PKB), note taking app, digital journal, and more.  Access, explore, and connect your document collections with *maxmimal efficiency*.
 
 # Features
-- **Access**: Search as you type with fuzzy matching, wildcards, filters, and more.  Browse documents by similarity and use keyword tags.
-- **Workflow Integration**: TSAR integrates with your workflow: use your favorite web browser, editor, etc. when interacting directly with documents.
-- **Extensibility**: The real power of TSAR lies in *Record Types*.  Use the included record types to define how TSAR handles your documents, or write your own with the library of functions.
-- **Flexibility**: Customize key bindings, default screens, syntax highlighting for each collection.
-- **Study Tools**: Absorb information from your documents with spaced-repetition review.
+- **Search**: search your documents in real time with the lucene query syntax, powered by elasticsearch
+- **Flexibility**: Use markdown, plain text, source code, ArXiv urls. Don't see what you need? Define a custom *record definition* for your files
+- **Workflow Integration**: TSAR integrates with your editor, web browser, etc.
 
-# Installation
-(coming soon)
+# Quickstart
+Alpha version currently available for macos.
+
+### Installation
+1. install [Docker](https://www.docker.com/get-started) 
+2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
+3. run install script:  `python install.py`
+4. from a terminal, run `tsar`
+
+### First steps
+Navigate TSAR with these keyboard shortcuts:
+- collection select window: `ctrl-a`
+- collection query window: `ctrl-s`
+- source query window: `ctrl-d`
+- exit TSAR: `ctrl-v`
+
+Select the `help` collection (enter) and press `ctrl-s` to navigate to the query window.  Enter `*` to show all documents; press `return` to view a file.
 
 # Examples
 Search a collection of arxiv publications for papers on "knowledge graphs":
