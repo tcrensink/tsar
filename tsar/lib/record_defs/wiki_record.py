@@ -82,8 +82,7 @@ class WikiRecord(RecordDef):
     def query_source(cls, folder):
         """Return records for docs of valid extension within a folder."""
         paths = parse_lib.return_files(
-            folder, extensions=VALID_EXTENSIONS, sftp_client=cls.sftp_client
-        )
+            folder, extensions=VALID_EXTENSIONS)
         records = []
         for path in paths:
             record = WikiRecord.gen_record(path)
