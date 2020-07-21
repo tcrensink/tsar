@@ -7,6 +7,6 @@ TSAR_PATH="$(dirname "$(readlink "$0")")"
 [[ $(docker ps -f "name=$NAME" --format '{{.Names}}') == $NAME ]] ||
 (cd $TSAR_PATH && make run)
 
-docker attach tsar --detach-keys="ctrl-v"
+docker attach tsar --detach-keys="ctrl-q"
 # see: https://tldp.org/HOWTO/Keyboard-and-Console-HOWTO-4.html
 echo -e \\033c

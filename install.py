@@ -53,7 +53,7 @@ if __name__ == "__main__":
     subprocess.call(CPY_TO_AUTHORIZED_KEYS, shell=True)
     subprocess.call(ADD_PRIVATE_KEY_TO_AGENT, shell=True)
 
-    print(f"Add executable to PATH variable (requires user password): {EXEC_PATH}")
+    print("Add executable to PATH variable (requires user password): {}".format(EXEC_PATH))
     subprocess.call(ADD_EXEC_TO_PATH, shell=True)
 
     print("updating path references in elasticsearch.yml file...")
@@ -62,13 +62,13 @@ if __name__ == "__main__":
     with open(ES_CONFIG_PATH, mode='w') as fp:
         for line_no, line in enumerate(lines):
             if line.startswith("path.data: "):
-                new_line = f"path.data: {ES_DATA_PATH}\n"
+                new_line = "path.data: {}\n".format(ES_DATA_PATH)
                 lines[line_no] = new_line
-                print(f"replaced {repr(line)} with {repr(new_line)}")
+                print("replaced {} with {}".format(repr(line), repr(new_line)))
             elif line.startswith("path.logs: "):
-                new_line = f"path.logs: {ES_LOG_PATH}\n"
+                new_line = "path.logs: {}\n".format(ES_LOG_PATH)
                 lines[line_no] = new_line
-                print(f"replaced {repr(line)} with {repr(new_line)}")
+                print("replaced {} with {}".format(repr(line), repr(new_line)))
         fp.writelines(lines)
 
     print("\nsetup complete!\n")
