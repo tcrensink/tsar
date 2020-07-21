@@ -20,7 +20,7 @@ from builtins import input
 import subprocess
 import os
 
-THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+APP_DIR = os.path.dirname(os.path.realpath(__file__))
 KEY_FILE = "tsar_id_rsa"
 KEY_FOLDER = os.path.expanduser("~/.ssh")
 AUTHORIZED_KEYS_FILE = os.path.join(KEY_FOLDER, "authorized_keys")
@@ -29,7 +29,11 @@ CPY_TO_AUTHORIZED_KEYS = 'cat ~/.ssh/{}.pub >> {}'.format(KEY_FILE, AUTHORIZED_K
 ADD_PRIVATE_KEY_TO_AGENT = "ssh-add {}".format(KEY_FILE)
 
 EXEC_NAME = "tsar"
-ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.sh /usr/local/bin/{} ".format(THIS_DIR, EXEC_NAME)
+ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.sh /usr/local/bin/{} ".format(APP_DIR, EXEC_NAME)
+
+ES_CONFIG_PATH = os.path.join(APP_DIR, "resources/elasticsearch/elasticsearch.yml")
+ES_LOG_PATH = os.path.join(os.path.dirname(ES_CONFIG_PATH), "logs")
+ES_DATA_PATH = os.path.join(os.path.dirname(ES_CONFIG_PATH), "data")
 
 if __name__ == "__main__":
 
@@ -48,5 +52,22 @@ if __name__ == "__main__":
 
     print("Add executable to $PATH (user password needed)...")
     subprocess.call(ADD_EXEC_TO_PATH, shell=True)
+
+    print("updating path references in elasticsearch.yml file...")
+    with open(ES_CONFIG_PATH, mode='r') as fp:
+        lines = fp.readlines()
+    with open(ES_CONFIG_PATH, mode='w') as fp:
+        for line_no, line in enumerate(lines):
+            if line.startswith("path.data: "):
+                new_line = f"path.data: {ES_DATA_PATH}\n"
+                lines[line_no] = new_line
+                print(f"replaced {repr(line)} with {repr(new_line)}")
+            elif line.startswith("path.logs: "):
+                new_line = f"path.logs: {ES_LOG_PATH}\n"
+                lines[line_no] = new_line
+                print(f"replaced {repr(line)} with {repr(new_line)}")
+        fp.writelines(lines)
+
+
 
     print("\nsetup complete!\n")
