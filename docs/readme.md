@@ -18,15 +18,13 @@ Alpha version currently available for macos.
 4. from a terminal, type `tsar` to run the app
 
 ### First steps
-Navigate TSAR with these keyboard shortcuts:
-- collection select window: `ctrl-a`
-- collection query window: `ctrl-s`
-- source query window: `ctrl-d`
-- exit TSAR: `ctrl-q`
+Navigate to the `help_docs` collection for more info.  To view it:
+- `ctrl-a` to view collections
+- select `help_docs`, press `return`
+- `ctrl-s` to query records in `help_docs`
+- type `*` to view records.  Press `return` to open the selected file
 
-Select the `help_docs` collection (press enter) and press `ctrl-s` to navigate to the query window.  Enter `*` to show all documents; press `return` to view a file.
-
-# Examples
+# Screenshots/GIFS
 Search a collection of arxiv publications for papers on "knowledge graphs":
 <img align="center" src="./resources/search2.gif" width=90%>
 
