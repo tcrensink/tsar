@@ -24,7 +24,7 @@ Navigate to the `help_docs` collection for more info.  To view it:
 - `ctrl-s` to query records in `help_docs`
 - type `*` to view records.  Press `return` to open the selected file
 
-# Screenshots/GIFS
+# Preview
 Search a collection of arxiv publications for papers on "knowledge graphs":
 <img align="center" src="./resources/search2.gif" width=90%>
 
