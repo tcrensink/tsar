@@ -9,7 +9,6 @@ TSAR makes your digital documents an extension of your mind. Use it as a persona
 - **Workflow Integration**: TSAR integrates with your editor, web browser, etc.
 
 # Quickstart
-Alpha version currently available for macos.
 
 ### Installation
 1. install [Docker](https://www.docker.com/get-started) 
