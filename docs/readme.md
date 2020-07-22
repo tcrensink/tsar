@@ -15,16 +15,16 @@ Alpha version currently available for macos.
 1. install [Docker](https://www.docker.com/get-started) 
 2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
 3. run install script:  `python install.py`
-4. from a terminal, run `tsar`
+4. from a terminal, type `tsar` to run the app
 
 ### First steps
 Navigate TSAR with these keyboard shortcuts:
 - collection select window: `ctrl-a`
 - collection query window: `ctrl-s`
 - source query window: `ctrl-d`
-- exit TSAR: `ctrl-v`
+- exit TSAR: `ctrl-q`
 
-Select the `help` collection (enter) and press `ctrl-s` to navigate to the query window.  Enter `*` to show all documents; press `return` to view a file.
+Select the `help_docs` collection (press enter) and press `ctrl-s` to navigate to the query window.  Enter `*` to show all documents; press `return` to view a file.
 
 # Examples
 Search a collection of arxiv publications for papers on "knowledge graphs":
