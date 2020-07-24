@@ -27,7 +27,7 @@ AUTHORIZED_KEYS_FILE = os.path.join(KEY_FOLDER, "authorized_keys")
 GEN_KEYS = 'ssh-keygen -f {} -t rsa -b 4096'.format(KEY_FILE)
 CPY_TO_AUTHORIZED_KEYS = 'cat ~/.ssh/{}.pub >> {}'.format(KEY_FILE, AUTHORIZED_KEYS_FILE)
 ADD_PRIVATE_KEY_TO_AGENT = "ssh-add {}".format(KEY_FILE)
-
+START_SSH_AGENT = 'eval "$(ssh-agent -s)"'
 EXEC_PATH = "/usr/local/bin/tsar"
 ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.sh {} ".format(APP_DIR, EXEC_PATH)
 
@@ -50,6 +50,7 @@ if __name__ == "__main__":
     subprocess.call(GEN_KEYS, shell=True)
 
     print("adding public key to authorized_keys and private key to ssh-agent via ssh-add...")
+    subprocess.call(START_SSH_AGENT, shell=True)
     subprocess.call(CPY_TO_AUTHORIZED_KEYS, shell=True)
     subprocess.call(ADD_PRIVATE_KEY_TO_AGENT, shell=True)
 
