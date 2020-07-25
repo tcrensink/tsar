@@ -3,6 +3,7 @@
 # rm: clean up docker image on exit
 # -it creates interactive (pseudo) tty shell
 # see also: reattach_shell.sh in ./resources
+SYSTEM = $(shell uname)
 
 build:
 	docker build \
@@ -10,7 +11,8 @@ build:
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
 
-# rebuild, run app in container
+# SYSTEM DEPENDENT RUN, BUILD TARGETS:
+ifeq (${SYSTEM}, Darwin)
 run: build
 	docker run \
 		-p 8137:8137 \
@@ -28,7 +30,7 @@ run: build
 		tsar \
 		python "$(shell pwd)/tsar/app/app.py"
 
-shell: build
+shell: build 
 	docker run \
 		-p 8137:8137 \
 		--name tsar \
@@ -45,3 +47,12 @@ shell: build
 		--detach-keys="ctrl-q" \
 		tsar \
 		bash
+else ifeq (${SYSTEM}, LINUX)
+shell: 
+	echo "(add linux build system)"
+else
+shell: 
+	echo "unable to determine system in Makefile"
+run: 
+	echo "unable to determine system in Makefile"
+endif
