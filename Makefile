@@ -11,8 +11,9 @@ build:
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
 
-# SYSTEM DEPENDENT RUN, BUILD TARGETS:
 ifeq (${SYSTEM}, Darwin)
+# MACOS TARGETS
+
 run: build
 	docker run \
 		-p 8137:8137 \
@@ -48,9 +49,46 @@ shell: build
 		tsar \
 		bash
 else ifeq (${SYSTEM}, LINUX)
-shell: 
-	echo "(add linux build system)"
+# LINUX TARGETS
+
+run: build
+	docker run \
+		-p 8137:8137 \
+		--name tsar \
+		-e HOST_USER=${USER} \
+		-e HOST_DIR=$(shell pwd) \
+		-e HOST_HOME=${HOME} \
+		-e SSH_AUTH_SOCK="${SSH_AUTH_SOCK}" \
+		-volume="${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}" \
+		--rm \
+		-idt \
+		--volume="${HOME}:${HOME}:cached" \
+		--volume="${HOME}/.ipython:/root/.ipython:cached" \
+		--memory="2g" \
+		tsar \
+		python "$(shell pwd)/tsar/app/app.py"
+
+shell: build 
+	docker run \
+		-p 8137:8137 \
+		--name tsar \
+		-e HOST_USER=${USER} \
+		-e HOST_DIR=$(shell pwd) \
+		-e HOST_HOME=${HOME} \
+		--mount type=bind,src=/run/host-services/ssh-auth.sock,target=/run/host-services/ssh-auth.sock \
+		-e SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock" \
+		--rm \
+		-it \
+		--volume="${HOME}:${HOME}:cached" \
+		--volume="${HOME}/.ipython:/root/.ipython:cached" \
+		--memory="2g" \
+		--detach-keys="ctrl-q" \
+		tsar \
+		bash
+
 else
+# TARGETS WHEN OS IS UNDETERMINED
+
 shell: 
 	echo "unable to determine system in Makefile"
 run: 
