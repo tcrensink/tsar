@@ -8,6 +8,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-
 from __future__ import unicode_literals
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Dimension
 from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
@@ -20,6 +21,16 @@ from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.layout.processors import TabsProcessor
 from datetime import datetime
 from operator import itemgetter
+
+RESULTS_DIMENSION_DICT = {
+    "min": 2,
+    "max": 15,
+    "preferred": 10,
+}
+PREVIEW_DIMENSION_DICT = {
+    "min": 6,
+    "preferred": 15,
+}
 
 
 class QuerySourceViewModel(object):
@@ -202,14 +213,19 @@ class QuerySourceView(object):
         self.query_window = Window(
             BufferControl(self.view_model.query_buffer,), height=1,
         )
-        results_window = Window(self.view_model.results_textcontrol, height=13)
+        results_window = Window(
+            self.view_model.results_textcontrol, 
+            height=Dimension(**RESULTS_DIMENSION_DICT),
+        )
 
         preview_header = Window(
             self.view_model.preview_header, height=1, style="reverse"
         )
 
         preview_window = Window(
-            self.view_model.preview_textcontrol, height=22, wrap_lines=True
+            self.view_model.preview_textcontrol, 
+            wrap_lines=True,
+            height=Dimension(**PREVIEW_DIMENSION_DICT),
         )
         status_window = Window(
             self.view_model.status_textcontrol, height=1, style="reverse"

@@ -11,21 +11,13 @@ TSAR makes your digital documents an extension of your mind. Use it as a persona
 # Quickstart
 
 ### Installation
-1. install [Docker](https://www.docker.com/get-started) 
+**Note**: your password is required during installation to authorize an ssh from your computer to the Docker container.
+1. install [Docker](https://www.docker.com/get-started)
 2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
-3. run install script:  `python install.py`
-4. from a terminal, type `tsar` to run the app
+3. run installation script: `python install.py`
+4. type `tsar` in a terminal
+5. Tsar opens to the `help_docs` collection with notes on how to use TSAR.
 
-### First steps
-Navigate to the `help_docs` collection for more info.  To view it:
-- `ctrl-a` to view collections
-- select `help_docs`, press `return`
-- `ctrl-s` to query records in `help_docs`
-- type `*` to view records.  Press `return` to open the selected file
-
-# Preview
-Search a collection of arxiv publications for papers on "knowledge graphs":
-<img align="center" src="./resources/search2.gif" width=90%>
 
 # Related
 TSAR is a vision for digital productivity inspired by many sources, including:
