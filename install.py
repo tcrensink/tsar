@@ -19,7 +19,9 @@ resources:
 from builtins import input
 import subprocess
 import os
+import sys
 
+PLATFORM = sys.platform
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 KEY_FILE = "tsar_id_rsa"
 KEY_FOLDER = os.path.expanduser("~/.ssh")
@@ -38,10 +40,9 @@ ES_CONFIG_TEMPLATE = os.path.join(ES_FOLDER, "elasticsearch.yml_template")
 ES_CONFIG_PATH = os.path.join(ES_FOLDER, "elasticsearch.yml")
 
 
-if __name__ == "__main__":
-
-    print("macos: enable remote login. See System Preferences -> Sharing: check `remote log in`")
-    _ = input("(press return when complete)")
+def install_macos():
+    print("\n**Enable remote login:**\nNavigate to System Preferences -> Sharing, check `remote log in`")
+    _ = input("Press return when complete:")
 
     print("generating key pairs {} in {}...".format(KEY_FILE, KEY_FOLDER))
     if not os.path.exists(KEY_FOLDER):
@@ -49,15 +50,15 @@ if __name__ == "__main__":
     os.chdir(KEY_FOLDER)
     subprocess.call(GEN_KEYS, shell=True)
 
-    print("adding public key to authorized_keys and private key to ssh-agent via ssh-add...")
+    print("\nAdding public key to authorized_keys and private key to ssh-agent via ssh-add...")
     subprocess.call(START_SSH_AGENT, shell=True)
     subprocess.call(CPY_TO_AUTHORIZED_KEYS, shell=True)
     subprocess.call(ADD_PRIVATE_KEY_TO_AGENT, shell=True)
 
-    print("Add executable to PATH variable (requires user password): {}".format(EXEC_PATH))
+    print("\nEnter user password to add terminal command `tsar`: {}".format(EXEC_PATH))
     subprocess.call(ADD_EXEC_TO_PATH, shell=True)
 
-    print("updating path references in elasticsearch.yml file...")
+    print("\nupdating path references in elasticsearch.yml file...")
     with open(ES_CONFIG_TEMPLATE, mode='r') as fp:
         lines = fp.readlines()
     with open(ES_CONFIG_PATH, mode='w') as fp:
@@ -72,4 +73,15 @@ if __name__ == "__main__":
                 print("replaced {} with {}".format(repr(line), repr(new_line)))
         fp.writelines(lines)
 
-    print("\nsetup complete!\n")
+def install_linux():
+    pass
+
+if __name__ == "__main__":
+
+    if PLATFORM.lower() == "darwin":
+        install_macos()        
+    
+    else:
+        raise NotImplementedError("Installation not currently supported for platform: {}".format(PLATFORM))
+
+    print("\nSetup complete!\n")
