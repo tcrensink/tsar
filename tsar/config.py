@@ -2,7 +2,9 @@
 from tsar import REPO_PATH
 
 # SYSTEM INTEGRATION
-EDITOR = "/usr/local/bin/code"
+# EDITOR = "/usr/local/bin/code"
+OPEN_TEXT_CMD = "open -a TextEdit {file_path}"
+
 BROWSER = "Safari"
 ELASTICSEARCH_PORT = 9200
 

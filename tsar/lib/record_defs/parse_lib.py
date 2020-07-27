@@ -6,9 +6,10 @@ Environment variables $HOME, $USER defined to match host in tsar/__init__.py
 for pathlib handling.
 """
 import os
-import pandas as pd
 from collections import Counter
 import numpy as np
+import pandas as pd
+import sys
 from stat import S_ISDIR, S_ISREG
 
 # from pathlib import Path
@@ -109,11 +110,11 @@ def return_files(folder, extensions=[]):
     return files
 
 
-def open_textfile(path, editor, ssh_client=None):
+def open_textfile(cmd, file_path, ssh_client=None):
     """Open text file with editor."""
     if not ssh_client:
         ssh_client = SSHClient()
-    cmd = f"{editor} {path}"
+    cmd = cmd.format(file_path=file_path)
     ssh_client.exec_command(cmd)
 
 

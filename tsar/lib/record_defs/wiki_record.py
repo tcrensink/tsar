@@ -37,8 +37,6 @@ INDEX_MAPPING = {
     }
 }
 
-DOC_VIEWER = config.EDITOR
-
 VALID_EXTENSIONS = (".md",)
 
 
@@ -103,7 +101,7 @@ class WikiRecord(RecordDef):
     @staticmethod
     def _open_doc(record_id):
         """Open doc from record_id."""
-        parse_lib.open_textfile(path=record_id, editor=config.EDITOR)
+        parse_lib.open_textfile(cmd=config.OPEN_TEXT_CMD, file_path=record_id)
 
     @staticmethod
     def open_doc(df, record_id):

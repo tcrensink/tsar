@@ -47,7 +47,7 @@ class SearchViewModel(object):
 
         self.shared_state = shared_state
         self.query_buffer = Buffer(name="query_buffer", multiline=False)
-        self.query_buffer.text = "*"
+
         # callback function that links query to results:
         self.query_buffer.on_text_changed += self.update_results
         self.results_textcontrol = FormattedTextControl("(no results)")

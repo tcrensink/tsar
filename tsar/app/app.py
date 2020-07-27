@@ -9,7 +9,7 @@ from tsar.lib.collection import Collection, gen_default_collection
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.app.query_source_window import QuerySourceView, QuerySourceViewModel
-from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, EDITOR
+from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, OPEN_TEXT_CMD
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
@@ -100,7 +100,7 @@ class App(object):
 
         @kb_global.add(GLOBAL_KB["open_capture_doc"])
         def open_capture(event):
-            open_textfile(path=CAPTURE_DOC_PATH, editor=EDITOR)
+            open_textfile(cmd=OPEN_TEXT_CMD, file_path=CAPTURE_DOC_PATH)
 
         @kb_global.add(GLOBAL_KB["source_query"])
         def add_screen(event):

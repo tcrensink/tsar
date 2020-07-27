@@ -47,17 +47,6 @@ BASE_SCHEMA = {
     "utc_last_access": datetime.datetime,
 }
 
-DOC_VIEWERS = {
-    ".txt": config.EDITOR,
-    ".md": config.EDITOR,
-}
-
-DOC_EDITORS = {
-    ".txt": config.EDITOR,
-    ".md": config.EDITOR,
-}
-
-
 class SafeSerializer(JSONSerializer):
     """modify json serialization to handle sets"""
 
