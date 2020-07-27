@@ -16,7 +16,7 @@ TSAR makes your digital documents an extension of your mind. Use it as a persona
 2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
 3. run installation script: `python install.py`
 4. type `tsar` in a terminal
-5. Tsar opens to the `help_docs` collection with notes on how to use TSAR.
+5. tsar's query window should appear for the `help_docs` collection; type `*` to see documents on how to use tsar.
 
 
 # Related
