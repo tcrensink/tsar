@@ -1,7 +1,7 @@
 (alpha version for macos coming soon)
 
 # What is TSAR?
-TSAR makes your digital documents an extension of your mind. Use it as a personal knowledge base (PKB), note taking app, digital journal, and more.  Access, explore, and connect your document collections from terminal with *maxmimal efficiency*.
+TSAR is a terminal-based productivity tool. Use it as a personal knowledge base (PKB), note taking app, digital journal, and more.  Access, explore, and connect your document collections from terminal with *maxmimal efficiency*.
 
 ### Features
 - **Search**: search your documents in real time with the lucene query syntax, powered by elasticsearch
