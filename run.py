@@ -31,7 +31,7 @@ NAME = "tsar"
 ATTACH_CMD = f'docker attach {NAME} --detach-keys="ctrl-q"'
 KILL_CMD = f"docker kill {NAME}"
 CLEAR_SCREEN_CMD = 'echo -e "\033[H\033[J"'
-STARTUP_TIMEOUT = 20
+STARTUP_TIMEOUT = 30
 
 PORT = 8137
 HOST = "0.0.0.0"

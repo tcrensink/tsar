@@ -19,7 +19,7 @@ from tsar.lib.record_defs.parse_lib import open_textfile
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.app.rest import FLASK_KWARGS, return_flask_app
 
-RUN_MAIN_APP = False
+RUN_MAIN_APP = True
 
 class Screen(object):
     """Define object necessary to determine app state and change view.
