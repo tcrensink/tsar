@@ -31,7 +31,7 @@ NAME = "tsar"
 ATTACH_CMD = f'docker attach {NAME} --detach-keys="ctrl-q"'
 KILL_CMD = f"docker kill {NAME}"
 CLEAR_SCREEN_CMD = 'echo -e "\033[H\033[J"'
-STARTUP_TIMEOUT = 30
+STARTUP_TIMEOUT = 20
 
 PORT = 8137
 HOST = "0.0.0.0"
@@ -68,6 +68,7 @@ def kill_container():
     proc = subprocess.run(
         KILL_CMD, 
         shell=True,
+        capture_output=True,
     )
 
 def restart_container():
@@ -142,8 +143,8 @@ if __name__ == '__main__':
         attach_to_app_container()
     elif args.command == "ls":
         # show basic collections info
-        collection_list = sorted(requests.get(f"{BASE_URL}/Collections").json())
-        print(*collection_list, sep="\n")
+        res = requests.get(f"{BASE_URL}/Collections")
+        print(res.json())
     elif args.command == "kill":
         # kill the running container
         kill_container()

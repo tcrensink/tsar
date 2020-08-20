@@ -51,7 +51,7 @@ def return_flask_app(tsar_app):
             )
             """
             df = tsar_app.shared_state["Collection"].db_meta()
-            return list(df.index)
+            return df.to_string()
 
         def post(self):
             """Create a new collection.

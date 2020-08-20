@@ -17,7 +17,9 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.record_defs.parse_lib import open_textfile
 from tsar.lib.record_defs.wiki_record import WikiRecord
-from tsar.app import rest
+from tsar.app.rest import FLASK_KWARGS, return_flask_app
+
+RUN_MAIN_APP = False
 
 class Screen(object):
     """Define object necessary to determine app state and change view.
@@ -139,11 +141,12 @@ if __name__ == "__main__":
     tsar_app = App()
 
     # start flask CLI server in a thread
-    flask_app = rest.return_flask_app(tsar_app)
+    flask_app = return_flask_app(tsar_app)
 
     log = logging.getLogger('werkzeug')
     log.disabled = True
-    threading.Thread(target=flask_app.run, kwargs=rest.FLASK_KWARGS).start()
+    threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
 
-    # start main app
-    tsar_app.run()
+    # start main app; set to false to debug CLI server.
+    if RUN_MAIN_APP:
+        tsar_app.run()
