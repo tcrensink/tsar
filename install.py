@@ -20,6 +20,7 @@ from builtins import input
 import subprocess
 import os
 import sys
+import pkg_resources
 
 PLATFORM = sys.platform
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -42,6 +43,10 @@ ES_CONFIG_PATH = os.path.join(ES_FOLDER, "elasticsearch.yml")
 def install_macos():
     print("\n**Enable remote login:**\nNavigate to System Preferences -> Sharing, check `remote log in`")
     _ = input("Press return when complete:")
+
+    missing_deps = return_missing_host_dependencies()
+    _ = input(f"Install python dependencies in host_requirements.txt? (press return):")
+    subprocess.call("python -m pip install -r host_requirements.txt", shell=True)
 
     print("generating key pairs {} in {}...".format(KEY_FILE, KEY_FOLDER))
     if not os.path.exists(KEY_FOLDER):
