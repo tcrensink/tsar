@@ -32,7 +32,7 @@ CPY_TO_AUTHORIZED_KEYS = 'cat ~/.ssh/{}.pub >> {}'.format(KEY_FILE, AUTHORIZED_K
 ADD_PRIVATE_KEY_TO_AGENT = "ssh-add {}".format(KEY_FILE)
 START_SSH_AGENT = 'eval "$(ssh-agent -s)"'
 EXEC_PATH = "/usr/local/bin/tsar"
-ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.py {} ".format(APP_DIR, EXEC_PATH)
+ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.sh {} ".format(APP_DIR, EXEC_PATH)
 ES_FOLDER = os.path.join(APP_DIR, "resources/elasticsearch")
 ES_LOG_PATH = os.path.join(ES_FOLDER, "logs")
 ES_DATA_PATH = os.path.join(ES_FOLDER, "data")
@@ -44,7 +44,6 @@ def install_macos():
     print("\n**Enable remote login:**\nNavigate to System Preferences -> Sharing, check `remote log in`")
     _ = input("Press return when complete:")
 
-    missing_deps = return_missing_host_dependencies()
     _ = input(f"Install python dependencies in host_requirements.txt? (press return):")
     subprocess.call("python -m pip install -r host_requirements.txt", shell=True)
 

@@ -39,11 +39,27 @@ def return_flask_app(tsar_app):
     app = Flask(__name__)
     api = Api(app)
 
+    class CollectionsInfo(Resource):
+
+        def get(self):
+            """Return summary info of collections.
+
+            example:
+            res = requests.get(
+                "http://0.0.0.0:8137/info", 
+            )
+            """
+            df = tsar_app.shared_state["Collection"].db_meta()
+            return df.to_string()
+
+    api.add_resource(CollectionsInfo, '/info')
+
+
     class RestCollections(Resource):
         """Resource that handles Collection(s) related requests."""
 
         def get(self):
-            """Return summary info of collections.
+            """Return list of collections.
 
             example:
             res = requests.get(
@@ -51,8 +67,8 @@ def return_flask_app(tsar_app):
             )
             """
             df = tsar_app.shared_state["Collection"].db_meta()
-            return df.to_string()
-
+            return list(df.index)
+    
         def post(self):
             """Create a new collection.
             

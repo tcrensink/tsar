@@ -1,0 +1,20 @@
+#! /bin/bash
+
+tsar_folder="$(dirname "$(readlink "$0")")"
+container='tsar'
+nargs="$#"
+
+# if tsar is not running, start it
+if ! [ "$(docker ps -f "name=$container" --format '{{.Names}}')" = "$container" ]; then 
+# echo "starting tsar..."
+(cd $tsar_folder && make run)
+fi
+
+# if tsar already running, no args provided, attach to container
+if [ $nargs -eq 0 ]; then
+# echo "attaching to tsar; clear screen after detaching..."
+docker attach "$container" --detach-keys="ctrl-q"
+printf "\033c"
+else
+python3 "$tsar_folder/run.py" $@
+fi
