@@ -82,9 +82,10 @@ def gen_collection_parser(
         title="collection commands", 
         dest="sub_command",
     )
-    rm_parser = coll_cmd_parser.add_parser("rm", help="remove record from collection")
+    name = collection_name
+    rm_parser = coll_cmd_parser.add_parser("rm", help=f"`tsar {name} --rm <record_id>` (remove record)")
     rm_parser.add_argument("record_id")
-    add_parser = coll_cmd_parser.add_parser("add", help="add record to collection")
+    add_parser = coll_cmd_parser.add_parser("add", help=f"`tsar {name} --add <record_id>` (add record)")
     add_parser.add_argument("record_id")
 
 
@@ -92,24 +93,29 @@ if __name__ == '__main__':
 
 
     # base parser is not used directly; sub_parsers define first <command> args
-    parser = argparse.ArgumentParser(prog="tsar")
+    parser = argparse.ArgumentParser(
+        prog="tsar",
+        # usage="tsar <collection> new/",
+        parents=[],
+    )
+
     sub_parsers = parser.add_subparsers(title="commands", dest="command")
 
     # non-collection parsers
     # sub_parsers.add_parser("", help="(No arguments) attach to running app.")
-    sub_parsers.add_parser("ls", help="summary of collections")
-    sub_parsers.add_parser("info", help="list of all collections summary")
-    sub_parsers.add_parser("kill", help="kill the app")
-    sub_parsers.add_parser("restart", help="restart the app")
+    sub_parsers.add_parser("ls", help="collections")
+    sub_parsers.add_parser("info", help="collections (more info)")
+    sub_parsers.add_parser("kill", help="")
+    sub_parsers.add_parser("restart", help="")
 
     # new collection parser
-    new_collection_parser = sub_parsers.add_parser("new", help="tsar new --name=test_coll (create a new collection)")
+    new_collection_parser = sub_parsers.add_parser("new", help="`tsar new --name my_coll --record_def arxiv` \n(new collection)")
     new_collection_parser.add_argument("--name", help="Name of new collection", required=True)
     new_collection_parser.add_argument("--record_def", help="Record type for collection", required=True)
 
     # drop collection parser
-    drop_collection_parser = sub_parsers.add_parser("drop", help="Drop (delete) a collection permanently.")
-    drop_collection_parser.add_argument("collection_name", help="Name of collection to drop")
+    drop_collection_parser = sub_parsers.add_parser("drop", help="`tsar drop --name my_coll` (permanently delete collection).")
+    drop_collection_parser.add_argument("--name", help="collection name")
 
     # add (sub) parsers for collections
     collections = requests.get(f"{BASE_URL}/Collections").json()
@@ -145,13 +151,23 @@ if __name__ == '__main__':
         print("created new collection.")
     elif args.command == "drop":
         # drop a collection
-        usr_input = input(f"drop collection {args.collection_name} [y/N]?")
+        res = requests.get(f"{BASE_URL}/Collections")
+        collections = res.json()
+        if args.name not in collections:
+            coll_str = "\n".join(collections)
+            print(f"`{args.name}` not found in:\n\n{coll_str}")
+            sys.exit(0)        
+        usr_input = input(f"permanently drop collection: `{args.name}`? (y/N)")
         if usr_input.lower() == "y":
             res = requests.delete(
                 f"{BASE_URL}/Collections", 
-                json={"collection_name": args.collection_name},
+                json={"collection_name": args.name},
             )
-            print(f"dropped collection: {args.collection_name}")
+            print(f"dropped collection: {args.name}")
+        else:
+            print("No action taken")
+    elif args.command in collections and args.sub_command is None:
+        print(f"type `tsar {args.command} -h` for commands")
     elif args.command in collections and args.sub_command == "add":
         # add record to a collection
         res = requests.post(

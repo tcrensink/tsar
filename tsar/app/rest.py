@@ -50,6 +50,7 @@ def return_flask_app(tsar_app):
             )
             """
             df = tsar_app.shared_state["Collection"].db_meta()
+            df["creation_date"] = df["creation_date"].dt.normalize()
             return df.to_string()
 
     api.add_resource(CollectionsInfo, '/info')
