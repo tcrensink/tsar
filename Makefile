@@ -11,8 +11,8 @@ build:
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
 
-ifeq (${SYSTEM}, Darwin)
 # MACOS TARGETS
+ifeq (${SYSTEM}, Darwin)
 
 run: build
 	docker run \
@@ -48,8 +48,9 @@ shell: build
 		--detach-keys="ctrl-q" \
 		tsar \
 		bash
-else ifeq (${SYSTEM}, LINUX)
+
 # LINUX TARGETS
+else ifeq (${SYSTEM}, LINUX)
 
 run: build
 	docker run \

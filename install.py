@@ -20,6 +20,7 @@ from builtins import input
 import subprocess
 import os
 import sys
+import pkg_resources
 
 PLATFORM = sys.platform
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -32,7 +33,6 @@ ADD_PRIVATE_KEY_TO_AGENT = "ssh-add {}".format(KEY_FILE)
 START_SSH_AGENT = 'eval "$(ssh-agent -s)"'
 EXEC_PATH = "/usr/local/bin/tsar"
 ADD_EXEC_TO_PATH = "sudo ln -sf {}/run.sh {} ".format(APP_DIR, EXEC_PATH)
-
 ES_FOLDER = os.path.join(APP_DIR, "resources/elasticsearch")
 ES_LOG_PATH = os.path.join(ES_FOLDER, "logs")
 ES_DATA_PATH = os.path.join(ES_FOLDER, "data")
@@ -43,6 +43,9 @@ ES_CONFIG_PATH = os.path.join(ES_FOLDER, "elasticsearch.yml")
 def install_macos():
     print("\n**Enable remote login:**\nNavigate to System Preferences -> Sharing, check `remote log in`")
     _ = input("Press return when complete:")
+
+    _ = input(f"Install python dependencies in host_requirements.txt? (press return):")
+    subprocess.call("python -m pip install -r host_requirements.txt", shell=True)
 
     print("generating key pairs {} in {}...".format(KEY_FILE, KEY_FOLDER))
     if not os.path.exists(KEY_FOLDER):
@@ -55,7 +58,7 @@ def install_macos():
     subprocess.call(CPY_TO_AUTHORIZED_KEYS, shell=True)
     subprocess.call(ADD_PRIVATE_KEY_TO_AGENT, shell=True)
 
-    print("\nEnter user password to add terminal command `tsar`: {}".format(EXEC_PATH))
+    print("\nEnter user password to add file to path: {}".format(EXEC_PATH))
     subprocess.call(ADD_EXEC_TO_PATH, shell=True)
 
     print("\nupdating path references in elasticsearch.yml file...")

@@ -59,7 +59,7 @@ class Data(object):
         return cls(collection_name, folder=folder)
 
     @classmethod
-    def drop(cls, collection_name, folder):
+    def drop(cls, collection_name, folder=COLLECTIONS_FOLDER):
         """Delete df associated with a collection and remove folder if empty."""
         db_path = cls.return_db_path(collection_name, folder=folder)
         if os.path.exists(db_path):
@@ -115,6 +115,15 @@ class Collection(object):
         self.df = self.data.df
         self.record_type = self.db_meta().loc[collection_name].record_type
         self.RecordDef = self.return_record_def(self.record_type)
+
+    @property
+    def summary(self):
+        summary = {
+            "name": self.name,
+            "record type": self.record_type,
+            "records": self.df.shape[0],
+        }
+        return summary
 
     @classmethod
     def db_meta(cls):

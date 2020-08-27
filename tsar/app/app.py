@@ -4,6 +4,8 @@ This module contains high level management of the terminal interface:
 - Screen: contains view and view_model for a single window (e.g. search)
 - App: manages active view, app state, keybindings, and event loop
 """
+import logging
+import threading
 from tsar import CAPTURE_DOC_PATH
 from tsar.lib.collection import Collection, gen_default_collection
 from tsar.app.search_window import SearchView, SearchViewModel
@@ -15,7 +17,9 @@ from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.record_defs.parse_lib import open_textfile
 from tsar.lib.record_defs.wiki_record import WikiRecord
+from tsar.app.rest import FLASK_KWARGS, return_flask_app
 
+RUN_MAIN_APP = True
 
 class Screen(object):
     """Define object necessary to determine app state and change view.
@@ -112,7 +116,6 @@ class App(object):
         """Update shared_state when screen is changed."""
         if self.shared_state["active_screen"] == self.screens[screen_key]:
             return
-
         self.shared_state["prev_screen"] = self.shared_state["active_screen"]
         self.shared_state["active_screen"] = self.screens[screen_key]
         self.shared_state["application"].layout = self.shared_state[
@@ -135,5 +138,15 @@ class App(object):
 if __name__ == "__main__":
     """Instantiate views, view_models, app; run the app."""
 
-    app = App()
-    app.run()
+    tsar_app = App()
+
+    # start flask CLI server in a thread
+    flask_app = return_flask_app(tsar_app)
+
+    log = logging.getLogger('werkzeug')
+    log.disabled = True
+    threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
+
+    # start main app; set to false to debug CLI server.
+    if RUN_MAIN_APP:
+        tsar_app.run()

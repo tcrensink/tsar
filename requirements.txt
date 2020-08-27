@@ -1,5 +1,7 @@
 arxiv
 elasticsearch
+flask
+flask-restful
 ipdb
 ipython
 nltk

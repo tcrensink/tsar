@@ -38,9 +38,7 @@ ENV PYTHONPATH=$APP_PATH
 # overwrite elasticsearch config file with host config file
 COPY --chown=root:elasticsearch ./resources/elasticsearch/* /etc/elasticsearch/
 
-# ENV PORT=9200
-# EXPOSE 9200
-# create executable alias
+# create executable alias in container
 RUN ln -s $APP_PATH/tsar/app/app.py /usr/bin/tsar
 
 # Add public key to known hosts
