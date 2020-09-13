@@ -7,6 +7,7 @@ SYSTEM = $(shell uname)
 
 build:
 	docker build \
+		--quiet \
 		--network=host \
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
