@@ -29,7 +29,7 @@ import requests
 # returns container name if currently running:
 NAME = "tsar"
 KILL_CMD = f"docker kill {NAME}"
-
+SHELL_CMD = f"docker exec -it {NAME} bash"
 STARTUP_TIMEOUT = 30
 
 PORT = 8137
@@ -38,6 +38,12 @@ BASE_URL = f"http://{HOST}:{PORT}"
 
 RUN_PATH = os.path.realpath(__file__)
 RUN_DIR = os.path.dirname(RUN_PATH)
+
+def attach_to_shell():
+    proc = subprocess.run(
+        SHELL_CMD,
+        shell=True,
+    )
 
 def start_container(timeout=STARTUP_TIMEOUT):
     """Start the app docker container."""
@@ -103,7 +109,8 @@ if __name__ == '__main__':
 
     # non-collection parsers
     # sub_parsers.add_parser("", help="(No arguments) attach to running app.")
-    sub_parsers.add_parser("ls", help="collections")
+    sub_parsers.add_parser("shell", help="connect to bash shell of running app")
+    sub_parsers.add_parser("ls", help="list collections")
     sub_parsers.add_parser("info", help="collections (more info)")
     sub_parsers.add_parser("kill", help="")
     sub_parsers.add_parser("restart", help="")
@@ -128,6 +135,8 @@ if __name__ == '__main__':
     # parse args
     args = parser.parse_args()
 
+    if args.command == "shell":
+        attach_to_shell()
     if args.command == "ls":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/Collections")

@@ -112,7 +112,8 @@ class ArxivRecord(RecordDef):
         ref: https://arxiv.org/help/api/user-manual#_calling_the_api
         # api url = 'http://export.arxiv.org/api/query?id_list=1311.5600'
         """
-        paper_id = document_id.split("/")[-1]
+        # see https://arxiv.org/help/arxiv_identifier
+        paper_id = document_id.split("abs/")[-1]
         record_dict = arxiv.query(id_list=[paper_id])[-1]
         record = gen_record_from_arxiv(record_dict)
         return record

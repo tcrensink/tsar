@@ -12,7 +12,7 @@ import pandas as pd
 import sys
 from stat import S_ISDIR, S_ISREG
 
-# from pathlib import Path
+
 from datetime import datetime
 from tsar.lib.ssh_utils import SSHClient
 
@@ -28,7 +28,7 @@ def resolve_path(path_str):
     """
     home_folder = os.environ["HOST_HOME"]
     path_str = path_str.replace("~", home_folder, 1)
-    path_str = os.path.normpath(path_str)
+    path_str = os.path.abspath(path_str)
     return path_str
 
 
@@ -91,22 +91,29 @@ def return_files_over_ssh(folder, extensions=None, sftp_client=None):
     return files
 
 
-def return_files(folder, extensions=[]):
+def return_files(path, extensions=[]):
     """Return list of files in folder with extension."""
-    if isinstance(extensions, str):
-        extensions = [extensions]
     for extension in extensions:
         if not extension.startswith("."):
             raise ValueError("valid extensions start with a '.'")
     extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
 
     # recursively walk through folders to get all files with extension
-    folder = resolve_path(folder)
+    path = resolve_path(path)
+
     files = []
-    for dirpath, dirnames, filenames in os.walk(folder):
-        curr_files = [resolve_path(os.path.join(dirpath, fn)) for fn in filenames]
-        curr_files = [fn for fn in curr_files if fn.split(".")[-1] in extensions]
-        files.extend(curr_files)
+    if os.path.isfile(path):
+        files.append(path)
+    elif os.path.isdir(path):
+        for dirpath, dirnames, filenames in os.walk(path):
+            curr_files = [os.path.join(dirpath, fn) for fn in filenames]
+            if extensions:
+                curr_files = [fn for fn in curr_files if fn.split(".")[-1] in extensions]
+            else:
+                curr_files = [fn for fn in curr_files if fn.split(".")[-1]]
+            files.extend(curr_files)
+    else:
+        raise ValueError(f"{path} is neither folder nor file; unable to proceed.")
     return files
 
 
