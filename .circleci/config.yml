@@ -14,4 +14,4 @@ jobs:
         name: see code
         command: |
           ls -al
-          echo ^^ see code above ^^
+          echo '^^ see code above ^^'
