@@ -67,15 +67,10 @@ def kill_container():
 
 def restart_container():
     """Restart the docker container."""
-    print('killing container...')
+    print('killing tsar...')
     kill_container()
-    print('restarting container...')
+    print('restarting tsar...')
     start_container()    
-
-def attach_to_app_container():
-    """Attach to a running container."""
-    subprocess.run(ATTACH_CMD, shell=True)
-    subprocess.run(CLEAR_SCREEN_CMD, shell=True)
 
 def gen_collection_parser(
     collection_name,
@@ -137,11 +132,11 @@ if __name__ == '__main__':
 
     if args.command == "shell":
         attach_to_shell()
-    if args.command == "ls":
+    elif args.command == "ls":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/Collections")
         print(*res.json(), sep="\n")
-    if args.command == "info":
+    elif args.command == "info":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/info")
         print(res.json())        

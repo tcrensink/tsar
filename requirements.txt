@@ -13,3 +13,4 @@ pygments
 pygments-style-solarized
 pytest
 requests
+tldextract

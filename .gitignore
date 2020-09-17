@@ -10,6 +10,8 @@ resources/collections/
 __pycache__/
 *.py[cod]
 *$py.class
+*.DS_Store
+*.devcontainer
 
 # sublime project file
 tsar.sublime-project

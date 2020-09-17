@@ -27,15 +27,14 @@ run: build
 		--rm \
 		-idt \
 		--volume="${HOME}:${HOME}:cached" \
-		--volume="${HOME}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		tsar \
 		python "$(shell pwd)/tsar/app/app.py"
 
 shell: build 
 	docker run \
-		-p 8137:8137 \
-		--name tsar \
+		-p 8138:8138 \
+		--name tsar_shell \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
 		-e HOST_HOME=${HOME} \

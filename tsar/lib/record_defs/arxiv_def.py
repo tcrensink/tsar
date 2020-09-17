@@ -3,9 +3,8 @@ Define arxiv record creation from a api endpoint.
 
 See https://github.com/karpathy/arxiv-sanity-preserver
 
-This RecordDef is pretty rough.  Todo:
-- are these a Collection or a Catelogue?
-- consider parsing full text instead of abstract (see arxiv sanity preserver)
+Todo:
+- parse full text instead of abstract; see https://github.com/arXiv/arxiv-fulltext
 - remove redundant paper versions
 - make generate_records url more flexible
 - compare existing records before adding new.
