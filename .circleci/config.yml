@@ -15,7 +15,3 @@ jobs:
           command: |
             ls -al
             echo '^^ see code above ^^'
-      - run:
-          name: run tests
-          command: |
-            pytest tests
