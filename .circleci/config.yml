@@ -9,7 +9,7 @@ jobs:
       - run:
           name: run container
           command: |
-            make tsar_shell
+#            make tsar_shell
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
       - run:
