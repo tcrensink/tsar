@@ -6,12 +6,12 @@ jobs:
     steps:
       - checkout
       - run:
-        name: The First Step
-        command: |
-          echo 'Hello World!'
-          echo 'This is the delivery pipeline'
+          name: The First Step
+          command: |
+            echo 'Hello World!'
+            echo 'This is the delivery pipeline'
       - run:
-        name: see code
-        command: |
-          ls -al
-          echo '^^ see code above ^^'
+          name: see code
+          command: |
+            ls -al
+            echo '^^ see code above ^^'
