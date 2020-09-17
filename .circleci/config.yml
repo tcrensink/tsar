@@ -2,14 +2,12 @@ version: 2.1
 jobs:
   build:
     docker:
-#       - image: alpine:3.7
-      - image: circleci/python:3.7
+      - image: alpine:3.7
     steps:
       - checkout
       - run:
           name: run container
           command: |
-#            make tsar_shell
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
       - run:
