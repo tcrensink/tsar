@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: run container
+          name: 1) run container
           command: |
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
@@ -15,3 +15,7 @@ jobs:
           command: |
             ls -al
             echo '^^ see code above ^^'
+      - run:
+          name: run tests
+          command: |
+            pytest tests
