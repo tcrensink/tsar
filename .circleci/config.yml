@@ -6,12 +6,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 1) run container
+          name: 1) container info
           command: |
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
+            echo "current dir contents:" $(ls -al)
       - run:
           name: see code
           command: |
-            ls -al
-            echo '^^ see code above ^^'
+            export PYTHONPATH="$PYTHONPATH:$(pwd)"
+            echo "$PYTHONPATH"
