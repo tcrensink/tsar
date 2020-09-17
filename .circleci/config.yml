@@ -6,10 +6,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: The First Step
+          name: run container
           command: |
-            echo 'Hello World!'
-            echo 'This is the delivery pipeline'
+            make tsar_shell
+            echo "user:" $(whoami)
+            echo "current dir:" $(pwd)
       - run:
           name: see code
           command: |
