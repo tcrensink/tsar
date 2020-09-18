@@ -1,3 +1,6 @@
+
+[![CircleCI](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://circleci.com/gh/circleci/circleci-docs)
+
 (alpha version for macos coming soon)
 
 # What is TSAR?
