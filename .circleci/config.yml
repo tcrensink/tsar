@@ -16,3 +16,4 @@ jobs:
           command: |
             export PYTHONPATH="$PYTHONPATH:$(pwd)"
             echo "$PYTHONPATH"
+            echo "test that tsar loads in python env: $(python -m tsar.lib.search)"
