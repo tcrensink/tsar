@@ -12,7 +12,7 @@ jobs:
             echo "current dir:" $(pwd)
             echo "current dir contents:" $(ls -al)
       - run:
-          name: setup environemnt
+          name: environemnt setup
           command: |
             export HOST_DIR="$(pwd)"
             export PYTHONPATH="$PYTHONPATH:$(pwd)"
