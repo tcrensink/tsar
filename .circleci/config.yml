@@ -7,8 +7,8 @@ jobs:
       - checkout
       - setup_remote_docker:
       - run: |
-          docker run \
-            tsar \
+          docker run
+            tsar
             bash
 #            -e HOST_USER=${USER} \
 #            -e HOST_DIR=$(shell pwd) \
