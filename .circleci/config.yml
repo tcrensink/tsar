@@ -16,6 +16,8 @@ jobs:
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
             echo "current dir contents:" $(ls -al)
+            echo "python path: $PYTHONPATH"
+            echo "HOST_DIR env var: $HOST_DIR"
       - run:
           name: run tests
           command: |
