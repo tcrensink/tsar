@@ -6,15 +6,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: 1) container info
+          name: info
           command: |
             echo "user:" $(whoami)
             echo "current dir:" $(pwd)
             echo "current dir contents:" $(ls -al)
       - run:
-          name: see code
+          name: setup environemnt
           command: |
             export HOST_DIR="$(pwd)"
             export PYTHONPATH="$PYTHONPATH:$(pwd)"
-            echo "$PYTHONPATH"
-            pytest tests/tsar
+      - run:
+          name: run tests
+          command: |
+            pytest tests
