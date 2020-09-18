@@ -2,19 +2,20 @@ version: 2.1
 jobs:
   build:
     docker:
-#       - image: docker.io/tcrensink/tsar
       - image: cimg/base:2020.01
     steps:
       - checkout
       - setup_remote_docker:
       - run: |
           docker run \
-            -e HOST_USER=${USER} \
-            -e HOST_DIR=$(shell pwd) \
-            -e HOST_HOME=${HOME} \
-            --rm \
             tsar \
             bash
+#            -e HOST_USER=${USER} \
+#            -e HOST_DIR=$(shell pwd) \
+#            -e HOST_HOME=${HOME} \
+#            --rm \
+#            tsar \
+#            bash
 #       - run:
 #           name: info
 #           command: |
