@@ -17,4 +17,4 @@ jobs:
             export HOST_DIR="$(pwd)"
             export PYTHONPATH="$PYTHONPATH:$(pwd)"
             echo "$PYTHONPATH"
-            echo "test that tsar loads in python env: $(python -m tsar.lib.search)"
+            pytest tests/tsar
