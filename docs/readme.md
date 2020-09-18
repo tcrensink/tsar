@@ -1,5 +1,5 @@
 
-[![CircleCI](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://circleci.com/gh/circleci/circleci-docs)
+[![tcrensink](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://app.circleci.com/pipelines/github/tcrensink/tsar/)
 
 (alpha version for macos coming soon)
 
