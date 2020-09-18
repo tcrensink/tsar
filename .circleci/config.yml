@@ -9,7 +9,7 @@ jobs:
           name: environemnt setup
           command: |
             export HOST_DIR="$(pwd)"
-            export PYTHONPATH="$PYTHONPATH:$(pwd)"
+            export PYTHONPATH="$(pwd)"
       - run:
           name: info
           command: |
@@ -21,4 +21,5 @@ jobs:
       - run:
           name: run tests
           command: |
+            echo "$PYTHONPATH"
             pytest tests
