@@ -15,17 +15,17 @@ jobs:
             --rm \
             tsar \
             bash
-      - run:
-          name: info
-          command: |
-            echo "user:" $(whoami)
-            echo "current dir:" $(pwd)
-            echo "current dir contents:" $(ls -al)
-      - run:
-          name: environemnt setup
-          command: |
-            export HOST_DIR="$(pwd)"
-            export PYTHONPATH="$PYTHONPATH:$(pwd)"
+#       - run:
+#           name: info
+#           command: |
+#             echo "user:" $(whoami)
+#             echo "current dir:" $(pwd)
+#             echo "current dir contents:" $(ls -al)
+#       - run:
+#           name: environemnt setup
+#           command: |
+#             export HOST_DIR="$(pwd)"
+#             export PYTHONPATH="$PYTHONPATH:$(pwd)"
 #       - run:
 #           name: run tests
 #           command: |
