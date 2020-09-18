@@ -7,10 +7,14 @@ jobs:
         - checkout
         - setup_remote_docker
         - run:
-            name: Build Docker image
+            name: build custom image
             command: docker build -t docker.io/tcrensink/tsar:latest .
         - run:
-            command: echo "stuff: $(ls -la)"
+            name: info
+            command: |
+              echo "user:" $(whoami)
+              echo "current dir:" $(pwd)
+              echo "current dir contents:" $(ls -al)
 #   workflows:
 #     version: 2
 #     build-master:
