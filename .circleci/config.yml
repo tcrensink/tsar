@@ -8,7 +8,12 @@ jobs:
         - setup_remote_docker
         - run:
             name: build custom image
-            command: docker build -t docker.io/tcrensink/tsar:latest .
+            command: |
+              docker build -t docker.io/tcrensink/tsar:latest .
+              --quiet \
+              --network=host \
+              -t tsar . \
+              --build-arg tsar_folder=$(shell pwd)
         - run:
             name: info
             command: |
