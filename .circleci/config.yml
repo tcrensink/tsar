@@ -6,6 +6,16 @@ jobs:
       - image: cimg/base:2020.01
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          docker run \
+            -e HOST_USER=${USER} \
+            -e HOST_DIR=$(shell pwd) \
+            -e HOST_HOME=${HOME} \
+            --rm \
+            tsar \
+            bash
       - run:
           name: info
           command: |
