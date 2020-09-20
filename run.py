@@ -29,7 +29,8 @@ import requests
 # returns container name if currently running:
 NAME = "tsar"
 KILL_CMD = f"docker kill {NAME}"
-SHELL_CMD = f"docker exec -it {NAME} bash"
+# SHELL_CMD = f"docker exec -it {NAME} bash"
+
 STARTUP_TIMEOUT = 30
 
 PORT = 8137
@@ -38,6 +39,7 @@ BASE_URL = f"http://{HOST}:{PORT}"
 
 RUN_PATH = os.path.realpath(__file__)
 RUN_DIR = os.path.dirname(RUN_PATH)
+SHELL_CMD = f"cd {RUN_DIR} && make shell"
 
 def attach_to_shell():
     proc = subprocess.run(
