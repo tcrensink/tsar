@@ -119,7 +119,7 @@ class OmniRecord(RecordDef):
         record_index = {
             "path": record_id,
             "content": record["content"],
-            # "linked_documents": record["links"],
+            "links": record["links"],
             "access_times": max(record["access_times"]),
             "keywords": record["keywords"],
         }
