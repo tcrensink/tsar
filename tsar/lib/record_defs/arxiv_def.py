@@ -1,8 +1,6 @@
 """
 Define arxiv record creation from a api endpoint.
 
-See https://github.com/karpathy/arxiv-sanity-preserver
-
 Todo:
 - parse full text instead of abstract; see https://github.com/arXiv/arxiv-fulltext
 - remove redundant paper versions
