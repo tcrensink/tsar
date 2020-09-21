@@ -22,4 +22,4 @@ jobs:
           name: run tests
           command: |
             echo "$PYTHONPATH"
-            pytest tests
+            pytest tests/tsar/test_passthrough.py
