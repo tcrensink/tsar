@@ -29,7 +29,8 @@ import requests
 # returns container name if currently running:
 NAME = "tsar"
 KILL_CMD = f"docker kill {NAME}"
-SHELL_CMD = f"docker exec -it {NAME} bash"
+# SHELL_CMD = f"docker exec -it {NAME} bash"
+
 STARTUP_TIMEOUT = 30
 
 PORT = 8137
@@ -38,6 +39,7 @@ BASE_URL = f"http://{HOST}:{PORT}"
 
 RUN_PATH = os.path.realpath(__file__)
 RUN_DIR = os.path.dirname(RUN_PATH)
+SHELL_CMD = f"cd {RUN_DIR} && make shell"
 
 def attach_to_shell():
     proc = subprocess.run(
@@ -67,15 +69,10 @@ def kill_container():
 
 def restart_container():
     """Restart the docker container."""
-    print('killing container...')
+    print('killing tsar...')
     kill_container()
-    print('restarting container...')
+    print('restarting tsar...')
     start_container()    
-
-def attach_to_app_container():
-    """Attach to a running container."""
-    subprocess.run(ATTACH_CMD, shell=True)
-    subprocess.run(CLEAR_SCREEN_CMD, shell=True)
 
 def gen_collection_parser(
     collection_name,
@@ -137,11 +134,11 @@ if __name__ == '__main__':
 
     if args.command == "shell":
         attach_to_shell()
-    if args.command == "ls":
+    elif args.command == "ls":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/Collections")
         print(*res.json(), sep="\n")
-    if args.command == "info":
+    elif args.command == "info":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/info")
         print(res.json())        

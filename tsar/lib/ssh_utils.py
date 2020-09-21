@@ -128,3 +128,54 @@ def open_url(url, browser, ssh_client=None):
         ssh_client = SSHClient()
     cmd = f"open -a {browser} {url}"
     ssh_client.exec_command(cmd)
+
+
+def list_folder_contents(path_string, sftp_client=None):
+    """Return contents of longest valid folder in path_string on host.
+
+    E.g.,  ./git/partial_folde -> <list of files in ./git>
+    """
+    path_string = resolve_path(path_string, sftp_client)
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+
+    try:
+        contents_list = sftp_client.listdir(path_string)
+    except FileNotFoundError:
+        contents_list = sftp_client.listdir(path_string.rsplit("/", 1)[0])
+    return contents_list
+
+
+def return_files_over_ssh(folder, extensions=None, sftp_client=None):
+    """Return list of files in folder with extension."""
+    if isinstance(extensions, str):
+        extensions = [extensions]
+    for extension in extensions:
+        if not extension.startswith("."):
+            raise ValueError("valid extensions start with a '.'")
+    extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
+
+    if not sftp_client:
+        sftp_client = SSHClient().open_sftp()
+
+    # recursively walk through folders to get all files with extension
+    folder = resolve_path(folder, sftp_client)
+    files = []
+
+    def get_files(folder, files=files):
+
+        folder_contents = sftp_client.listdir_attr(folder)
+        for entry in folder_contents:
+            mode = entry.st_mode
+            fname = os.path.join(folder, entry.filename).lower()
+            if S_ISDIR(mode):
+                get_files(fname)
+            elif S_ISREG(mode):
+                file_ext = fname.split(".", 1)[-1]
+                if extensions is None or file_ext in extensions:
+                    files.append(fname)
+
+    get_files(folder)
+    return files
+
+

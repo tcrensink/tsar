@@ -9,25 +9,31 @@ import os
 from collections import Counter
 import numpy as np
 import pandas as pd
+import re
 import sys
 from stat import S_ISDIR, S_ISREG
-
-
 from datetime import datetime
 from tsar.lib.ssh_utils import SSHClient
 
 
-def resolve_path(path_str):
-    """Generate canonical path from path string.
+def return_links(text):
+    """Return markdown-formatted links in text body."""
+    links = re.findall(r'\[[^\]]+\]\(<?([^)<>]+)>?\)', text)
+    return sorted(list(set(links)))
 
-    All paths assumed relative to $HOME. Expected behavior:
-    ~/test ->               /Users/username/test
-    ./test ->               /Users/username/test
-    /Users/username/test -> /Users/username/test
-    ../username/test ->     /Users/username/test
+def resolve_path(path_str, source_path=None):
+    """Resolve file paths to absolute path.    
+    
+    - paths are identical in host, container
+    - if source_path is specified, relative paths (./ ../) in path_str resolved 
+    relative to source_path
     """
     home_folder = os.environ["HOST_HOME"]
     path_str = path_str.replace("~", home_folder, 1)
+    if source_path:
+        source_dir = os.path.dirname(resolve_path(source_path))
+        path_str = os.path.join(source_dir, path_str)
+
     path_str = os.path.abspath(path_str)
     return path_str
 
@@ -42,61 +48,9 @@ def return_file_contents(path_string):
     return contents_str
 
 
-def list_folder_contents(path_string, sftp_client=None):
-    """Return contents of longest valid folder on host.
-
-    E.g.,  ./git/xxxx -> <list of files in ./git>
-    """
-    path_string = resolve_path(path_string, sftp_client)
-    if not sftp_client:
-        sftp_client = SSHClient().open_sftp()
-
-    try:
-        contents_list = sftp_client.listdir(path_string)
-    except FileNotFoundError:
-        contents_list = sftp_client.listdir(path_string.rsplit("/", 1)[0])
-    return contents_list
-
-
-def return_files_over_ssh(folder, extensions=None, sftp_client=None):
-    """Return list of files in folder with extension."""
-    if isinstance(extensions, str):
-        extensions = [extensions]
-    for extension in extensions:
-        if not extension.startswith("."):
-            raise ValueError("valid extensions start with a '.'")
-    extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
-
-    if not sftp_client:
-        sftp_client = SSHClient().open_sftp()
-
-    # recursively walk through folders to get all files with extension
-    folder = resolve_path(folder, sftp_client)
-    files = []
-
-    def get_files(folder, files=files):
-
-        folder_contents = sftp_client.listdir_attr(folder)
-        for entry in folder_contents:
-            mode = entry.st_mode
-            fname = os.path.join(folder, entry.filename).lower()
-            if S_ISDIR(mode):
-                get_files(fname)
-            elif S_ISREG(mode):
-                file_ext = fname.split(".", 1)[-1]
-                if extensions is None or file_ext in extensions:
-                    files.append(fname)
-
-    get_files(folder)
-    return files
-
-
 def return_files(path, extensions=[]):
     """Return list of files in folder with extension."""
-    for extension in extensions:
-        if not extension.startswith("."):
-            raise ValueError("valid extensions start with a '.'")
-    extensions = set([ex.rsplit(".", 1)[1] for ex in extensions])
+    extensions = set([ex.rsplit(".", 1)[-1] for ex in extensions])
 
     # recursively walk through folders to get all files with extension
     path = resolve_path(path)
@@ -152,11 +106,35 @@ def basic_text_to_keyword(raw_text, N):
     """
     words = raw_text.split()
     words = [word.lower() for word in words if word.isalpha()]
-    word_counts = dict(Counter(words))
-    df = pd.DataFrame.from_dict(word_counts, columns=["count"], orient="index")
-    df["length"] = df.index.str.len()
-    df["importance"] = np.sqrt(df["count"]) * df["length"]
-    keywords = set(df.nlargest(N, columns="importance").index)
+    word_counts = pd.Series(Counter(words))
+    word_length = word_counts.index.str.len()
+    # heuristic for gauging import words: long and frequently occuring
+    word_importance = word_length*word_counts
+    keywords = sorted(list(word_importance.nlargest(N).sort_values(ascending=False).index))
+    return keywords
+
+def text_to_keyword_linked_doc(doc_text, link_texts, N, weight=0.65):
+    """Simple function to return keywords for main doc including (weighting of) linked texts."""
+    # main text:
+    words = doc_text.split()
+    words = [word.lower() for word in words if word.isalpha()]
+    df = pd.DataFrame.from_dict(data=Counter(words), orient="index", columns=["counts"])
+    df["doc_word_weight"] = df.index.str.len()*df["counts"]
+
+    link_text = "\n".join(link_texts).split()
+    link_words = [word.lower() for word in link_text if word.isalpha()]
+    df_links = pd.DataFrame.from_dict(data=Counter(link_words), orient="index", columns=["counts"])
+    df_links["link_word_weight"] = df_links.index.str.len()*df_links["counts"]
+    df = pd.merge(
+        left=df_links[["link_word_weight"]],
+        right=df[["doc_word_weight"]], 
+        how="outer", 
+        left_index=True, 
+        right_index=True,
+    )
+    df = df.fillna(0)
+    word_weights = (df["doc_word_weight"] + weight*df["link_word_weight"])
+    keywords = list(word_weights.nlargest(N).sort_values(ascending=False).index)
     return keywords
 
 
@@ -169,16 +147,12 @@ def file_meta_data(path):
     st_size: in bytes
     st_ctime: last change to file metadata
     """
-    # info = os.stat(path)
+    info = os.stat(path)
     info_dict = {
-        "st_atime": 1600000000.0,
-        "st_mtime": 1600000000.0,
-        "st_ctime": 1600000000.0,
-        "st_size": 1600000000.0,
-        # "st_atime": info.st_atime,
-        # "st_mtime": info.st_mtime,
-        # "st_ctime": info.st_ctime,
-        # "st_size": info.st_size,
+        "st_atime": info.st_atime,
+        "st_mtime": info.st_mtime,
+        "st_ctime": info.st_ctime,
+        "st_size": info.st_size,
     }
     return info_dict
 

@@ -15,6 +15,7 @@ from tsar.lib import ssh_utils
 # must be imported to be recognized as subclasses...
 from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.lib.record_defs.arxiv_def import ArxivRecord
+from tsar.lib.record_defs.omni_record import OmniRecord
 import datetime
 from requests import HTTPError
 
