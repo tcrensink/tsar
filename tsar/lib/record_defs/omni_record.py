@@ -58,8 +58,8 @@ class OmniRecord(RecordDef):
 
     @staticmethod
     def gen_link_content(link_list, source_path):
-        """Use parsers to generate link content.
-        source_dir included to resolve relative paths.
+        """Generate content from links from source_path and return as dict `link_content`.
+        source_path included to resolve relative (file path) links.
         """
         link_content = {}
 
@@ -74,6 +74,8 @@ class OmniRecord(RecordDef):
             elif doc_type == "arxiv":
                 arxiv_content = parsers.parse_arxiv_url(link_id)["summary"]
                 link_content[link_id] = arxiv_content
+            else:
+                raise ValueError("unable to parse document.")
 
         return link_content
 

@@ -51,7 +51,7 @@ URL_DOCTYPE_MAP = {
 
 
 def infer_type(document_id):
-    """Infer the document type based on the document_id (filepath, url, etc).
+    """Infer the *document type* based for a given document_id (filepath, url, etc).
     
     used to parse files when type is not indicated, e.g. markdown files.
     """
