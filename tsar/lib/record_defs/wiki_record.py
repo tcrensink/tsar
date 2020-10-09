@@ -111,11 +111,6 @@ class WikiRecord(RecordDef):
         df.loc[record_id, "access_times"].append(curr_time)
         WikiRecord._open_doc(record_id)
 
-    @staticmethod
-    def update_collection(record_list):
-        """Modifications to records that depend on collection."""
-        pass
-
 
 def return_record_name(doc):
     """Create display name for doc/content.

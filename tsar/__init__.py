@@ -15,6 +15,7 @@ CAPTURE_DOC_PATH = os.path.join(RESOURCES_PATH, "capture.md")
 _TEMP_CONTENT_FOLDER = os.path.join(REPO_PATH, ".tmp_content")
 TESTS_FOLDER = os.path.join(REPO_PATH, "tests")
 TEST_FIXTURES_FOLDER = os.path.join(REPO_PATH, "tests/fixtures")
+TEST_RESOURCES_FOLDER = os.path.join(REPO_PATH, "tests/resources")
 
 
 # All paths as seen on HOST machine (should now be mounted to same path in container)
