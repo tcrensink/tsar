@@ -30,12 +30,12 @@ INDEX_MAPPING = {
         "properties": {
             "path": {"type": "text",},
             "content": {"type": "text", "analyzer": "english"},
-            # "links": {
-            #     "properties": {
-            #         "source_id": {"type": "keyword"},
-            #         "source_content": {"type": "text"},
-            #     },
-            # },
+            "links": {
+                "properties": {
+                    "source_id": {"type": "keyword"},
+                    "source_content": {"type": "text"},
+                },
+            },
             "access_times": {
                 "type": "date",
                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
@@ -66,7 +66,7 @@ class OmniRecord(RecordDef):
         for link_id in link_list:
             doc_type = parsers.infer_type(link_id)        
             if doc_type not in parsers.PARSABLE_DOC_TYPES:
-                link_content["link_id"] = ""
+                link_content[link_id] = ""
             elif doc_type in parsers.TEXTFILE_DOCTYPE_MAP.values():
                 doc_dict = parsers.parse_textfile(link_id, source_path=source_path)
                 link_id = doc_dict["record_id"]
@@ -110,8 +110,8 @@ class OmniRecord(RecordDef):
         return record
 
     @classmethod
-    def query_source(cls, folder):
-        """Return records for docs of valid extension within a folder."""
+    def query_source(cls, source_ref):
+        """Return records associated with a source (query url, folder, etc)."""
         raise NotImplementedError
 
     @staticmethod

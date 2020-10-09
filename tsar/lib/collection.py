@@ -115,7 +115,7 @@ class Collection(object):
         self.data = Data(self.name, folder=Collection.collections_folder)
         self.df = self.data.df
         self.record_type = self.db_meta().loc[collection_name].record_type
-        self.RecordDef = self.return_record_def(self.record_type)
+        self.RecordDef = self._return_record_def(self.record_type)
 
     @property
     def summary(self):
@@ -207,7 +207,7 @@ class Collection(object):
             print("error dropping collection from search index.")
 
     @staticmethod
-    def return_record_def(record_type):
+    def _return_record_def(record_type):
         """Return record_def from record type."""
 
         for record_def in RecordDef.__subclasses__():
