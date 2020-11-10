@@ -1,9 +1,11 @@
 arxiv
+bs4
 elasticsearch
 flask
 flask-restful
 ipdb
 ipython
+markdown
 nltk
 numpy
 pandas
