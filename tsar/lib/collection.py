@@ -23,8 +23,9 @@ import datetime
 from requests import HTTPError
 
 REGISTER_PATH = os.path.join(COLLECTIONS_FOLDER, "collection_register.pkl")
-logging.basicConfig(filename=LOG_PATH, filemode="w", level=logging.WARNING)
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
+handler = logging.FileHandler(LOG_PATH)
+logger.addHandler(handler)
 
 
 class Data(object):
@@ -378,7 +379,9 @@ class Collection(object):
         try:
             link_id = doc_type.resolve_id(link_id)
         except Exception:
-            logger.exception()
+            logger.exception(
+                f"tried to resolve link_id: {link_id} using doctype: {doc_type}"
+            )
         return link_id
 
     def gen_link_content(self, document_id):
@@ -402,6 +405,7 @@ class Collection(object):
         doc_type=None,
         gen_link_records=True,
         index_linked_content=True,
+        write=True,
     ):
         """Create a record, add it to the collection.
 
@@ -410,7 +414,11 @@ class Collection(object):
             linked content to primary doc search index.
         """
         if doc_type is None:
-            doc_type = self.doctype_resolver.return_doctype(document_id)
+            try:
+                doc_type = self.doctype_resolver.return_doctype(document_id)
+            except TypeError():
+                logger.exception(f"unable to determine doc_type for {document_id}")
+            return
         record = doc_type.gen_record(
             document_id, primary_doc=primary_doc, gen_links=True
         )
@@ -431,8 +439,8 @@ class Collection(object):
                     gen_link_records=False,
                     index_linked_content=False,
                 )
-            self.add_record(record, index_linked_content=False)
-        self.add_record(record, index_linked_content=True)
+            self.add_record(record, index_linked_content=False, write=False)
+        self.add_record(record, index_linked_content=True, write=write)
 
     def add_record(self, record, index_linked_content, write=True):
         """Add record to collection, write to disk if registered."""
@@ -486,3 +494,13 @@ class Collection(object):
                 k: v for k, v in record_score_dict.items() if k in primary_ids
             }
         return record_score_dict
+
+    def add_from_source(self, doc_type, source_id, *source_args, **source_kwargs):
+        """Add doc_type records from source_id."""
+        document_ids = doc_type.gen_from_source(
+            source_id, *source_args, **source_kwargs
+        )
+        for document_id in document_ids:
+            self.add_document(document_id=document_id, doc_type=doc_type, write=False)
+        if self.registered:
+            self.write()

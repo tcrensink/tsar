@@ -10,11 +10,7 @@ class MarkdownDoc(DocType):
     """Markdown document type."""
 
     schema = BASE_SCHEMA
-    index_mapping = {
-        "mappings": {
-            "properties": {"document_name": {"type": "text", "analyzer": "english"},}
-        }
-    }
+    index_mapping = {"mappings": {"properties": {"document_name": {"type": "text",},}}}
     index_mapping = update_dict(index_mapping, BASE_MAPPING)
 
     @staticmethod
