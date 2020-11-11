@@ -23,6 +23,10 @@ class MarkdownDoc(DocType):
         document_id = MarkdownDoc.resolve_id(document_id)
         raw_doc = parse_lib.return_file_contents(document_id)
         links = MarkdownDoc.gen_links(raw_doc) if gen_links else []
+        links = [
+            MarkdownDoc.resolve_id(link_id, source_path=document_id)
+            for link_id in links
+        ]
         record = {
             "document_id": document_id,
             "document_name": document_id,
@@ -60,8 +64,8 @@ class MarkdownDoc(DocType):
         return doc_ids
 
     @staticmethod
-    def resolve_id(document_id):
-        return parse_lib.resolve_path(document_id)
+    def resolve_id(document_id, source_path=None):
+        return parse_lib.resolve_path(document_id, source_path=source_path)
 
     @staticmethod
     def is_valid(document_id):
