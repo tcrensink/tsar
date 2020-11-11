@@ -4,6 +4,7 @@ import requests
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
 from tsar.lib.record_defs import parse_lib
 
+
 class ArxivDoc(DocType):
     """Arxiv publication document type."""
 
@@ -27,7 +28,7 @@ class ArxivDoc(DocType):
     index_mapping = update_dict(index_mapping, BASE_MAPPING)
 
     @staticmethod
-    def gen_record(document_id):
+    def gen_record(document_id, primary_doc, gen_links):
         """Generate record from arxiv url.
         # example document_id: https://arxiv.org/abs/1810.04805
         arxiv reference: https://arxiv.org/help/api/user-manual#_calling_the_api
@@ -35,11 +36,11 @@ class ArxivDoc(DocType):
         """
         paper_id = document_id.split("abs/")[-1]
         record_dict = arxiv.query(id_list=[paper_id])[-1]
-        record = gen_record_from_arxiv_dict(record_dict)
+        record = gen_record_from_arxiv_dict(record_dict, primary_doc=primary_doc)
         return record
 
     @staticmethod
-    def gen_search_index(record):
+    def gen_search_index(record, link_content=None):
         """Generate a search index from a record."""
         document_id = record["document_id"]
         record_index = {
@@ -47,6 +48,7 @@ class ArxivDoc(DocType):
             "content": record["content"],
             "authors": record["authors"],
             "publish_date": record["publish_date"],
+            "link_content": link_content,
         }
         return (document_id, record_index)
 
@@ -62,7 +64,7 @@ class ArxivDoc(DocType):
 
     @staticmethod
     def resolve_id(document_id):
-        arxiv_dict = ArxivDoc.gen_record(document_id)
+        arxiv_dict = ArxivDoc.gen_record(document_id, primary_doc=None, gen_links=False)
         return arxiv_dict["document_id"]
 
     @staticmethod
@@ -70,7 +72,8 @@ class ArxivDoc(DocType):
         value = True if "arxiv.org" in document_id else False
         return value
 
-def gen_record_from_arxiv_dict(arxiv_dict):
+
+def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
     """Parse arxiv package result into a record."""
     abstract = arxiv_dict["summary"].replace("\n", " ")
     title = arxiv_dict["title"].replace("\n", "")
@@ -81,6 +84,7 @@ def gen_record_from_arxiv_dict(arxiv_dict):
         "document_id": arxiv_dict["id"],
         "document_name": title,
         "document_type": ArxivDoc,
+        "primary_doc": primary_doc,
         "content": abstract,
         "authors": arxiv_dict["authors"],
         "publish_date": publish_date,

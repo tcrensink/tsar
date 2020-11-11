@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 import collections.abc
 
-# required fields for all DocTypes; used by app/framework.  Prefer pandas/numpy dtypes.
+# required fields for all DocTypes; used by app/framework.  Uses pandas/numpy dtypes.
 BASE_SCHEMA = {
     "document_id": object,
     "document_name": object,
     "document_type": type,
+    "primary_doc": bool,
     "content": object,
     "links": object,
 }
@@ -17,7 +18,7 @@ BASE_MAPPING = {
         "properties": {
             "document_name": {"type": "text", "analyzer": "english"},
             "content": {"type": "text", "analyzer": "english"},
-            "link_content": {"type": "text", "analyzer": "english"},
+            "link_content": {"type": "text", "boost": 0.3, "analyzer": "english"},
         }
     }
 }
@@ -50,20 +51,20 @@ class DocType(ABC):
 
     @staticmethod
     @abstractmethod
-    def gen_record(document_id):
+    def gen_record(document_id, primary_doc, gen_links):
         """Generate a record {document_id, field_dict} from a document_id."""
         pass
 
     @staticmethod
     @abstractmethod
-    def gen_search_index(record):
+    def gen_search_index(record, link_content):
         """Generate a search index entry from a record."""
         pass
 
     @staticmethod
     @abstractmethod
-    def gen_links(record):
-        """Parse record of same type for links using DocType syntax."""
+    def gen_links(text):
+        """Parse text for links using DocType-specifics syntax."""
         pass
 
     @staticmethod

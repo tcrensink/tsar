@@ -12,34 +12,35 @@ class MarkdownDoc(DocType):
     schema = BASE_SCHEMA
     index_mapping = {
         "mappings": {
-            "properties": {
-                "document_name": {"type": "text", "analyzer": "english"},
-            }
+            "properties": {"document_name": {"type": "text", "analyzer": "english"},}
         }
     }
     index_mapping = update_dict(index_mapping, BASE_MAPPING)
 
     @staticmethod
-    def gen_record(document_id):
+    def gen_record(document_id, primary_doc, gen_links):
         """Generate a record from a markdown file."""
         document_id = MarkdownDoc.resolve_id(document_id)
         raw_doc = parse_lib.return_file_contents(document_id)
-
+        links = MarkdownDoc.gen_links(raw_doc) if gen_links else []
         record = {
             "document_id": document_id,
             "document_name": document_id,
+            "primary_doc": primary_doc,
             "document_type": MarkdownDoc,
             "content": raw_doc,
+            "links": links,
         }
         return record
 
     @staticmethod
-    def gen_search_index(record):
+    def gen_search_index(record, link_content=None):
         """Generate a search index entry from a record."""
         document_id = record["document_id"]
         record_index = {
             "document_name": record["document_id"],
-            "content": record["content"]
+            "content": record["content"],
+            "link_content": link_content,
         }
         return (document_id, record_index)
 

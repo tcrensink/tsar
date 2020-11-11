@@ -83,7 +83,11 @@ class Data(object):
 
     def return_record(self, document_id):
         """Return record associated with doc_id."""
-        return self.df.loc[document_id].to_dict()
+        if document_id in self.df.index:
+            record = self.df.loc[document_id].to_dict()
+        else:
+            record = None
+        return record
 
     def rm_record(self, document_id):
         """Remove the record associated with doc_id."""
@@ -241,7 +245,7 @@ class Collection(object):
     def clear_tmp_collections(cls, index_str="tmp_*"):
         cls.client.drop_index(index_str)
 
-    def register(self, records_db_path=None, config_path=None):
+    def register(self, records_db_path=None, config_path=None, write=True):
         """Register collection/define asset paths.
 
         Registration (and subsequent collection.write) are used to create a persistent collection
@@ -281,6 +285,8 @@ class Collection(object):
         for k, v in collection_record.items():
             setattr(self, k, v)
         self.registered = True
+        if write:
+            self.write()
 
     def _write_records_db(self, path, force=True):
         """Write records_db to file."""
@@ -365,21 +371,82 @@ class Collection(object):
             except Exception:
                 logger.exception(f"warning: unable to remove {index_id}")
 
-    def add_document(self, document_id, doc_type=None):
-        """Create a record, add it to the collection."""
+    def _resolve_link_id(self, link_id):
+        """Resolve document_id using doctype_resolver for link ids."""
+        try:
+            doc_type = self.doctype_resolver.return_doctype(link_id)
+            link_id = doc_type.resolve_id(link_id)
+        except Exception:
+            logger.exception()
+        return link_id
+
+    def gen_link_content(self, document_id):
+        """Append content from linked docs."""
+        df = self.records_db.df
+        links = df.loc[document_id].links
+        # link content series for link records in df:
+        content_series = df[df.index.isin(links)].content
+        link_content = "\n".join(content_series)
+        return link_content
+
+    def primary_documents(self):
+        """Return index of primary document_ids."""
+        df = self.records_db.df
+        return df[df.primary_doc].index
+
+    def add_document(
+        self,
+        document_id,
+        primary_doc=True,
+        doc_type=None,
+        gen_link_records=True,
+        index_linked_content=True,
+    ):
+        """Create a record, add it to the collection.
+
+        This also handles the following behavior:
+        - resolve link ids
+        - optionally, generate records for links, add
+            linked content to primary doc search index.
+        """
         if doc_type is None:
             doc_type = self.doctype_resolver.return_doctype(document_id)
-        record = doc_type.gen_record(document_id)
-        self.add_record(record)
+        record = doc_type.gen_record(
+            document_id, primary_doc=primary_doc, gen_links=True
+        )
+        # resolve link_ids
+        resolved_links = [self._resolve_link_id(link) for link in record["links"]]
+        record["links"] = resolved_links
 
-    def add_record(self, record):
+        # generate records for linked docs that aren't primary
+        if gen_link_records:
+            link_only_ids = [
+                link for link in resolved_links if link not in self.primary_documents()
+            ]
+            for link_id in link_only_ids:
+                self.add_document(
+                    document_id=link_id,
+                    primary_doc=False,
+                    doc_type=None,
+                    gen_link_records=False,
+                    index_linked_content=False,
+                )
+            self.add_record(record, index_linked_content=False)
+        self.add_record(record, index_linked_content=True)
+
+    def add_record(self, record, index_linked_content):
         """Add record to collection, write to disk if registered."""
         self.records_db.update_record(record)
         if self.registered:
             self.records_db.write(self.records_db_path)
         doc_type = record["document_type"]
-        (document_id, record_index) = doc_type.gen_search_index(record)
-
+        if index_linked_content:
+            link_content = self.gen_link_content(record["document_id"])
+        else:
+            link_content = None
+        (document_id, record_index) = doc_type.gen_search_index(
+            record, link_content=link_content
+        )
         index_name = return_index_name(
             self._collection_id, doc_type_str=doc_type.__name__
         )
