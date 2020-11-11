@@ -371,10 +371,11 @@ class Collection(object):
             except Exception:
                 logger.exception(f"warning: unable to remove {index_id}")
 
-    def _resolve_link_id(self, link_id):
+    def _resolve_link_id(self, link_id, doc_type=None):
         """Resolve document_id using doctype_resolver for link ids."""
-        try:
+        if doc_type is None:
             doc_type = self.doctype_resolver.return_doctype(link_id)
+        try:
             link_id = doc_type.resolve_id(link_id)
         except Exception:
             logger.exception()
@@ -404,7 +405,6 @@ class Collection(object):
     ):
         """Create a record, add it to the collection.
 
-        This also handles the following behavior:
         - resolve link ids
         - optionally, generate records for links, add
             linked content to primary doc search index.
@@ -434,7 +434,7 @@ class Collection(object):
             self.add_record(record, index_linked_content=False)
         self.add_record(record, index_linked_content=True)
 
-    def add_record(self, record, index_linked_content):
+    def add_record(self, record, index_linked_content, write=True):
         """Add record to collection, write to disk if registered."""
         self.records_db.update_record(record)
         if self.registered:
@@ -475,9 +475,14 @@ class Collection(object):
         )
         return query_results
 
-    def query_records(self, query_str):
+    def query_records(self, query_str, primary_docs_only=True):
         """return record ids from query_str."""
         res = self._raw_query(query_str)
         results = res["hits"]["hits"]
         record_score_dict = {r["_id"]: r["_score"] for r in results}
+        if primary_docs_only:
+            primary_ids = set(self.primary_documents())
+            record_score_dict = {
+                k: v for k, v in record_score_dict.items() if k in primary_ids
+            }
         return record_score_dict

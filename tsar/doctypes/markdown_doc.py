@@ -64,8 +64,8 @@ class MarkdownDoc(DocType):
         return doc_ids
 
     @staticmethod
-    def resolve_id(document_id, source_path=None):
-        return parse_lib.resolve_path(document_id, source_path=source_path)
+    def resolve_id(document_id):
+        return parse_lib.resolve_path(document_id)
 
     @staticmethod
     def is_valid(document_id, extensions=[".md"]):
