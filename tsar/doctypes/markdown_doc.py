@@ -24,8 +24,8 @@ class MarkdownDoc(DocType):
         raw_doc = parse_lib.return_file_contents(document_id)
         links = MarkdownDoc.gen_links(raw_doc) if gen_links else []
         links = [
-            MarkdownDoc.resolve_id(link_id, source_path=document_id)
-            for link_id in links
+            parse_lib.resolve_path(link, document_id) if os.path.exists(link) else link
+            for link in links
         ]
         record = {
             "document_id": document_id,
@@ -68,6 +68,9 @@ class MarkdownDoc(DocType):
         return parse_lib.resolve_path(document_id, source_path=source_path)
 
     @staticmethod
-    def is_valid(document_id):
-        value = True if os.path.splitext(document_id)[-1] == ".md" else False
-        return value
+    def is_valid(document_id, extensions=[".md"]):
+        valid = (
+            os.path.exists(document_id)
+            and os.path.splitext(document_id)[-1] in extensions
+        )
+        return valid
