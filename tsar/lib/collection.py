@@ -10,10 +10,11 @@ import json
 import pandas as pd
 from pickle import UnpicklingError
 from requests.exceptions import HTTPError
+from tsar.doctypes import DOCTYPES
 from tsar.doctypes.doctype import update_dict, DocTypeResolver
 from tsar.doctypes.arxiv_doc import ArxivDoc
 from tsar.doctypes.markdown_doc import MarkdownDoc
-from tsar import COLLECTIONS_FOLDER, HOST_REPO_PATH, DOCTYPES, LOG_PATH
+from tsar import COLLECTIONS_FOLDER, HOST_REPO_PATH, LOG_FOLDER
 from tsar.config import DEFAULT_COLLECTION
 from tsar.lib.record_defs.parse_lib import resolve_path
 from tsar.lib import search
@@ -23,8 +24,9 @@ import datetime
 from requests import HTTPError
 
 REGISTER_PATH = os.path.join(COLLECTIONS_FOLDER, "collection_register.pkl")
+
 logger = logging.getLogger(__name__)
-handler = logging.FileHandler(LOG_PATH)
+handler = logging.FileHandler(os.path.join(LOG_FOLDER, "collection.log"))
 logger.addHandler(handler)
 
 
@@ -35,6 +37,10 @@ class Data(object):
         if df.index.name != index_field:
             raise ValueError(f"index field required to be `{index_field}`")
         self.df = df
+
+    def __repr__(self):
+        value = "data:\n" + self.df.__repr__()
+        return value
 
     @classmethod
     def new(cls, record_schema, index_field="document_id"):
@@ -130,10 +136,6 @@ class Register(object):
         df = pd.read_pickle(self.path)
         return True if collection_id in df.index else False
 
-    def return_record(self, collection_id):
-        df = pd.read_pickle(self.path)
-        return df.loc[collection_id].to_dict()
-
     def add(self, collection_record):
         """Register a collection."""
         collection_id = collection_record.pop("collection_id")
@@ -197,10 +199,9 @@ class Collection(object):
     @property
     def _collection_id(self):
         if self.registered:
-            _collection_id = self.collection_id
+            return self.collection_id
         else:
-            _collection_id = f"tmp_{self.collection_id}"
-        return _collection_id
+            return f"tmp_{self.collection_id}"
 
     @classmethod
     def new(cls, collection_id, doc_types):
@@ -375,7 +376,10 @@ class Collection(object):
     def _resolve_link_id(self, link_id, doc_type=None):
         """Resolve document_id using doctype_resolver for link ids."""
         if doc_type is None:
-            doc_type = self.doctype_resolver.return_doctype(link_id)
+            try:
+                doc_type = self.doctype_resolver.return_doctype(link_id)
+            except Exception:
+                logger.exception(f"unable to determine doctype of {link_id}")
         try:
             link_id = doc_type.resolve_id(link_id)
         except Exception:
@@ -416,9 +420,9 @@ class Collection(object):
         if doc_type is None:
             try:
                 doc_type = self.doctype_resolver.return_doctype(document_id)
-            except TypeError():
+            except Exception:
                 logger.exception(f"unable to determine doc_type for {document_id}")
-            return
+                return
         record = doc_type.gen_record(
             document_id, primary_doc=primary_doc, gen_links=True
         )
@@ -475,6 +479,9 @@ class Collection(object):
             self._collection_id, doc_type_str=doc_type.__name__
         )
         self.client.delete_record(document_id, index_name=index_name)
+
+    def return_record(self, document_id):
+        return self.records_db.return_record(document_id)
 
     def _raw_query(self, query_str):
         """Return raw query result json."""

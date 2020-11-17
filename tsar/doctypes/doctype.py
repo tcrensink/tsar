@@ -94,10 +94,12 @@ class DocTypeResolver(object):
 
     def return_doctype(self, document_id):
         """Return best doctype for document_id."""
+        if not isinstance(document_id, str):
+            raise Exception(f"document_id not a string")
         for doctype in self.doctypes:
             if doctype.is_valid(document_id):
                 return doctype
-        return None
+        raise Exception("No associated doctype")
 
     def resolve_id(self, document_id, doc_type=None):
         if doc_type is None:

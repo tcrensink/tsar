@@ -69,8 +69,13 @@ class ArxivDoc(DocType):
 
     @staticmethod
     def is_valid(document_id):
-        value = True if "arxiv.org" in document_id else False
-        return value
+        url = requests.urllib3.util.parse_url(document_id)
+        cond1 = bool(url.host == "arxiv.org")
+        cond2 = bool(url.path.startswith("/abs"))
+        if cond1 and cond2:
+            return True
+        else:
+            return False
 
 
 def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):

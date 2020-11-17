@@ -18,14 +18,15 @@ from tsar.lib.ssh_utils import SSHClient
 
 def return_links(text):
     """Return markdown-formatted links in text body."""
-    links = re.findall(r'\[[^\]]+\]\(<?([^)<>]+)>?\)', text)
+    links = re.findall(r"\[[^\]]+\]\(<?([^)<>]+)>?\)", text)
     return sorted(list(set(links)))
 
+
 def resolve_path(path_str, source_path=None):
-    """Resolve file paths to absolute path.    
-    
+    """Resolve file paths to absolute path.
+
     - paths are identical in host, container
-    - if source_path is specified, relative paths (./ ../) in path_str resolved 
+    - if source_path is specified, relative paths (./ ../) in path_str resolved
     relative to source_path
     """
     home_folder = os.environ["HOST_HOME"]
@@ -62,12 +63,14 @@ def return_files(path, extensions=[]):
         for dirpath, dirnames, filenames in os.walk(path):
             curr_files = [os.path.join(dirpath, fn) for fn in filenames]
             if extensions:
-                curr_files = [fn for fn in curr_files if fn.split(".")[-1] in extensions]
+                curr_files = [
+                    fn for fn in curr_files if fn.split(".")[-1] in extensions
+                ]
             else:
                 curr_files = [fn for fn in curr_files if fn.split(".")[-1]]
             files.extend(curr_files)
     else:
-        raise ValueError(f"{path} is neither folder nor file; unable to proceed.")
+        raise ValueError(f"{path} not found; unable to proceed.")
     return files
 
 
@@ -109,9 +112,12 @@ def basic_text_to_keyword(raw_text, N):
     word_counts = pd.Series(Counter(words))
     word_length = word_counts.index.str.len()
     # heuristic for gauging import words: long and frequently occuring
-    word_importance = word_length*word_counts
-    keywords = sorted(list(word_importance.nlargest(N).sort_values(ascending=False).index))
+    word_importance = word_length * word_counts
+    keywords = sorted(
+        list(word_importance.nlargest(N).sort_values(ascending=False).index)
+    )
     return keywords
+
 
 def text_to_keyword_linked_doc(doc_text, link_texts, N, weight=0.65):
     """Simple function to return keywords for main doc including (weighting of) linked texts."""
@@ -119,21 +125,23 @@ def text_to_keyword_linked_doc(doc_text, link_texts, N, weight=0.65):
     words = doc_text.split()
     words = [word.lower() for word in words if word.isalpha()]
     df = pd.DataFrame.from_dict(data=Counter(words), orient="index", columns=["counts"])
-    df["doc_word_weight"] = df.index.str.len()*df["counts"]
+    df["doc_word_weight"] = df.index.str.len() * df["counts"]
 
     link_text = "\n".join(link_texts).split()
     link_words = [word.lower() for word in link_text if word.isalpha()]
-    df_links = pd.DataFrame.from_dict(data=Counter(link_words), orient="index", columns=["counts"])
-    df_links["link_word_weight"] = df_links.index.str.len()*df_links["counts"]
+    df_links = pd.DataFrame.from_dict(
+        data=Counter(link_words), orient="index", columns=["counts"]
+    )
+    df_links["link_word_weight"] = df_links.index.str.len() * df_links["counts"]
     df = pd.merge(
         left=df_links[["link_word_weight"]],
-        right=df[["doc_word_weight"]], 
-        how="outer", 
-        left_index=True, 
+        right=df[["doc_word_weight"]],
+        how="outer",
+        left_index=True,
         right_index=True,
     )
     df = df.fillna(0)
-    word_weights = (df["doc_word_weight"] + weight*df["link_word_weight"])
+    word_weights = df["doc_word_weight"] + weight * df["link_word_weight"]
     keywords = list(word_weights.nlargest(N).sort_values(ascending=False).index)
     return keywords
 

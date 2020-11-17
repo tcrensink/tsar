@@ -1,16 +1,4 @@
-"""
-package-wide import values
-"""
 import os
-from tsar import doctypes
-from tsar.doctypes.markdown_doc import MarkdownDoc
-from tsar.doctypes.arxiv_doc import ArxivDoc
-
-# list of recognized doc types
-DOCTYPES = {
-    ArxivDoc.__name__: ArxivDoc,
-    MarkdownDoc.__name__: MarkdownDoc,
-}
 
 # all paths as seen on CONTAINER:
 MODULE_PATH = __path__[0]
@@ -20,7 +8,7 @@ COLLECTIONS_FOLDER = os.path.join(RESOURCES_PATH, "collections/")
 # CONTENT_FOLDER = os.path.join(REPO_PATH, 'tsar_content')
 CAPTURE_DOC_PATH = os.path.join(RESOURCES_PATH, "capture.md")
 
-LOG_PATH = os.path.join(RESOURCES_PATH, "tsar.log")
+LOG_FOLDER = os.path.join(RESOURCES_PATH, "logs/")
 
 # _TEMP_METADB_PATH = METADB_PATH
 _TEMP_CONTENT_FOLDER = os.path.join(REPO_PATH, ".tmp_content")

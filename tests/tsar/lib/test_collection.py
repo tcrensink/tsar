@@ -6,7 +6,8 @@ import pytest
 import tsar
 from tsar.lib.collection import Data, Register, REGISTER_PATH
 from tsar.lib.collection import Collection as ProdCollection
-from tsar import TESTS_FOLDER, COLLECTIONS_FOLDER, DOCTYPES
+from tsar import TESTS_FOLDER, COLLECTIONS_FOLDER
+from tsar.doctypes import DOCTYPES
 
 
 @pytest.fixture

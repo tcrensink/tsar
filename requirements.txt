@@ -6,6 +6,7 @@ flask-restful
 ipdb
 ipython
 markdown
+networkx
 nltk
 numpy
 pandas

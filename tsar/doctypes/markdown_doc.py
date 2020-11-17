@@ -1,9 +1,17 @@
 from bs4 import BeautifulSoup
+import logging
 import markdown
 import os
 
+# from tsar import LOG_FOLDER
+from tsar import LOG_FOLDER
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
 from tsar.lib.record_defs import parse_lib
+from logging import FileHandler
+
+handler = FileHandler(os.path.join(LOG_FOLDER, "markdown_doc.log"), mode="w+")
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 
 
 class MarkdownDoc(DocType):
@@ -18,11 +26,17 @@ class MarkdownDoc(DocType):
         """Generate a record from a markdown file."""
         document_id = MarkdownDoc.resolve_id(document_id)
         raw_doc = parse_lib.return_file_contents(document_id)
-        links = MarkdownDoc.gen_links(raw_doc) if gen_links else []
-        links = [
-            parse_lib.resolve_path(link, document_id) if os.path.exists(link) else link
-            for link in links
-        ]
+        raw_links = MarkdownDoc.gen_links(raw_doc) if gen_links else []
+        links = []
+        for link in raw_links:
+            try:
+                res_link = parse_lib.resolve_path(link, document_id)
+            except AttributeError:
+                logger.exception(f"unable to resolve link: {link}")
+            if os.path.exists(res_link):
+                links.append(res_link)
+            else:
+                links.append(link)
         record = {
             "document_id": document_id,
             "document_name": document_id,

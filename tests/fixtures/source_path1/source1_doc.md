@@ -6,6 +6,7 @@ bare links
 - https://arxiv.org/abs/1906.03926
 
 markdown-style links
+
 - [rel link to source2](../source_path2/source2_doc.md)
 - [external link](https://arxiv.org/abs/1906.03926)
 

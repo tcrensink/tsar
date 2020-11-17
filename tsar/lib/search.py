@@ -9,8 +9,8 @@ from requests.exceptions import ConnectionError, HTTPError
 from pandas.io.json import json_normalize
 from tsar import MODULE_PATH, REPO_PATH
 from urllib.parse import quote_plus, unquote_plus
-from tsar.config import ELASTICSEARCH_PORT
 
+ELASTICSEARCH_PORT = 9200
 HOST = "localhost"
 BASE_URL = f"http://{HOST}:{ELASTICSEARCH_PORT}"
 
@@ -74,7 +74,8 @@ class Client(object):
         self.base_url = f"http://{host}:{port}"
 
     @property
-    def return_indexes_summary_df(self):
+    def summary(self):
+        """Return indices summary dataframe."""
         res = self.session.get(self.base_url + "/_cat/indices?v")
         res.raise_for_status()
         table_values = [j.split() for j in res.text.splitlines()]
@@ -123,7 +124,7 @@ class Client(object):
         return res
 
     def query(
-        self, index_list, query_str="*", default_fields="*", num_results=12,
+        self, index_list, query_str="*", default_fields="*", num_results=20,
     ):
         """Basic query using the lucene search syntax.
 

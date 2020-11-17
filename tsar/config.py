@@ -6,7 +6,6 @@ from tsar import REPO_PATH
 OPEN_TEXT_CMD = "open -a TextEdit {file_path}"
 
 BROWSER = "Safari"
-ELASTICSEARCH_PORT = 9200
 
 # TSAR CONTENT DEFAULTS
 DEFAULT_COLLECTION = "help_docs"
