@@ -5,7 +5,8 @@ flask
 flask-restful
 ipdb
 ipython
-markdown
+mistune==2.0.0a4
+# markdown
 networkx
 nltk
 numpy

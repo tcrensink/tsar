@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import logging
-import markdown
+import mistune
 import os
 
 # from tsar import LOG_FOLDER
@@ -61,7 +61,7 @@ class MarkdownDoc(DocType):
     @staticmethod
     def gen_links(text):
         """Return links from markdown text."""
-        html = markdown.markdown(text)
+        html = mistune.html(text)
         soup = BeautifulSoup(html, features="html.parser")
         links = [link.get("href") for link in soup.findAll("a")]
         return links
