@@ -1,31 +1,32 @@
 
 [![tcrensink](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://app.circleci.com/pipelines/github/tcrensink/tsar/)
 
-(alpha version for macos coming soon)
+(beta version for macos coming soon)
 
 # What is TSAR?
-TSAR is a terminal-based productivity tool. Use it as a personal knowledge base (PKB), note taking app, digital journal, and more.  Access, explore, and connect your document collections from terminal with *maxmimal efficiency*.
+[Memex](https://en.wikipedia.org/wiki/Memex) is a hypothetical device *in which individuals would compress and store all of their books, records, and communications, mechanized so that it may be consulted with exceeding speed and flexibility*.  TSAR is a terminal-based vision of *memex*. It provides frictionless access to your digital information through search, linking, association, and tagging. Use it to manage notes, a personal knowledge base (PKB), or introspect digital document collections.
 
-### Features
-- **Search**: search your documents in real time with the lucene query syntax, powered by elasticsearch
-- **Flexibility**: Use markdown, plain text, source code, ArXiv urls. Don't see what you need? Define a custom *record definition* for your files
-- **Workflow Integration**: TSAR integrates with your editor, web browser, etc.
+# Usage
+- Add documents (.md, .txt, arxiv urls) to a collection via the terminal client.  TSAR generates metadata from your docs, leaving source data unmodified.
+- Attach to the TSAR terminal interface via the command `tsar`; search, browse, preview, your documents with unmatched speed.
+- Detach from TSAR via `ctrl-c`. It runs in the background and will resume right where you left off next time.
 
-# Quickstart
+# Features
+- **Incremental search**: via lucene query syntax, powered by elasticsearch
+- **Linking**: Automatically detect and index linked content (hyperlink, citations, etc.)
+- **Flexibility**: create multiple collections, define keybindings, add folder watch and more
+- **Extensibility**: customize how documents are parsed, link syntax, and more.  TSAR was designed with extensibility in mind
 
-### Installation
-**Note**: your password is required during installation to authorize an ssh from your computer to the Docker container.
-1. install [Docker](https://www.docker.com/get-started)
+# Installation and quickstart
+1. install [Docker](https://www.docker.com/get-started) desktop on your system
 2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
-3. run installation script: `python install.py`
-4. type `tsar` in a terminal
-5. tsar's query window should appear for the `help_docs` collection; type `*` to see documents on how to use tsar.
-
+3. run installation script `python install.py` and follow instructions
+4. type `tsar` into a terminal window; it may take a few seconds the first time but is fast to connect, disconnect
+5. tsar's query window should appear for the `help_docs` collection; type `*` to see all documents; press return to open one.
 
 # Related
-TSAR is a vision for digital productivity inspired by many sources, including:
+There are several productivity tools with similar goals.  Here are some:
 
-- ["Getting Things Done"](https://gettingthingsdone.com) by David Allen
 - Emacs [org mode](https://orgmode.org)
 - [Roam](https://roamresearch.com)
 - [nvALT](https://nvultra.com)
