@@ -32,4 +32,3 @@ def add_source(collection, doc_type, source_id, *source_args, **source_kwargs):
         *source_args,
         **source_kwargs,
     )
-    # print(f"added source {source_id}")
