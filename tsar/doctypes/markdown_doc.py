@@ -68,7 +68,7 @@ class MarkdownDoc(DocType):
 
     @staticmethod
     def gen_from_source(source_id, extensions=[".md"]):
-        """Return markdown docs in folder."""
+        """Return markdown docs from folder source_id, recursively."""
         doc_ids = parse_lib.return_files(source_id, extensions=extensions)
         doc_ids = [MarkdownDoc.resolve_id(doc_id) for doc_id in doc_ids]
         return doc_ids
@@ -76,6 +76,10 @@ class MarkdownDoc(DocType):
     @staticmethod
     def resolve_id(document_id):
         return parse_lib.resolve_path(document_id)
+
+    @staticmethod
+    def resolve_source_id(source_id):
+        return parse_lib.resolve_path(source_id)
 
     @staticmethod
     def is_valid(document_id, extensions=[".md"]):

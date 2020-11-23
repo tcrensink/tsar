@@ -90,8 +90,6 @@ def test_data_init(records_db_fixture):
 
 
 def test_data_new(arxiv_record1):
-    # assert 0
-    # import IPython; IPython.embed()
     schema = pd.DataFrame(data=[arxiv_record1]).dtypes
     data = Data.new(schema)
     df = pd.DataFrame(columns=schema.keys()).set_index("document_id", drop=True)
@@ -208,8 +206,8 @@ def test_return_record(register, tmpdir):
 
 def test_collection_new(Collection, COLLECTIONS_FOLDER_TEST):
     # test new collection, and second collection by same name overwites first if unregistered (dropped)
-    coll = Collection.new("test", doc_types=list(DOCTYPES.values()))
-    coll = Collection.new("test", doc_types=list(DOCTYPES.values()))
+    _ = Collection.new("test", doc_types=list(DOCTYPES.values()))
+    _ = Collection.new("test", doc_types=list(DOCTYPES.values()))
 
 
 def test_collection_register(Collection, register, COLLECTIONS_FOLDER_TEST):
@@ -274,7 +272,8 @@ def test_add_document_remove_record(Collection, register, arxiv_record1, arxiv_r
 
     doc_id = "https://arxiv.org/abs/1810.04805"
     coll = Collection.new("test", doc_types=list(DOCTYPES.values()))
-    resolved_id = coll.doctype_resolver.resolve_id(doc_id)
+    doc_type = coll.doctype_resolver.return_doctype(doc_id)
+    resolved_id = doc_type.resolve_id(doc_id)
 
     coll.add_document(resolved_id)
     assert resolved_id in coll.records_db.df.index

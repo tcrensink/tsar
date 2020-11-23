@@ -76,7 +76,7 @@ class Data(object):
         if os.path.exists(path):
             try:
                 # verify filetype before deleting
-                obj = cls.read(path)
+                _ = cls.read(path)
                 os.remove(path)
             except UnpicklingError("Aborted: not a database file."):
                 return
@@ -504,6 +504,7 @@ class Collection(object):
 
     def add_from_source(self, doc_type, source_id, *source_args, **source_kwargs):
         """Add doc_type records from source_id."""
+        doc_type = DOCTYPES[doc_type]
         document_ids = doc_type.gen_from_source(
             source_id, *source_args, **source_kwargs
         )

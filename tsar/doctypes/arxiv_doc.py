@@ -68,6 +68,10 @@ class ArxivDoc(DocType):
         return arxiv_dict["document_id"]
 
     @staticmethod
+    def resolve_source_id(source_id):
+        return source_id
+
+    @staticmethod
     def is_valid(document_id):
         url = requests.urllib3.util.parse_url(document_id)
         cond1 = bool(url.host == "arxiv.org")

@@ -77,7 +77,13 @@ class DocType(ABC):
     @abstractmethod
     def resolve_id(document_id):
         """Resolve id to be unique for each document."""
-        return document_id
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def resolve_source_id(source_id):
+        """Resolve source id."""
+        pass
 
     @staticmethod
     @abstractmethod
@@ -100,9 +106,3 @@ class DocTypeResolver(object):
             if doctype.is_valid(document_id):
                 return doctype
         raise Exception("No associated doctype")
-
-    def resolve_id(self, document_id, doc_type=None):
-        if doc_type is None:
-            doc_type = self.return_doctype(document_id)
-        resolved_id = doc_type.resolve_id(document_id)
-        return resolved_id
