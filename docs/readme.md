@@ -4,18 +4,18 @@
 (beta version for macos coming soon)
 
 # What is TSAR?
-[Memex](https://en.wikipedia.org/wiki/Memex) is a hypothetical device *in which individuals would compress and store all of their books, records, and communications, mechanized so that it may be consulted with exceeding speed and flexibility*.  TSAR is a terminal-based vision of *memex*. It provides frictionless access to your digital information through search, linking, association, and tagging. Use it to manage notes, a personal knowledge base (PKB), or introspect digital document collections.
+TSAR is a tool to seamlessly integrate your thoughts and digital documents.  It brings services like incremental search, linking, document association, and spaced-repetition to your existing documents in a frictionless text-based interface.  Use it to manage notes, a personal knowledge base (PKB), or as a study aid.
 
 # Usage
 - Add documents (.md, .txt, arxiv urls) to a collection via the terminal client.  TSAR generates metadata from your docs, leaving source data unmodified.
-- Attach to the TSAR terminal interface via the command `tsar`; search, browse, preview, your documents with unmatched speed.
+- Attach to the TSAR terminal interface via the command `tsar`; search, browse, preview, your documents with unmatched efficiency.
 - Detach from TSAR via `ctrl-c`. It runs in the background and will resume right where you left off next time.
 
 # Features
 - **Incremental search**: via lucene query syntax, powered by elasticsearch
 - **Linking**: Automatically detect and index linked content (hyperlink, citations, etc.)
-- **Flexibility**: create multiple collections, define keybindings, add folder watch and more
-- **Extensibility**: customize how documents are parsed, link syntax, and more.  TSAR was designed with extensibility in mind
+- **Flexibility**: supports multiple document collections, custom keybindings, folder watch, and more
+- **Extensibility**: customize how documents are parsed, link syntax, and more.  TSAR was designed with extensibility in mind.
 
 # Installation and quickstart
 1. install [Docker](https://www.docker.com/get-started) desktop on your system
