@@ -1,5 +1,5 @@
 """
-Basic Screen interface.
+Basic input/results Screen.
 """
 from collections.abc import Sequence
 from prompt_toolkit.application import Application
@@ -11,6 +11,7 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.processors import TabsProcessor
 from prompt_toolkit.lexers import PygmentsLexer
+from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.widgets import HorizontalLine
 from tsar.lib.collection import Collection, DOCTYPES
 from tsar.lib.services import TaskManager
@@ -35,73 +36,67 @@ PREVIEW_DIMENSION_DICT = {
 
 
 class SelectableList(FormattedTextControl):
-    """Create a selectable list that does take the cursor."""
+    """Create a selectable list that is not focusable.
+    Text property must be set as list of strings; outputs formatted list of strings
+    """
 
     def __init__(self, focusable=False, text_format=TEXT_FORMAT, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.text_format = text_format
         self._index = 0
+        super().__init__(*args, **kwargs)
 
     @property
     def index(self):
-        """Define a "selected item" index if self.text is list-like."""
+        """Define a "selected item" index for self.text."""
         return self._index
 
     @index.setter
     def index(self, value):
         """Selected result index."""
+        idx_init = self._index
+        idx_max = len(self.text) - 1
+
         if isinstance(self.text, str):
-            self._index = 0
+            self._index = -1
+            return
         elif isinstance(self.text, Sequence):
             # self.text is list-like; set within index bounds:
-            lmax = len(self.text) - 1
-            if 0 <= value <= lmax:
+            if 0 <= value <= idx_max:
                 self._index = value
             elif value < 0:
                 self._index = 0
-            elif lmax < value:
-                self._index = lmax
+            elif idx_max < value:
+                self._index = idx_max
+
+        # update formatting for index; text may have changed
+        if 0 <= idx_init <= len(self.text) - 1:
+            _, res_init = self.text[idx_init]
+            self._text[idx_init] = (self.text_format["unselected"], res_init)
+        _, res = self.text[self.index]
+        self._text[self.index] = (self.text_format["selected"], res)
 
     @property
     def text(self):
         """Return formatted results, with highlighted item at self.index."""
-        if len(self._text) == 0:
-            formatted_results = [(self.text_format["unselected"], "(no results)")]
-
-        elif isinstance(self._text, str):
-            formatted_results = [
-                (self.text_format["unselected"], f"{res}\n")
-                for res in self._text.split("\n")
-            ]
-            _, res = formatted_results[self.index]
-            formatted_results[self.index] = (self.text_format["selected"], res)
-
-        elif isinstance(self._text, Sequence) and isinstance(self._text[0], str):
-            formatted_results = [
-                (self.text_format["unselected"], f"{res}") for res in self._text
-            ]
-            _, res = formatted_results[self.index]
-            formatted_results[self.index] = (self.text_format["selected"], res)
-
-        elif isinstance(self._text, Sequence) and isinstance(self._text[0], tuple):
-            formatted_results = [
-                (self.text_format["unselected"], f"{res[1]}") for res in self._text
-            ]
-            _, res = formatted_results[self.index]
-            formatted_results[self.index] = (self.text_format["selected"], res)
-
-        return formatted_results
+        return self._text
 
     @text.setter
     def text(self, value):
-        self._text = value
+        if len(value) == 0:
+            formatted_results = "(no results)"
+        # text is list
+        elif isinstance(value, Sequence):
+            formatted_results = [
+                (self.text_format["unselected"], f"{res}\n") for res in value
+            ]
+        self._text = formatted_results
 
 
 class ViewScreen1(object):
     """View screen format 1: buffer, results, preview."""
 
     def __init__(
-        self, state,
+        self, state, header_text="(header text)", status_bar_text="(status bar text)"
     ):
         self.state = state
         self.collection = self.state["active_collection"]
@@ -109,19 +104,22 @@ class ViewScreen1(object):
 
         # layout components
         self.query_header = Window(
-            FormattedTextControl("example text"), height=1, style="reverse",
+            FormattedTextControl(header_text), height=1, style="reverse",
         )
         self.input_buffer = Buffer(multiline=False)
         self.input_buffer.on_text_changed += self.update_results
-
         self.results_control = SelectableList(text="")
-        # self.results_control.text = self.results_control.results
+        self.preview_control = BufferControl(focusable=False,)
+        self.status_bar = FormattedTextControl(status_bar_text)
+
         self.layout = Layout(
             HSplit(
                 [
                     self.query_header,
                     Window(BufferControl(self.input_buffer), height=1,),
                     Window(self.results_control),
+                    Window(self.preview_control),
+                    Window(self.status_bar, height=1, style="reverse"),
                 ]
             ),
         )
@@ -138,27 +136,24 @@ class ViewScreen1(object):
     def input_str(self):
         return self.input_buffer.text
 
-    @input_str.setter
-    def input_str(self, new_input_str):
-        self.query_buffer.text = new_input_str
-
     def update_results(self, unused_arg=""):
         """Update self.results in-place."""
         try:
             results = self.collection.query_records(query_str=self.input_str)
         except Exception:
             self.results = []
-            self.status_textcontrol.text = "(invalid query)"
+            self.status_bar.text = "(invalid query)"
         else:
             results = sorted(results, key=lambda x: x[1])
-            formatted_results = [
-                (TEXT_FORMAT["unselected"], f"{res}\n") for res in results
-            ]
-            self.results_control.text = formatted_results
+            self.results_control.text = results
+            self.results_control.index = 0
+            self.status_bar.text = ""
+
+        # self.preview_control.text = self.results_control.index
 
 
 if __name__ == "__main__":
-    """stand-alone version of the search window for debugging."""
+    """stand-alone window test."""
 
     coll_ids = Collection.registered_collections()
     collections = [Collection.load(coll) for coll in coll_ids]
@@ -180,4 +175,5 @@ if __name__ == "__main__":
     application = Application(
         layout=window.layout, key_bindings=window.kb, full_screen=True
     )
-    application.run()
+    with patch_stdout():
+        application.run()
