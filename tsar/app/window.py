@@ -98,16 +98,14 @@ class SelectableList(FormattedTextControl):
 class ViewScreen(object):
     """View screen with selectable results, preview."""
 
-    def __init__(
-        self, state, header_text="(header text)", status_bar_text="(status bar text)"
-    ):
+    def __init__(self, state,):
         self.state = state
         self.collection = self.state["active_collection"]
         self.kb = KeyBindings()
 
         # layout components
         self.query_header = Window(
-            FormattedTextControl(header_text), height=1, style="reverse",
+            FormattedTextControl(""), height=1, style="reverse",
         )
         self.input_buffer = Buffer(multiline=False)
         self.input_buffer.on_text_changed += self.update_results
@@ -115,7 +113,7 @@ class ViewScreen(object):
         self.results_window = Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT))
         self.preview_header = Window(BufferControl(focusable=False,), height=1, style="reverse")
         self.preview_window = Window(BufferControl(focusable=False),  height=Dimension(**PREVIEW_DIMENSION_DICT))
-        self.status_bar = FormattedTextControl(status_bar_text)
+        self.status_bar = FormattedTextControl("")
 
         self.layout = Layout(
             HSplit(

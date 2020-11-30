@@ -6,16 +6,12 @@ This module contains high level management of the terminal interface:
 """
 import logging
 import threading
-from tsar import CAPTURE_DOC_PATH
+from tsar.app.window import ViewScreen
+from tsar.config import GLOBAL_KB
 from tsar.lib.collection import Collection, Register
-from tsar.app.search_window import SearchView, SearchViewModel
-from tsar.app.collections_window import CollectionsView, CollectionsViewModel
-from tsar.app.query_source_window import QuerySourceView, QuerySourceViewModel
-from tsar.config import GLOBAL_KB, DEFAULT_COLLECTION, DEFAULT_SCREEN, OPEN_TEXT_CMD
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
-from tsar.lib.record_defs.parse_lib import open_textfile
 from tsar.app.rest import FLASK_KWARGS, return_flask_app
 
 RUN_MAIN_APP = True
@@ -31,19 +27,7 @@ def return_global_keybindings(app):
 
     @kb_global.add(GLOBAL_KB["search_screen"])
     def search_screen(event):
-        app.update_state("search")
-
-    @kb_global.add(GLOBAL_KB["collections_screen"])
-    def collections_screen(event):
-        app.update_state("collections")
-
-    @kb_global.add(GLOBAL_KB["open_capture_doc"])
-    def open_capture(event):
-        open_textfile(cmd=OPEN_TEXT_CMD, file_path=CAPTURE_DOC_PATH)
-
-    @kb_global.add(GLOBAL_KB["source_query"])
-    def add_screen(event):
-        app.update_state("source_query")
+        pass
 
     return kb_global
 
@@ -51,54 +35,46 @@ def return_global_keybindings(app):
 class App(object):
     """Main tsar app."""
 
-    def __init__(self,):
+    def __init__(self):
 
-        self.collections = {
+        collections = {
             coll_id: Collection.load(coll_id)
             for coll_id in Collection.registered_collections()
         }
-        default_coll = list(self.collections.values())[0]
+        default_coll = list(collections.values())[0]
 
-        self.app = Application(full_screen=True)
+        self.global_kb = return_global_keybindings(self)
+
+        # define *data* state: collections, string values, etc
         self.state = {
-            "app": self.app,
-            "active_collection": default_coll,
-            "active_screen": None,
-            "key_bindings": return_global_keybindings(self),
+            "app": Application(full_screen=True),
             "collections": {
                 coll_id: {"query_str": "*", "selected_doc": None, "results": [],}
-                for coll_id in self.collections.keys()
+                for coll_id in collections.keys()
             },
-            "screens": {"search_screen": None},
+            "active_collection": default_coll,
         }
 
-        # ViewScreen1(state=self.state)
-        # self.state["app"].layout = ViewScreen1.layout
+        # update with *view* elements; screens, etc
+        screens = {
+            "search_screen": ViewScreen(state=self.state)
+        }
+        self.state.update(
+            {
+                "screens": screens,
+                "active_screen": screens["search_screen"],
+            }
+        )
+        self.state["app"].layout = self.state["active_screen"].layout
+        self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])
 
     def update_window(self, screen_key):
         pass
 
-    # def update_state(self, screen_key):
-    #     """Update shared_state when screen is changed."""
-    #     if self.shared_state["active_screen"] == self.screens[screen_key]:
-    #         return
-    #     self.shared_state["prev_screen"] = self.shared_state["active_screen"]
-    #     self.shared_state["active_screen"] = self.screens[screen_key]
-    #     self.shared_state["application"].layout = self.shared_state[
-    #         "active_screen"
-    #     ].layout
-    #     self.shared_state["application"].key_bindings = merge_key_bindings(
-    #         [
-    #             self.shared_state["active_screen"].key_bindings,
-    #             self.shared_state["global_kb"],
-    #         ]
-    #     )
-    #     self.shared_state["active_screen"].refresh_view()
-
     def run(self):
         """Start Prompt-toolkit event loop."""
         with patch_stdout():
-            self.app.run()
+            self.state["app"].run()
 
 
 if __name__ == "__main__":

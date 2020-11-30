@@ -14,8 +14,7 @@ from tsar.doctypes import DOCTYPES
 from tsar.doctypes.doctype import update_dict, DocTypeResolver
 from tsar.doctypes.arxiv_doc import ArxivDoc
 from tsar.doctypes.markdown_doc import MarkdownDoc
-from tsar import COLLECTIONS_FOLDER, HOST_REPO_PATH, LOG_FOLDER
-from tsar.config import DEFAULT_COLLECTION
+from tsar import COLLECTIONS_FOLDER, LOG_FOLDER
 from tsar.lib.record_defs.parse_lib import resolve_path
 from tsar.lib import search
 from tsar.lib.search import return_index_name
@@ -184,10 +183,7 @@ class Collection(object):
         """Initialize a Collection.
 
         Note:
-        - init defines member variables/attributes for a collection object; other constructors define such objects
-        as convenient and return cls.__init__().
-
-        - config created or verified as consistent with provided fields
+        - init assigns attributes; use `Collection.new` etc. for collection creation.
         """
         self.doctype_resolver = DocTypeResolver(doc_types)
         self.collection_id = collection_id
