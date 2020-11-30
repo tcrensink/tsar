@@ -1,4 +1,5 @@
 import arxiv
+import pandas as pd
 from datetime import datetime
 import requests
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
@@ -81,6 +82,16 @@ class ArxivDoc(DocType):
         else:
             return False
 
+    @staticmethod
+    def preview(record):
+
+        preview = (
+            f"{record['document_name']}\n"
+            f"{pd.to_datetime(record['publish_date'], unit='s').isoformat()}"
+            f"{', '.join(record['authors'])}"
+            f"Abstract: {record['content']}"
+        )
+        return preview
 
 def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
     """Parse arxiv package result into a record."""
@@ -100,3 +111,4 @@ def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
         "links": links,
     }
     return record
+

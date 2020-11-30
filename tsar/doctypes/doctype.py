@@ -91,6 +91,12 @@ class DocType(ABC):
         """Returns True if document_id is valid for doc type."""
         pass
 
+    @staticmethod
+    @abstractmethod
+    def preview(record):
+        """(Text) preview of a document."""
+        pass
+
 
 class DocTypeResolver(object):
     """Class for doctype inference/management."""

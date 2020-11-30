@@ -91,8 +91,15 @@ class SelectableList(FormattedTextControl):
             ]
         self._text = formatted_results
 
+    @property
+    def selected_result(self):
+        """Return the selected result."""
+        if 0 <= self.index:
+            return self.text[self.index][1]
+        else:
+            return None
 
-class ViewScreen1(object):
+class ViewScreen(object):
     """View screen format 1: buffer, results, preview."""
 
     def __init__(
@@ -109,7 +116,9 @@ class ViewScreen1(object):
         self.input_buffer = Buffer(multiline=False)
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
-        self.preview_control = BufferControl(focusable=False,)
+        self.results_window = Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT))
+        self.preview_header = Window(BufferControl(focusable=False,), height=1, style="reverse")
+        self.preview_window = Window(BufferControl(focusable=False),  height=Dimension(**PREVIEW_DIMENSION_DICT))
         self.status_bar = FormattedTextControl(status_bar_text)
 
         self.layout = Layout(
@@ -117,8 +126,9 @@ class ViewScreen1(object):
                 [
                     self.query_header,
                     Window(BufferControl(self.input_buffer), height=1,),
-                    Window(self.results_control),
-                    Window(self.preview_control),
+                    self.results_window,
+                    self.preview_header,
+                    self.preview_window,
                     Window(self.status_bar, height=1, style="reverse"),
                 ]
             ),
@@ -127,13 +137,20 @@ class ViewScreen1(object):
         @self.kb.add("up")
         def _(event):
             self.results_control.index -= 1
+            self.update_preview()
 
         @self.kb.add("down")
         def _(event):
             self.results_control.index += 1
+            self.update_preview()
+
 
     @property
     def input_str(self):
+        return self.input_buffer.text
+
+    @input_str.setter
+    def input_str(self, text):
         return self.input_buffer.text
 
     def update_results(self, unused_arg=""):
@@ -147,10 +164,26 @@ class ViewScreen1(object):
             results = sorted(results, key=lambda x: x[1])
             self.results_control.text = results
             self.results_control.index = 0
-            self.status_bar.text = ""
+            self.update_preview()
 
-        # self.preview_control.text = self.results_control.index
+    def update_status_text(self, text):
+        """Update the status bar text."""
+        pass
 
+    def update_header_text(self, text):
+        """Update the header text."""
+        pass
+
+    def update_preview(self):
+        """Update preview window text."""
+
+        if isinstance(self.results_control.selected_result, str):
+            document_id = self.results_control.selected_result.split("\n")[0]
+            record = self.collection.return_record(document_id)
+            preview = record["document_type"].preview(record)
+        else:
+            preview = "(no preview)"
+        self.preview_window.content.buffer.text = preview
 
 if __name__ == "__main__":
     """stand-alone window test."""
@@ -166,7 +199,7 @@ if __name__ == "__main__":
         },
     }
 
-    window = ViewScreen1(state=state)
+    window = ViewScreen(state=state)
 
     @window.kb.add("c-c")
     def _(event):

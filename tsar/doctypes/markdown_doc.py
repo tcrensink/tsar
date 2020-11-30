@@ -88,3 +88,11 @@ class MarkdownDoc(DocType):
             and os.path.splitext(document_id)[-1] in extensions
         )
         return valid
+
+    @staticmethod
+    def preview(record):
+
+        preview_text = (
+            f'{record["content"]}'
+        )
+        return preview_text

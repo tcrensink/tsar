@@ -7,7 +7,7 @@ This module contains high level management of the terminal interface:
 import logging
 import threading
 from tsar import CAPTURE_DOC_PATH
-from tsar.lib.collection import Collection, gen_default_collection
+from tsar.lib.collection import Collection, Register
 from tsar.app.search_window import SearchView, SearchViewModel
 from tsar.app.collections_window import CollectionsView, CollectionsViewModel
 from tsar.app.query_source_window import QuerySourceView, QuerySourceViewModel
@@ -16,123 +16,89 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.record_defs.parse_lib import open_textfile
-from tsar.lib.record_defs.wiki_record import WikiRecord
 from tsar.app.rest import FLASK_KWARGS, return_flask_app
 
 RUN_MAIN_APP = True
 
-class Screen(object):
-    """Define object necessary to determine app state and change view.
 
-    This should be an ABC, defining template for future screens.
-    """
+def return_global_keybindings(app):
+    """Register key bindings (global, screen specific)."""
+    kb_global = KeyBindings()
 
-    def __init__(self, shared_state, ViewModel, View):
-        self.shared_state = shared_state
-        self.view_model = ViewModel(shared_state)
-        self.view = View(self.view_model)
-        self.key_bindings = self.view.kb
-        self.layout = self.view.layout
-        self.refresh_view = self.view.refresh_view
+    @kb_global.add(GLOBAL_KB["exit"])
+    def close_app(event):
+        event.app.exit()
+
+    @kb_global.add(GLOBAL_KB["search_screen"])
+    def search_screen(event):
+        app.update_state("search")
+
+    @kb_global.add(GLOBAL_KB["collections_screen"])
+    def collections_screen(event):
+        app.update_state("collections")
+
+    @kb_global.add(GLOBAL_KB["open_capture_doc"])
+    def open_capture(event):
+        open_textfile(cmd=OPEN_TEXT_CMD, file_path=CAPTURE_DOC_PATH)
+
+    @kb_global.add(GLOBAL_KB["source_query"])
+    def add_screen(event):
+        app.update_state("source_query")
+
+    return kb_global
 
 
 class App(object):
-    """Contains MVVM style views, view models, and keybindings.
+    """Main tsar app."""
 
-    Organization:
-    - shared_state includes the prompt_toolkit application and state values shared globally in App
-    - shared_state includes values that may be modified by a Screen for example
-    - self.screens contains Screen objects, e.g. search_screen or collections_screen.  These contain layouts
-    - app.layout is dynamically bound to Screen layouts in app.update_state().  Screens have their own global logic which is also called.
-    - calls to app.update_state are defined (and triggered) via app._return_global_keybindings()
-    """
+    def __init__(self,):
 
-    def __init__(
-        self,
-        initial_collection_name=DEFAULT_COLLECTION,
-        initial_screen_name=DEFAULT_SCREEN,
-    ):
-        if DEFAULT_COLLECTION not in Collection.db_meta().index:
-            print("generating default collection, `{}`...".format(DEFAULT_COLLECTION))
-            gen_default_collection()
-        # mutable/updatable object references across app.
-        self.shared_state = {
-            "Collection": Collection,
-            "active_collection": Collection(initial_collection_name),
+        self.collections = {
+            coll_id: Collection.load(coll_id)
+            for coll_id in Collection.registered_collections()
+        }
+        default_coll = list(self.collections.values())[0]
+
+        self.app = Application(full_screen=True)
+        self.state = {
+            "app": self.app,
+            "active_collection": default_coll,
             "active_screen": None,
-            "prev_screen": None,
-            "global_kb": self._return_global_keybindings(),
-            "application": Application(full_screen=True),
+            "key_bindings": return_global_keybindings(self),
+            "collections": {
+                coll_id: {"query_str": "*", "selected_doc": None, "results": [],}
+                for coll_id in self.collections.keys()
+            },
+            "screens": {"search_screen": None},
         }
 
-        # app screens
-        self.screens = {
-            "collections": Screen(
-                shared_state=self.shared_state,
-                ViewModel=CollectionsViewModel,
-                View=CollectionsView,
-            ),
-            "search": Screen(
-                shared_state=self.shared_state,
-                ViewModel=SearchViewModel,
-                View=SearchView,
-            ),
-            "source_query": Screen(
-                shared_state=self.shared_state,
-                ViewModel=QuerySourceViewModel,
-                View=QuerySourceView,
-            ),
-        }
-        self.update_state(initial_screen_name)
-        self.shared_state["active_screen"] = self.screens[initial_screen_name]
+        # ViewScreen1(state=self.state)
+        # self.state["app"].layout = ViewScreen1.layout
 
-    def _return_global_keybindings(self):
-        """Register key bindings (global, screen specific)."""
-        kb_global = KeyBindings()
+    def update_window(self, screen_key):
+        pass
 
-        @kb_global.add(GLOBAL_KB["exit"])
-        def close_app(event):
-            event.app.exit()
-
-        @kb_global.add(GLOBAL_KB["search_screen"])
-        def search_screen(event):
-            self.update_state("search")
-
-        @kb_global.add(GLOBAL_KB["collections_screen"])
-        def collections_screen(event):
-            self.update_state("collections")
-
-        @kb_global.add(GLOBAL_KB["open_capture_doc"])
-        def open_capture(event):
-            open_textfile(cmd=OPEN_TEXT_CMD, file_path=CAPTURE_DOC_PATH)
-
-        @kb_global.add(GLOBAL_KB["source_query"])
-        def add_screen(event):
-            self.update_state("source_query")
-
-        return kb_global
-
-    def update_state(self, screen_key):
-        """Update shared_state when screen is changed."""
-        if self.shared_state["active_screen"] == self.screens[screen_key]:
-            return
-        self.shared_state["prev_screen"] = self.shared_state["active_screen"]
-        self.shared_state["active_screen"] = self.screens[screen_key]
-        self.shared_state["application"].layout = self.shared_state[
-            "active_screen"
-        ].layout
-        self.shared_state["application"].key_bindings = merge_key_bindings(
-            [
-                self.shared_state["active_screen"].key_bindings,
-                self.shared_state["global_kb"],
-            ]
-        )
-        self.shared_state["active_screen"].refresh_view()
+    # def update_state(self, screen_key):
+    #     """Update shared_state when screen is changed."""
+    #     if self.shared_state["active_screen"] == self.screens[screen_key]:
+    #         return
+    #     self.shared_state["prev_screen"] = self.shared_state["active_screen"]
+    #     self.shared_state["active_screen"] = self.screens[screen_key]
+    #     self.shared_state["application"].layout = self.shared_state[
+    #         "active_screen"
+    #     ].layout
+    #     self.shared_state["application"].key_bindings = merge_key_bindings(
+    #         [
+    #             self.shared_state["active_screen"].key_bindings,
+    #             self.shared_state["global_kb"],
+    #         ]
+    #     )
+    #     self.shared_state["active_screen"].refresh_view()
 
     def run(self):
         """Start Prompt-toolkit event loop."""
         with patch_stdout():
-            self.shared_state["application"].run()
+            self.app.run()
 
 
 if __name__ == "__main__":
@@ -141,11 +107,11 @@ if __name__ == "__main__":
     tsar_app = App()
 
     # start flask CLI server in a thread
-    flask_app = return_flask_app(tsar_app)
+    # flask_app = return_flask_app(tsar_app)
 
-    log = logging.getLogger('werkzeug')
-    log.disabled = True
-    threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
+    # log = logging.getLogger("werkzeug")
+    # log.disabled = True
+    # threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
 
     # start main app; set to false to debug CLI server.
     if RUN_MAIN_APP:
