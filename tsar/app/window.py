@@ -1,6 +1,4 @@
-"""
-Basic input/results Screen.
-"""
+"""Basic input/results Screen."""
 from collections.abc import Sequence
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
@@ -9,45 +7,33 @@ from prompt_toolkit.layout import Dimension
 from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
-from prompt_toolkit.layout.processors import TabsProcessor
-from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.patch_stdout import patch_stdout
-from prompt_toolkit.widgets import HorizontalLine
-from tsar.lib.collection import Collection, DOCTYPES
-from tsar.lib.services import TaskManager
-from tsar.config import SEARCH_RECORD_COLORS, DEFAULT_COLLECTION
-from tsar import tasks
-from tsar.tasks import DEFAULT_HOUR, DEFAULT_MINUTE, DEFAULT_SECONDS
-from datetime import datetime
-from operator import itemgetter
+from tsar.lib.collection import Collection
 
 TEXT_FORMAT = {"selected": "bg:#144288", "unselected": "default"}
 
-
 RESULTS_DIMENSION_DICT = {
-    "min": 2,
+    "min": 3,
     "max": 15,
     "preferred": 10,
 }
 PREVIEW_DIMENSION_DICT = {
-    "min": 6,
+    "min": 5,
     "preferred": 15,
 }
 
 
 class SelectableList(FormattedTextControl):
-    """Create a selectable list that is not focusable.
-    Text property must be set as list of strings; outputs formatted list of strings
-    """
+    """Create a selectable list that is not focusable."""
 
     def __init__(self, focusable=False, text_format=TEXT_FORMAT, *args, **kwargs):
         self.text_format = text_format
-        self._index = 0
+        self._index = -1
         super().__init__(*args, **kwargs)
 
     @property
     def index(self):
-        """Define a "selected item" index for self.text."""
+        """Selected item index."""
         return self._index
 
     @index.setter
@@ -68,7 +54,7 @@ class SelectableList(FormattedTextControl):
             elif idx_max < value:
                 self._index = idx_max
 
-        # update formatting for index; text may have changed
+        # update formatting for index must be included here, as text/list may have changed
         if 0 <= idx_init <= len(self.text) - 1:
             _, res_init = self.text[idx_init]
             self._text[idx_init] = (self.text_format["unselected"], res_init)
@@ -100,7 +86,7 @@ class SelectableList(FormattedTextControl):
             return None
 
 class ViewScreen(object):
-    """View screen format 1: buffer, results, preview."""
+    """View screen with selectable results, preview."""
 
     def __init__(
         self, state, header_text="(header text)", status_bar_text="(status bar text)"
@@ -144,7 +130,6 @@ class ViewScreen(object):
             self.results_control.index += 1
             self.update_preview()
 
-
     @property
     def input_str(self):
         return self.input_buffer.text
@@ -158,7 +143,6 @@ class ViewScreen(object):
         try:
             results = self.collection.query_records(query_str=self.input_str)
         except Exception:
-            self.results = []
             self.status_bar.text = "(invalid query)"
         else:
             results = sorted(results, key=lambda x: x[1])
