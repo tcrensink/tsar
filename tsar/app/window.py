@@ -70,6 +70,7 @@ class SelectableList(FormattedTextControl):
     def text(self, value):
         if len(value) == 0:
             formatted_results = "(no results)"
+
         # text is list
         elif isinstance(value, Sequence):
             formatted_results = [
@@ -81,9 +82,18 @@ class SelectableList(FormattedTextControl):
     def selected_result(self):
         """Return the selected result."""
         if 0 <= self.index:
-            return self.text[self.index][1]
+            return self.text[self.index][1].strip()
         else:
             return None
+
+    def index_of_result(self, result):
+        """Given a result, return its index, else None."""
+        results = {res[1].strip(): j for j, res in enumerate(self.text)}
+        if self.selected_result in results.keys():
+            idx = results[self.selected_result]
+        else:
+            idx = None
+        return idx
 
 class ViewScreen(object):
     """View screen with selectable results, preview."""
@@ -136,7 +146,7 @@ class ViewScreen(object):
 
     @input_str.setter
     def input_str(self, text):
-        return self.input_buffer.text
+        self.input_buffer.text = text
 
     def update_results(self, unused_arg=""):
         """Update self.results in-place."""
