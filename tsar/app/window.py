@@ -216,9 +216,7 @@ if __name__ == "__main__":
     @window.kb.add("c-c")
     def _(event):
         event.app.exit()
-
-    application = Application(
-        layout=window.layout, key_bindings=window.kb, full_screen=True
-    )
     with patch_stdout():
-        application.run()
+        Application(
+            layout=window.layout, key_bindings=window.kb, full_screen=True
+        ).run()
