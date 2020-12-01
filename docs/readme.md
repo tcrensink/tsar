@@ -1,21 +1,27 @@
 
 [![tcrensink](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://app.circleci.com/pipelines/github/tcrensink/tsar/)
 
-(beta version for macos coming soon)
+(beta version coming soon)
 
 # What is TSAR?
-TSAR is a tool to seamlessly integrate your thoughts and digital documents.  It brings services like incremental search, linking, document association, and spaced-repetition to your existing documents in a frictionless text-based interface.  Use it to manage notes, a personal knowledge base (PKB), or as a study aid.
+The [*memex*](https://en.wikipedia.org/wiki/Memex) is a hypothetical device "in which individuals would compress and store all of their [information]... so that it may be consulted with exceeding speed and flexibility".  Stated differently: a program that makes digital information *so available* that it integrates as a seamless extension of your mind.
+
+TSAR is a terminal-based utility with that vision in mind.  Use it to manage a personal knowledge base (PKB) or notes, as a study aid, or to manage academic papers.  Unlike a note-taking app, TSAR adds a layer of services onto your existing documents rather than managing content directly.
+
+# Features
+TSAR includes features that mirror cognitive tasks such as (content) retrieval, association, search/discovery, and review.  Some key features include:
+- incremental search: per-keystroke results via the lucene query syntax (elasticsearch)
+- link-awareness: linked documents can be parsed/indexed and generate search hits
+- document association: browse documents by similarity
+- content curation: separate collections with custom folder watch and automatic indexing
 
 # Usage
 - Add documents (.md, .txt, arxiv urls) to a collection via the terminal client.  TSAR generates metadata from your docs, leaving source data unmodified.
-- Attach to the TSAR terminal interface via the command `tsar`; search, browse, preview, your documents with unmatched efficiency.
+- Attach to the TSAR terminal interface via the command `tsar`; search, browse, preview, documents in a collection.
 - Detach from TSAR via `ctrl-c`. It runs in the background and will resume right where you left off next time.
 
-# Features
-- **Incremental search**: via lucene query syntax, powered by elasticsearch
-- **Linking**: Automatically detect and index linked content (hyperlink, citations, etc.)
-- **Flexibility**: supports multiple document collections, custom keybindings, folder watch, and more
-- **Extensibility**: customize how documents are parsed, link syntax, and more.  TSAR was designed with extensibility in mind.
+# Extensibility
+Want to include a new kind of document?  Define a new *documents type* (in python) to customize parsing, linking, and search indexing behavior.  TSAR was designed with extensibility in mind.
 
 # Installation and quickstart
 1. install [Docker](https://www.docker.com/get-started) desktop on your system
@@ -25,11 +31,10 @@ TSAR is a tool to seamlessly integrate your thoughts and digital documents.  It 
 5. tsar's query window should appear for the `help_docs` collection; type `*` to see all documents; press return to open one.
 
 # Related
-There are several productivity tools with similar goals.  Here are some:
+Several existing tools have similar aim or helped inspire TSAR.  Some of these include:
 
 - Emacs [org mode](https://orgmode.org)
 - [Roam](https://roamresearch.com)
-- [nvALT](https://nvultra.com)
 - [wiki.js](https://wiki.js.org)
 - [anki](https://www.google.com/search?client=safari&rls=en&q=anki&ie=UTF-8&oe=UTF-8)
 - [Mendeley](https://www.mendeley.com/?interaction_required=true)
