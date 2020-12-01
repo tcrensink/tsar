@@ -164,7 +164,7 @@ class ViewScreen(object):
             for index in coll.search_indices:
                 index_fields = coll.client.return_fields(index)
                 fields.update(index_fields.keys())
-            text = f"search: {' | '.join(sorted(fields))})"
+            text = f"search: {' | '.join(sorted(fields))}"
         self.header_bar.text = text
 
     def update_status_bar(self, text=None):
