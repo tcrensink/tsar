@@ -14,12 +14,12 @@ TEXT_FORMAT = {"selected": "bg:#144288", "unselected": "default"}
 
 RESULTS_DIMENSION_DICT = {
     "min": 3,
-    "max": 15,
-    "preferred": 10,
+    "max": 20,
+    "preferred": 14,
 }
 PREVIEW_DIMENSION_DICT = {
     "min": 5,
-    "preferred": 15,
+    "preferred": 12,
 }
 
 
@@ -103,25 +103,27 @@ class ViewScreen(object):
         self.kb = KeyBindings()
 
         # layout components
-        self.query_header = Window(
-            FormattedTextControl(""), height=1, style="reverse",
-        )
+        self.header_bar = FormattedTextControl(focusable=False,)
+        self.update_header_bar()
+
         self.input_buffer = Buffer(multiline=False)
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
-        self.results_window = Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT))
-        self.preview_header = Window(BufferControl(focusable=False,), height=1, style="reverse")
-        self.preview_window = Window(BufferControl(focusable=False),  height=Dimension(**PREVIEW_DIMENSION_DICT))
-        self.status_bar = FormattedTextControl("")
+        self.preview_bar = FormattedTextControl(focusable=False,)
+        self.preview_buffer = BufferControl(focusable=False)
+        self.update_preview_bar()
+        self.update_preview()
+        self.status_bar = FormattedTextControl()
+        self.update_status_bar()
 
         self.layout = Layout(
             HSplit(
                 [
-                    self.query_header,
+                    Window(self.header_bar, height=1, style="reverse"),
                     Window(BufferControl(self.input_buffer), height=1,),
-                    self.results_window,
-                    self.preview_header,
-                    self.preview_window,
+                    Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT)),
+                    Window(self.preview_bar, height=1, style="reverse"),
+                    Window(self.preview_buffer,  height=Dimension(**PREVIEW_DIMENSION_DICT)),
                     Window(self.status_bar, height=1, style="reverse"),
                 ]
             ),
@@ -137,7 +139,6 @@ class ViewScreen(object):
             self.results_control.index += 1
             self.update_preview()
 
-
     @property
     def input_str(self):
         return self.input_buffer.text
@@ -151,20 +152,45 @@ class ViewScreen(object):
         try:
             results = self.state["active_collection"].query_records(query_str=self.input_str)
         except Exception:
-            self.status_bar.text = "(invalid query)"
+            self.results_control.text = ["(invalid query)"]
         else:
             results = sorted(results, key=lambda x: x[1])
             self.results_control.text = results
             self.results_control.index = 0
             self.update_preview()
 
-    def update_status_text(self, text):
-        """Update the status bar text."""
-        pass
-
-    def update_header_text(self, text):
+    def update_header_bar(self, text=None):
         """Update the header text."""
-        pass
+        if text is None:
+            coll = self.state["active_collection"]
+
+            fields = set()
+            for index in coll.search_indices:
+                index_fields = coll.client.return_fields(index)
+                fields.update(index_fields.keys())
+            text = f"search: {' | '.join(sorted(fields))})"
+        self.header_bar.text = text
+
+    def update_status_bar(self, text=None):
+        """Update the status bar text."""
+        coll = self.state["active_collection"]
+        df = coll.records_db.df
+        _doc_count = df.document_type.value_counts().reset_index(name="counts")
+        doc_count_str = ", ".join([f"{row[1]} {row[0].__name__}" for row in _doc_count.values])
+        if text is None:
+            text = (
+                f'{coll.records_db.df.shape[0]} docs in '
+                f'"{coll.collection_id}": '
+                f'{doc_count_str}'
+            )
+        self.status_bar.text = text
+
+    def update_preview_bar(self, text=None):
+        """Update the preview bar text."""
+        coll = self.state["active_collection"]
+        if text is None:
+            text = "preview"
+        self.preview_bar.text = text
 
     def update_preview(self):
         """Update preview window text."""
@@ -174,8 +200,8 @@ class ViewScreen(object):
             record = self.state["active_collection"].return_record(document_id)
             preview = record["document_type"].preview(record)
         else:
-            preview = "(no preview)"
-        self.preview_window.content.buffer.text = preview
+            preview = "(no preview available)"
+        self.preview_buffer.buffer.text = preview
 
 if __name__ == "__main__":
     """stand-alone window test."""

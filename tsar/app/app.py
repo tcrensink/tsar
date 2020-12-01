@@ -47,13 +47,13 @@ class App(object):
             "active_collection": collections[0],
         }
 
-        # objects register themselves to the state dict under (possibly nested) key
+        # add screens to global state dict
         update_dict(self.state, {"screens":{"search": ViewScreen(state=self.state)}})
         self.state["active_screen"] = self.state["screens"]["search"]
         self.state["app"].layout = self.state["active_screen"].layout
         self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])
 
-    def update_window(self, screen_key):
+    def change_screen(self, screen_key):
         pass
 
     def run(self):
