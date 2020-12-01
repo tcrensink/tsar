@@ -100,7 +100,6 @@ class ViewScreen(object):
 
     def __init__(self, state,):
         self.state = state
-        self.collection = self.state["active_collection"]
         self.kb = KeyBindings()
 
         # layout components
@@ -138,6 +137,7 @@ class ViewScreen(object):
             self.results_control.index += 1
             self.update_preview()
 
+
     @property
     def input_str(self):
         return self.input_buffer.text
@@ -149,7 +149,7 @@ class ViewScreen(object):
     def update_results(self, unused_arg=""):
         """Update self.results in-place."""
         try:
-            results = self.collection.query_records(query_str=self.input_str)
+            results = self.state["active_collection"].query_records(query_str=self.input_str)
         except Exception:
             self.status_bar.text = "(invalid query)"
         else:
@@ -171,7 +171,7 @@ class ViewScreen(object):
 
         if isinstance(self.results_control.selected_result, str):
             document_id = self.results_control.selected_result.split("\n")[0]
-            record = self.collection.return_record(document_id)
+            record = self.state["active_collection"].return_record(document_id)
             preview = record["document_type"].preview(record)
         else:
             preview = "(no preview)"
@@ -186,9 +186,6 @@ if __name__ == "__main__":
 
     state = {
         "active_collection": coll,
-        "collections": {
-            coll: {"current_doc": None, "query_str": "", "current_results": [],},
-        },
     }
 
     window = ViewScreen(state=state)

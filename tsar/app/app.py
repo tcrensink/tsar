@@ -6,6 +6,7 @@ This module contains high level management of the terminal interface:
 """
 import logging
 import threading
+from tsar.doctypes.doctype import update_dict
 from tsar.app.window import ViewScreen
 from tsar.config import GLOBAL_KB
 from tsar.lib.collection import Collection, Register
@@ -37,34 +38,18 @@ class App(object):
 
     def __init__(self):
 
-        collections = {
-            coll_id: Collection.load(coll_id)
-            for coll_id in Collection.registered_collections()
-        }
-        default_coll = list(collections.values())[0]
-
+        collections = [ Collection.load(coll_id) for coll_id in Collection.registered_collections()]
         self.global_kb = return_global_keybindings(self)
 
-        # define *data* state: collections, string values, etc
+        # global state dict that objects (e.g. screens) register themselves to and can access.
         self.state = {
             "app": Application(full_screen=True),
-            "collections": {
-                coll_id: {"query_str": "*", "selected_doc": None, "results": [],}
-                for coll_id in collections.keys()
-            },
-            "active_collection": default_coll,
+            "active_collection": collections[0],
         }
 
-        # update with *view* elements; screens, etc
-        screens = {
-            "search_screen": ViewScreen(state=self.state)
-        }
-        self.state.update(
-            {
-                "screens": screens,
-                "active_screen": screens["search_screen"],
-            }
-        )
+        # objects register themselves to the state dict under (possibly nested) key
+        update_dict(self.state, {"screens":{"search": ViewScreen(state=self.state)}})
+        self.state["active_screen"] = self.state["screens"]["search"]
         self.state["app"].layout = self.state["active_screen"].layout
         self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])
 
