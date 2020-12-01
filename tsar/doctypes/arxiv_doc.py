@@ -45,7 +45,7 @@ class ArxivDoc(DocType):
         """Generate a search index from a record."""
         document_id = record["document_id"]
         record_index = {
-            "title": record["document_name"],
+            "document_name": record["document_name"],
             "content": record["content"],
             "authors": record["authors"],
             "publish_date": record["publish_date"],
@@ -111,4 +111,3 @@ def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
         "links": links,
     }
     return record
-
