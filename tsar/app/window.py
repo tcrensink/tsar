@@ -104,17 +104,12 @@ class ViewScreen(object):
 
         # layout components
         self.header_bar = FormattedTextControl(focusable=False,)
-        self.update_header_bar()
-
         self.input_buffer = Buffer(multiline=False)
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
         self.preview_bar = FormattedTextControl(focusable=False,)
         self.preview_buffer = BufferControl(focusable=False)
-        self.update_preview_bar()
-        self.update_preview()
         self.status_bar = FormattedTextControl()
-        self.update_status_bar()
 
         self.layout = Layout(
             HSplit(
@@ -128,6 +123,7 @@ class ViewScreen(object):
                 ]
             ),
         )
+        self.reset_view()
 
         @self.kb.add("up")
         def _(event):
@@ -202,6 +198,14 @@ class ViewScreen(object):
         else:
             preview = "(no preview available)"
         self.preview_buffer.buffer.text = preview
+
+    def reset_view(self):
+        """Update all values from shared state dict."""
+        self.update_header_bar()
+        self.update_preview_bar()
+        self.update_preview()
+        self.update_status_bar()
+
 
 if __name__ == "__main__":
     """stand-alone window test."""
