@@ -212,14 +212,7 @@ if __name__ == "__main__":
 
     coll_ids = Collection.registered_collections()
     collections = [Collection.load(coll) for coll in coll_ids]
-    coll = collections[0]
-
-    state = {
-        "active_collection": coll,
-    }
-
-    window = ViewScreen(state=state)
-
+    window = ViewScreen(state={"active_collection": collections[0]})
     @window.kb.add("c-c")
     def _(event):
         event.app.exit()
