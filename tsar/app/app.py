@@ -7,7 +7,7 @@ This module contains high level management of the terminal interface:
 import logging
 import threading
 from tsar.doctypes.doctype import update_dict
-from tsar.app.window import ViewScreen
+from tsar.app.search_view import SearchView
 from tsar.config import GLOBAL_KB
 from tsar.lib.collection import Collection, Register
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -48,7 +48,7 @@ class App(object):
         }
 
         # add screens to global state dict
-        update_dict(self.state, {"screens":{"search": ViewScreen(state=self.state)}})
+        update_dict(self.state, {"screens":{"search": SearchView(state=self.state)}})
         self.state["active_screen"] = self.state["screens"]["search"]
         self.state["app"].layout = self.state["active_screen"].layout
         self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])

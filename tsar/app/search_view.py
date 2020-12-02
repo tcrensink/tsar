@@ -9,6 +9,7 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.collection import Collection
+from tsar.app.layout_components import SelectableList
 
 TEXT_FORMAT = {"selected": "bg:#144288", "unselected": "default"}
 
@@ -23,82 +24,12 @@ PREVIEW_DIMENSION_DICT = {
 }
 
 
-class SelectableList(FormattedTextControl):
-    """Create a selectable list that is not focusable."""
-
-    def __init__(self, focusable=False, text_format=TEXT_FORMAT, *args, **kwargs):
-        self.text_format = text_format
-        self._index = -1
-        super().__init__(*args, **kwargs)
-
-    @property
-    def index(self):
-        """Selected item index."""
-        return self._index
-
-    @index.setter
-    def index(self, value):
-        """Selected result index."""
-        idx_init = self._index
-        idx_max = len(self.text) - 1
-
-        if isinstance(self.text, str):
-            self._index = -1
-            return
-        elif isinstance(self.text, Sequence):
-            # self.text is list-like; set within index bounds:
-            if 0 <= value <= idx_max:
-                self._index = value
-            elif value < 0:
-                self._index = 0
-            elif idx_max < value:
-                self._index = idx_max
-
-        # update formatting for index must be included here, as text/list may have changed
-        if 0 <= idx_init <= len(self.text) - 1:
-            _, res_init = self.text[idx_init]
-            self._text[idx_init] = (self.text_format["unselected"], res_init)
-        _, res = self.text[self.index]
-        self._text[self.index] = (self.text_format["selected"], res)
-
-    @property
-    def text(self):
-        """Return formatted results, with highlighted item at self.index."""
-        return self._text
-
-    @text.setter
-    def text(self, value):
-        if len(value) == 0:
-            formatted_results = "(no results)"
-
-        # text is list
-        elif isinstance(value, Sequence):
-            formatted_results = [
-                (self.text_format["unselected"], f"{res}\n") for res in value
-            ]
-        self._text = formatted_results
-
-    @property
-    def selected_result(self):
-        """Return the selected result."""
-        if 0 <= self.index:
-            return self.text[self.index][1].strip()
-        else:
-            return None
-
-    def index_of_result(self, result):
-        """Given a result, return its index, else None."""
-        results = {res[1].strip(): j for j, res in enumerate(self.text)}
-        if self.selected_result in results.keys():
-            idx = results[self.selected_result]
-        else:
-            idx = None
-        return idx
-
-class ViewScreen(object):
+class SearchView(object):
     """View screen with selectable results, preview."""
 
-    def __init__(self, state,):
+    def __init__(
+        self, state,
+    ):
         self.state = state
         self.kb = KeyBindings()
 
@@ -116,9 +47,15 @@ class ViewScreen(object):
                 [
                     Window(self.header_bar, height=1, style="reverse"),
                     Window(BufferControl(self.input_buffer), height=1,),
-                    Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT)),
+                    Window(
+                        self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT)
+                    ),
                     Window(self.preview_bar, height=1, style="reverse"),
-                    Window(self.preview_buffer, wrap_lines=True, height=Dimension(**PREVIEW_DIMENSION_DICT)),
+                    Window(
+                        self.preview_buffer,
+                        wrap_lines=True,
+                        height=Dimension(**PREVIEW_DIMENSION_DICT),
+                    ),
                     Window(self.status_bar, height=1, style="reverse"),
                 ]
             ),
@@ -146,7 +83,9 @@ class ViewScreen(object):
     def update_results(self, unused_arg=""):
         """Update self.results in-place."""
         try:
-            results = self.state["active_collection"].query_records(query_str=self.input_str)
+            results = self.state["active_collection"].query_records(
+                query_str=self.input_str
+            )
         except Exception:
             self.results_control.text = ["(invalid query)"]
         else:
@@ -172,12 +111,14 @@ class ViewScreen(object):
         coll = self.state["active_collection"]
         df = coll.records_db.df
         _doc_count = df.document_type.value_counts().reset_index(name="counts")
-        doc_count_str = ", ".join([f"{row[1]} {row[0].__name__}" for row in _doc_count.values])
+        doc_count_str = ", ".join(
+            [f"{row[1]} {row[0].__name__}" for row in _doc_count.values]
+        )
         if text is None:
             text = (
-                f'{coll.records_db.df.shape[0]} docs in '
+                f"{coll.records_db.df.shape[0]} docs in "
                 f'"{coll.collection_id}": '
-                f'{doc_count_str}'
+                f"{doc_count_str}"
             )
         self.status_bar.text = text
 
@@ -214,10 +155,12 @@ if __name__ == "__main__":
 
     coll_ids = Collection.registered_collections()
     collections = [Collection.load(coll) for coll in coll_ids]
-    window = ViewScreen(state={"active_collection": collections[0]})
+    window = SearchView(state={"active_collection": collections[0]})
+
     @window.kb.add("c-c")
     def _(event):
         event.app.exit()
+
     with patch_stdout():
         Application(
             layout=window.layout, key_bindings=window.kb, full_screen=True
