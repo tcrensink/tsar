@@ -38,13 +38,14 @@ class App(object):
 
     def __init__(self):
 
-        collections = [ Collection.load(coll_id) for coll_id in Collection.registered_collections()]
+        collections = {coll_id: Collection.load(coll_id) for coll_id in Collection.registered_collections()}
         self.global_kb = return_global_keybindings(self)
 
         # global state dict that objects (e.g. screens) register themselves to and can access.
         self.state = {
             "app": Application(full_screen=True),
-            "active_collection": collections[0],
+            "collections": collections,
+            "active_collection": collections[list(collections.keys())[0]],
         }
 
         # add screens to global state dict

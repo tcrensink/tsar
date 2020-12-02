@@ -1,5 +1,6 @@
-"""Basic input/results Screen."""
+"""Collection summary/selection screen."""
 from collections.abc import Sequence
+from fuzzywuzzy import fuzz
 from prompt_toolkit.application import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.buffer import Buffer
@@ -7,6 +8,7 @@ from prompt_toolkit.layout import Dimension
 from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
+from prompt_toolkit.layout.processors import TabsProcessor
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.collection import Collection
 from tsar.app.layout_components import SelectableList
@@ -24,7 +26,7 @@ PREVIEW_DIMENSION_DICT = {
 }
 
 
-class SearchView(object):
+class CollectionsView(object):
     """View screen with selectable results, preview."""
 
     def __init__(
@@ -39,7 +41,7 @@ class SearchView(object):
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
         self.preview_bar = FormattedTextControl(focusable=False,)
-        self.preview_buffer = BufferControl(focusable=False,)
+        self.preview_buffer = BufferControl(input_processors=[TabsProcessor(tabstop=4, char1="", char2="")], focusable=False,)
         self.status_bar = FormattedTextControl()
 
         self.layout = Layout(
@@ -72,6 +74,13 @@ class SearchView(object):
             self.results_control.index += 1
             self.update_preview()
 
+        @self.kb.add("enter")
+        def _(event):
+            collection = self.state["collections"][self.results_control.selected_result]
+            self.state["active_collection"] = collection
+            self.reset_view()
+
+
     @property
     def input_str(self):
         return self.input_buffer.text
@@ -82,28 +91,19 @@ class SearchView(object):
 
     def update_results(self, unused_arg=""):
         """Update self.results in-place."""
-        try:
-            results = self.state["active_collection"].query_records(
-                query_str=self.input_str
-            )
-        except Exception:
-            self.results_control.text = ["(invalid query)"]
-        else:
-            results = sorted(results.keys(), key=results.get, reverse=True)
-            self.results_control.text = results
-            self.results_control.index = 0
+
+        collections = Collection.registered_collections()
+        results = {coll: fuzz.ratio(coll, self.input_str) for coll in collections}
+        results = sorted(results.keys(), key=results.get, reverse=True)
+
+        self.results_control.text = results
+        self.results_control.index = 0
         self.update_preview()
 
     def update_header_bar(self, text=None):
         """Update the header text."""
         if text is None:
-            coll = self.state["active_collection"]
-
-            fields = set()
-            for index in coll.search_indices:
-                index_fields = coll.client.return_fields(index)
-                fields.update(index_fields.keys())
-            text = f"search: {' | '.join(sorted(fields))}"
+            text = f"Active collection: {state['active_collection'].collection_id}"
         self.header_bar.text = text
 
     def update_status_bar(self, text=None):
@@ -117,7 +117,7 @@ class SearchView(object):
         if text is None:
             text = (
                 f"{coll.records_db.df.shape[0]} docs in "
-                f'{coll.collection_id.upper()}: '
+                f'"{coll.collection_id}": '
                 f"{doc_count_str}"
             )
         self.status_bar.text = text
@@ -126,36 +126,38 @@ class SearchView(object):
         """Update the preview bar text."""
         coll = self.state["active_collection"]
         if text is None:
-            text = "preview document"
+            text = "preview"
         self.preview_bar.text = text
 
     def update_preview(self):
         """Update preview window text."""
-        if isinstance(self.results_control.selected_result, str):
-            document_id = self.results_control.selected_result.split("\n")[0]
-            record = self.state["active_collection"].return_record(document_id)
-            if record:
-                preview = record["document_type"].preview(record)
-            else:
-                preview = "(no preview available)"
-        else:
-            preview = "(no preview available)"
+        try:
+            coll = self.state["collections"][self.results_control.selected_result]
+            preview = coll.preview()
+        except KeyError:
+            preview = f"(no preview available)"
         self.preview_buffer.buffer.text = preview
 
     def reset_view(self):
         """Update all values from shared state dict."""
         self.update_header_bar()
         self.update_preview_bar()
-        self.update_results()
         self.update_preview()
         self.update_status_bar()
+        self.update_results()
+
 
 if __name__ == "__main__":
     """stand-alone window test."""
 
-    coll_ids = Collection.registered_collections()
-    collections = [Collection.load(coll) for coll in coll_ids]
-    window = SearchView(state={"active_collection": collections[0]})
+    # coll_ids = Collection.registered_collections()
+    collections = {coll_id: Collection.load(coll_id) for coll_id in Collection.registered_collections()}
+    state = {
+        "app": Application(full_screen=True),
+        "collections": collections,
+        "active_collection": collections[list(collections.keys())[0]],
+    }
+    window = CollectionsView(state=state)
 
     @window.kb.add("c-c")
     def _(event):

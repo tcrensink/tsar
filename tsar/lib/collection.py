@@ -508,3 +508,32 @@ class Collection(object):
             self.add_document(document_id=document_id, doc_type=doc_type, write=False)
         if self.registered:
             self.write()
+
+    def preview(self):
+        """Return formatted text preview of collection.
+
+        prompt-toolkit won't recognize '\t', so this string is manually formatted.
+        Consider improving with str.format() with args.
+        """
+        df = self.records_db.df
+        fields = sorted(df.columns)
+        _doc_count = df.document_type.value_counts().reset_index(name="counts")
+        _link_df = df.links.apply(lambda x: len(x))
+
+        doc_count_str = ", ".join(
+            sorted([f"{row[1]} {row[0].__name__}" for row in _doc_count.values])
+        )
+        fields = set()
+        for index in self.search_indices:
+            index_fields = self.client.return_fields(index)
+            fields.update(index_fields.keys())
+        search_idx_fields = sorted(fields)
+
+        preview_str = (
+            f"Collection: {self.collection_id}\n\n"
+            f"doc count:        {len(df)} ({doc_count_str})\n"
+            f"link count:       median: {round(_link_df.median(),1)}, mean: {round(_link_df.mean(),1)}\n"
+            f"fields:           {' | '.join(df.columns.to_list())}\n"
+            f"search fields:    {' | '.join(search_idx_fields)}\n"
+        )
+        return preview_str
