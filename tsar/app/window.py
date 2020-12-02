@@ -7,6 +7,7 @@ from prompt_toolkit.layout import Dimension
 from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
+from prompt_toolkit.layout.processors import TabsProcessor
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.collection import Collection
 
@@ -108,7 +109,7 @@ class ViewScreen(object):
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
         self.preview_bar = FormattedTextControl(focusable=False,)
-        self.preview_buffer = BufferControl(focusable=False)
+        self.preview_buffer = BufferControl(focusable=False, input_processors=[TabsProcessor(tabstop=4, char1=" ", char2=" ")],)
         self.status_bar = FormattedTextControl()
 
         self.layout = Layout(
@@ -118,7 +119,7 @@ class ViewScreen(object):
                     Window(BufferControl(self.input_buffer), height=1,),
                     Window(self.results_control, height=Dimension(**RESULTS_DIMENSION_DICT)),
                     Window(self.preview_bar, height=1, style="reverse"),
-                    Window(self.preview_buffer,  height=Dimension(**PREVIEW_DIMENSION_DICT)),
+                    Window(self.preview_buffer, wrap_lines=True, height=Dimension(**PREVIEW_DIMENSION_DICT)),
                     Window(self.status_bar, height=1, style="reverse"),
                 ]
             ),
@@ -153,7 +154,7 @@ class ViewScreen(object):
             results = sorted(results, key=lambda x: x[1])
             self.results_control.text = results
             self.results_control.index = 0
-            self.update_preview()
+        self.update_preview()
 
     def update_header_bar(self, text=None):
         """Update the header text."""
@@ -190,11 +191,13 @@ class ViewScreen(object):
 
     def update_preview(self):
         """Update preview window text."""
-
         if isinstance(self.results_control.selected_result, str):
             document_id = self.results_control.selected_result.split("\n")[0]
             record = self.state["active_collection"].return_record(document_id)
-            preview = record["document_type"].preview(record)
+            if record:
+                preview = record["document_type"].preview(record)
+            else:
+                preview = "(no preview available)"
         else:
             preview = "(no preview available)"
         self.preview_buffer.buffer.text = preview
