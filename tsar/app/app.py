@@ -9,13 +9,11 @@ import threading
 from tsar.doctypes.doctype import update_dict
 from tsar.app.search_view import SearchView
 from tsar.app.collections_view import CollectionsView
-from tsar.config import GLOBAL_KB
 from tsar.lib.collection import Collection, Register
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.app.rest import FLASK_KWARGS, return_flask_app
-
 RUN_MAIN_APP = True
 
 
@@ -23,13 +21,17 @@ def return_global_keybindings(app):
     """Register key bindings (global, screen specific)."""
     kb_global = KeyBindings()
 
-    @kb_global.add(GLOBAL_KB["exit"])
+    @kb_global.add("c-c")
     def close_app(event):
         event.app.exit()
 
-    @kb_global.add(GLOBAL_KB["search_screen"])
-    def search_screen(event):
-        pass
+    @kb_global.add("c-a")
+    def collection_view(event):
+        app.update_active_view(view=app.state["views"]["collections"])
+
+    @kb_global.add("c-s")
+    def search_view(event):
+        app.update_active_view(view=app.state["views"]["search"])
 
     return kb_global
 
@@ -54,19 +56,20 @@ class App(object):
         self.state["views"]["search"] = SearchView(state=self.state)
         self.state["views"]["collections"] = CollectionsView(state=self.state)
 
-        self.state["active_screen"] = self.state["views"]["search"]
-        self.state["app"].layout = self.state["active_screen"].layout
-        self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])
+        self.state["active_view"] = self.state["views"]["search"]
+        self.state["app"].layout = self.state["active_view"].layout
+        self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_view"].kb])
 
-
-    def change_screen(self, screen_key):
-        pass
+    def update_active_view(self, view):
+        self.state["app"].layout = view.layout
+        self.state["active_view"] = view
+        self.state["app"].key_bindings = merge_key_bindings([self.global_kb, view.kb])
+        view.reset_view()
 
     def run(self):
         """Start Prompt-toolkit event loop."""
         with patch_stdout():
             self.state["app"].run()
-
 
 if __name__ == "__main__":
     """Instantiate views, view_models, app; run the app."""
@@ -74,11 +77,11 @@ if __name__ == "__main__":
     tsar_app = App()
 
     # start flask CLI server in a thread
-    flask_app = return_flask_app(tsar_app)
+    # flask_app = return_flask_app(tsar_app)
 
-    log = logging.getLogger("werkzeug")
-    log.disabled = True
-    threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
+    # log = logging.getLogger("werkzeug")
+    # log.disabled = True
+    # threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
 
     # start main app; set to false to debug CLI server.
     if RUN_MAIN_APP:
