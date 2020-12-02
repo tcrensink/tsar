@@ -93,6 +93,7 @@ class MarkdownDoc(DocType):
     def preview(record):
 
         preview_text = (
+            "(file contents):\n"
             f'{record["content"]}'
         )
         return preview_text

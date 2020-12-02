@@ -87,8 +87,8 @@ class ArxivDoc(DocType):
 
         preview = (
             f"{record['document_name']}\n"
-            f"{pd.to_datetime(record['publish_date'], unit='s').isoformat()}"
-            f"{', '.join(record['authors'])}"
+            f"{pd.to_datetime(record['publish_date'], unit='s').isoformat()}\n"
+            f"{', '.join(record['authors'])}\n\n"
             f"Abstract: {record['content']}"
         )
         return preview

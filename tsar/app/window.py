@@ -7,7 +7,6 @@ from prompt_toolkit.layout import Dimension
 from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
-from prompt_toolkit.layout.processors import TabsProcessor
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.lib.collection import Collection
 
@@ -109,7 +108,7 @@ class ViewScreen(object):
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
         self.preview_bar = FormattedTextControl(focusable=False,)
-        self.preview_buffer = BufferControl(focusable=False, input_processors=[TabsProcessor(tabstop=4, char1=" ", char2=" ")],)
+        self.preview_buffer = BufferControl(focusable=False,)
         self.status_bar = FormattedTextControl()
 
         self.layout = Layout(
