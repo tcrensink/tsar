@@ -4,7 +4,7 @@
 (beta version coming soon)
 
 # What is TSAR?
-Imagine a program that makes digital information *so available* that it becomes a seamless extension of your thought.  This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... and consulted with exceeding speed and flexibility".  Modern search engines partially fulfill this vision with unprecedented information retrieval, but aren't tailored to *your* information, and aren't really designed to curate, remember, or learn new information.
+Imagine a program that makes digital information *so available* that it becomes a seamless extension of your thought.  This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... and consulted with exceeding speed and flexibility".  Modern search engines partially fulfill this vision with unprecedented information retrieval, but aren't tailored to the information *you* care about, and aren't designed to curate, remember, or learn new information.
 
 TSAR is terminal-based utility with the vision of "digitally-integrated thinking" in mind.  More plainly, it is a collection of services to help you curate, manage, introspect, and learn from digital documents *as efficiently as possible*. Use it to manage a personal knowledge base (PKB), as a study aid for your notes, or help organize academic papers.  Unlike a note-taking app, TSAR adds a layer of services onto your existing documents rather than managing content directly.
 
