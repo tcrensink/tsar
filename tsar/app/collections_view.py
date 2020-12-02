@@ -103,7 +103,7 @@ class CollectionsView(object):
     def update_header_bar(self, text=None):
         """Update the header text."""
         if text is None:
-            text = f"Active collection: {state['active_collection'].collection_id}"
+            text = f"Active collection: {self.state['active_collection'].collection_id}"
         self.header_bar.text = text
 
     def update_status_bar(self, text=None):

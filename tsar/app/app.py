@@ -8,6 +8,7 @@ import logging
 import threading
 from tsar.doctypes.doctype import update_dict
 from tsar.app.search_view import SearchView
+from tsar.app.collections_view import CollectionsView
 from tsar.config import GLOBAL_KB
 from tsar.lib.collection import Collection, Register
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
@@ -46,13 +47,17 @@ class App(object):
             "app": Application(full_screen=True),
             "collections": collections,
             "active_collection": collections[list(collections.keys())[0]],
+            "views": {},
         }
 
-        # add screens to global state dict
-        update_dict(self.state, {"screens":{"search": SearchView(state=self.state)}})
-        self.state["active_screen"] = self.state["screens"]["search"]
+        # add screens; self.state must exist before adding but all objects share state ref.
+        self.state["views"]["search"] = SearchView(state=self.state)
+        self.state["views"]["collections"] = CollectionsView(state=self.state)
+
+        self.state["active_screen"] = self.state["views"]["search"]
         self.state["app"].layout = self.state["active_screen"].layout
         self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_screen"].kb])
+
 
     def change_screen(self, screen_key):
         pass
@@ -69,11 +74,11 @@ if __name__ == "__main__":
     tsar_app = App()
 
     # start flask CLI server in a thread
-    # flask_app = return_flask_app(tsar_app)
+    flask_app = return_flask_app(tsar_app)
 
-    # log = logging.getLogger("werkzeug")
-    # log.disabled = True
-    # threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
+    log = logging.getLogger("werkzeug")
+    log.disabled = True
+    threading.Thread(target=flask_app.run, kwargs=FLASK_KWARGS).start()
 
     # start main app; set to false to debug CLI server.
     if RUN_MAIN_APP:
