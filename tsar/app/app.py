@@ -9,7 +9,7 @@ import threading
 from tsar.doctypes.doctype import update_dict
 from tsar.app.search_view import SearchView
 from tsar.app.collections_view import CollectionsView
-from tsar.lib.collection import Collection, Register
+from tsar.lib.collection import Collection, Register, DOCTYPES
 from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
@@ -42,13 +42,18 @@ class App(object):
     def __init__(self):
 
         collections = {coll_id: Collection.load(coll_id) for coll_id in Collection.registered_collections()}
+        if collections:
+            active_collection = collections[list(collections.keys())[0]]
+        else:
+            active_collection = Collection.new(collection_id="temp_colleciton", doc_types=list(DOCTYPES.values()))
+
         self.global_kb = return_global_keybindings(self)
 
         # global state dict that objects (e.g. screens) register themselves to and can access.
         self.state = {
             "app": Application(full_screen=True),
             "collections": collections,
-            "active_collection": collections[list(collections.keys())[0]],
+            "active_collection": active_collection,
             "views": {},
         }
 
