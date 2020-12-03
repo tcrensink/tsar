@@ -85,13 +85,17 @@ class ArxivDoc(DocType):
     @staticmethod
     def preview(record):
 
+        time_str = (
+            pd.to_datetime(record["publish_date"], unit="s").isoformat().split("T")[0]
+        )
         preview = (
             f"{record['document_name']}\n"
-            f"{pd.to_datetime(record['publish_date'], unit='s').isoformat()}\n"
             f"{', '.join(record['authors'])}\n\n"
+            f"{time_str}\n"
             f"Abstract: {record['content']}"
         )
         return preview
+
 
 def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
     """Parse arxiv package result into a record."""

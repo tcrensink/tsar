@@ -117,7 +117,7 @@ class SearchView(object):
         if text is None:
             text = (
                 f"{coll.records_db.df.shape[0]} docs in "
-                f'{coll.collection_id.upper()}: '
+                f"{coll.collection_id}: "
                 f"{doc_count_str}"
             )
         self.status_bar.text = text
@@ -149,6 +149,7 @@ class SearchView(object):
         self.update_results()
         self.update_preview()
         self.update_status_bar()
+
 
 if __name__ == "__main__":
     """stand-alone window test."""

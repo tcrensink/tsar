@@ -14,7 +14,10 @@ from prompt_toolkit.key_binding import KeyBindings, merge_key_bindings
 from prompt_toolkit.application import Application
 from prompt_toolkit.patch_stdout import patch_stdout
 from tsar.app.rest import FLASK_KWARGS, return_flask_app
+
 RUN_MAIN_APP = True
+
+INITIAL_VIEW = "search"
 
 
 def return_global_keybindings(app):
@@ -41,7 +44,10 @@ class App(object):
 
     def __init__(self):
 
-        collections = {coll_id: Collection.load(coll_id) for coll_id in Collection.registered_collections()}
+        collections = {
+            coll_id: Collection.load(coll_id)
+            for coll_id in Collection.registered_collections()
+        }
         self.global_kb = return_global_keybindings(self)
 
         # global state dict that objects (e.g. screens) register themselves to and can access.
@@ -58,7 +64,9 @@ class App(object):
 
         self.state["active_view"] = self.state["views"]["search"]
         self.state["app"].layout = self.state["active_view"].layout
-        self.state["app"].key_bindings = merge_key_bindings([self.global_kb, self.state["active_view"].kb])
+        self.state["app"].key_bindings = merge_key_bindings(
+            [self.global_kb, self.state["active_view"].kb]
+        )
 
     def update_active_view(self, view):
         self.state["app"].layout = view.layout
@@ -70,6 +78,7 @@ class App(object):
         """Start Prompt-toolkit event loop."""
         with patch_stdout():
             self.state["app"].run()
+
 
 if __name__ == "__main__":
     """Instantiate views, view_models, app; run the app."""
