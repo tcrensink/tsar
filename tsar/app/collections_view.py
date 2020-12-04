@@ -37,13 +37,15 @@ class CollectionsView(object):
 
         # layout components
         self.header_bar = FormattedTextControl(focusable=False,)
-        self.input_buffer = Buffer(multiline=False)
+        self.input_buffer = Buffer(multiline=False,)
         self.input_buffer.on_text_changed += self.update_results
         self.results_control = SelectableList(text="")
         self.preview_bar = FormattedTextControl(focusable=False,)
-        self.preview_buffer = BufferControl(input_processors=[TabsProcessor(tabstop=4, char1="", char2="")], focusable=False,)
+        self.preview_buffer = BufferControl(
+            input_processors=[TabsProcessor(tabstop=4, char1="", char2="")],
+            focusable=False,
+        )
         self.status_bar = FormattedTextControl()
-
         self.layout = Layout(
             HSplit(
                 [
@@ -76,10 +78,8 @@ class CollectionsView(object):
 
         @self.kb.add("enter")
         def _(event):
-            collection = self.state["collections"][self.results_control.selected_result]
-            self.state["active_collection"] = collection
+            self.select_collection()
             self.reset_view()
-
 
     @property
     def input_str(self):
@@ -89,15 +89,31 @@ class CollectionsView(object):
     def input_str(self, text):
         self.input_buffer.text = text
 
+    def select_collection(self, collection=None):
+
+        if collection is None:
+            collection = self.state["collections"][self.results_control.selected_result]
+        self.state["active_collection"] = collection
+        self.input_str = collection.collection_id
+        self.input_buffer.cursor_position = len(self.input_str)
+
     def update_results(self, unused_arg=""):
-        """Update self.results in-place."""
+        """Update self.results."""
 
-        collections = Collection.registered_collections()
-        results = {coll: fuzz.ratio(coll, self.input_str) for coll in collections}
-        results = sorted(results.keys(), key=results.get, reverse=True)
+        results = sorted(Collection.registered_collections())
+        # results may be empty
+        if results:
+            result_scores = {coll: fuzz.ratio(coll, self.input_str) for coll in results}
+            max_score = max(result_scores.values())
 
-        self.results_control.text = results
-        self.results_control.index = 0
+            for idx, result in enumerate(results):
+                if result_scores[result] == max_score:
+                    self.results_control.text = results
+                    self.results_control.index = idx
+                    break
+        else:
+            self.results_control.index = -1
+            self.results_control.text = ["(no registered collections)"]
         self.update_preview()
 
     def update_header_bar(self, text=None):
@@ -117,7 +133,7 @@ class CollectionsView(object):
         if text is None:
             text = (
                 f"{coll.records_db.df.shape[0]} docs in "
-                f'"{coll.collection_id}": '
+                f"{coll.collection_id}: "
                 f"{doc_count_str}"
             )
         self.status_bar.text = text
@@ -126,7 +142,7 @@ class CollectionsView(object):
         """Update the preview bar text."""
         coll = self.state["active_collection"]
         if text is None:
-            text = "preview"
+            text = "Collection preview"
         self.preview_bar.text = text
 
     def update_preview(self):
@@ -145,13 +161,17 @@ class CollectionsView(object):
         self.update_preview()
         self.update_status_bar()
         self.update_results()
+        self.layout.focus(self.input_buffer)
 
 
 if __name__ == "__main__":
     """stand-alone window test."""
 
     # coll_ids = Collection.registered_collections()
-    collections = {coll_id: Collection.load(coll_id) for coll_id in Collection.registered_collections()}
+    collections = {
+        coll_id: Collection.load(coll_id)
+        for coll_id in Collection.registered_collections()
+    }
     state = {
         "app": Application(full_screen=True),
         "collections": collections,
