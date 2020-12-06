@@ -1,7 +1,7 @@
 
 [![tcrensink](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://app.circleci.com/pipelines/github/tcrensink/tsar/)
 
-(beta version coming soon)
+(under construction)
 
 # What is TSAR?
 Imagine a program that makes digital information *so available* that it becomes a seamless extension of your thought.  This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... and consulted with exceeding speed and flexibility".  Modern search engines partially fulfill this vision with unprecedented information retrieval, but aren't tailored to the information *you* care about, and aren't designed to curate, remember, or learn new information.
