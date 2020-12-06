@@ -4,30 +4,29 @@
 (under construction)
 
 # What is TSAR?
-Imagine a program that makes digital information *so available* that it becomes a seamless extension of your thought.  This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... and consulted with exceeding speed and flexibility".  Modern search engines partially fulfill this vision with unprecedented information retrieval, but aren't tailored to the information *you* care about, and aren't designed to curate, remember, or learn new information.
+Imagine a program that makes digital information *so available* that it becomes a seamless extension of your thought. This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... [to be] consulted with exceeding speed and flexibility".
 
-TSAR is terminal-based utility with the vision of "digitally-integrated thinking" in mind.  More plainly, it is a collection of services to help you curate, manage, introspect, and learn from digital documents *as efficiently as possible*. Use it to manage a personal knowledge base (PKB), as a study aid for your notes, or help organize academic papers.  Unlike a note-taking app, TSAR adds a layer of services onto your existing documents rather than managing content directly.
+TSAR is a tool designed to facilitate digitally-integrated thinking similar to that of *memex*. It is a terminal app to  access, introspect, curate, and review your digital documents *as efficiently as possible*. Use it to manage a personal knowledge base (PKB), as a study aid for your notes, or help navigate complex project information. Unlike a note-taking app, TSAR provides services for your existing documents rather than managing content directly.
 
 # Features
-TSAR includes features that mirror cognitive tasks such as (content) retrieval, association, search/discovery, and review.  Some key features include:
-- incremental search: per-keystroke results via the lucene query syntax (elasticsearch)
-- link-awareness: linked documents can be parsed/indexed and generate search hits
-- document association: browse documents by similarity
+TSAR includes features that mirror cognitive tasks such as retrieval, association, search/discovery, and review.  Features include:
+- incremental search: per-keystroke results with elasticsearch
+- linking: browse linked documents (e.g. a markdown wiki) or index linked docs for search relevance (e.g. arxiv link)
+- content association: efficiently find associated material that is not explicitly linked
 - custom content curation: manage separate collections, each with custom sources (e.g. folders), document types, and indexing
-- document-type agnostic framework: search, association, and linking behavior can be specified and interoperate on a per-document-type basis
+- document type agnostic: a flexible framework allows plain text, markdown, pdf, arxiv papers, etc. to seamlessly interoperate
 
 # Installation and quickstart
 1. install [Docker](https://www.docker.com/get-started) desktop on your system
 2. clone this repository: `git clone https://github.com/tcrensink/tsar.git`
 3. run installation script `python install.py` and follow instructions
-4. type `tsar` into a terminal window; it may take a few seconds the first time but remains running in the background
-5. tsar's query window should appear for the `help_docs` collection; type `*` to see all documents; press return to open one.
+4. type `tsar` in a bash shell to launch the interface
 
 # Extensibility
-Want to include a new kind of document?  Define a new *documents type* (in python) to customize parsing, linking, and search indexing behavior.  TSAR was designed with extensibility in mind.
+Want to modify how documents are parsed or parse a new kind of document altogether?  The document type engine was designed to be extended with just a bit of python.
 
 # Related
-Several existing tools have similar aim or helped inspire TSAR.  Some of these include:
+Several tools helped inspire TSAR or have related functionality.  A (very incomplete) list includes:
 
 - Emacs [org mode](https://orgmode.org)
 - [Roam](https://roamresearch.com)

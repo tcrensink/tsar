@@ -91,6 +91,7 @@ class Data(object):
         """Return record associated with doc_id."""
         if document_id in self.df.index:
             record = self.df.loc[document_id].to_dict()
+            record["document_id"] = document_id
         else:
             record = None
         return record
@@ -240,8 +241,8 @@ class Collection(object):
         return colls
 
     @classmethod
-    def clear_tmp_collections(cls, index_str="tmp_*"):
-        cls.client.drop_index(index_str)
+    def clear_tmp_collections(cls, temp_index_str="tmp_*"):
+        cls.client.drop_index(temp_index_str)
 
     def register(self, records_db_path=None, config_path=None, write=True):
         """Register collection/define asset paths.
@@ -466,7 +467,7 @@ class Collection(object):
         """Remove (resolved) document_id record from collection."""
 
         # get doc_type to remove from search index
-        record = self.records_db.return_record(document_id)
+        record = self.return_record(document_id)
         self.records_db.rm_record(document_id)
         if self.registered:
             self.records_db.write(self.records_db_path)
@@ -537,3 +538,34 @@ class Collection(object):
             f"search fields:    {' | '.join(search_idx_fields)}\n"
         )
         return preview_str
+
+    def _reindex_records(self):
+        """Re-index all records in the collection.
+
+        - (leave records unchanged)
+        - wipe existing indexes, create new
+        - uses search_mapping associated with doc type
+        """
+        search_indices = []
+        for doc_type in self.doc_types:
+            index_name = return_index_name(self._collection_id, doc_type.__name__)
+            search_indices.append(index_name)
+            # overwrite temp indices of same name if they exist
+            if self.client.index_exists(index_name):
+                self.client.drop_index(index_name)
+            self.client.new_index(index_name=index_name, mapping=doc_type.index_mapping)
+
+        records_dict = self.records_db.df.index
+        for document_id in records_dict:
+            record = self.return_record(document_id)
+            doc_type = record["document_type"]
+            link_content = self.gen_link_content(record["document_id"])
+            (document_id, record_index) = doc_type.gen_search_index(
+                record, link_content=link_content
+            )
+            index_name = return_index_name(
+                self._collection_id, doc_type_str=doc_type.__name__
+            )
+            self.client.index_record(
+                document_id=document_id, record_index=record_index, index_name=index_name
+            )
