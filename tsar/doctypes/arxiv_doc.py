@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import requests
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
-from tsar.lib.record_defs import parse_lib
+from tsar.lib import parse_lib
 
 
 class ArxivDoc(DocType):
@@ -115,3 +115,16 @@ def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
         "links": links,
     }
     return record
+
+def _recent_ml_and_ai_query_url(
+    fields=["cs.AI", "cs.LG", "cs.CL", "cs.NE"],
+    sort_method="lastUpdatedDate",
+    max_results=4,
+):
+    """Return query string for recent ml/ai papers."""
+    base_query = "http://export.arxiv.org/api/query?search_query="
+    fields_str = "+OR+".join([f"cat:{f}" for f in fields])
+    sort_str = f"sortBy={sort_method}"
+    max_results_str = f"max_results={max_results}"
+    query = base_query + "&".join([fields_str, sort_str, max_results_str])
+    return query

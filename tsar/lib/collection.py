@@ -15,10 +15,9 @@ from tsar.doctypes.doctype import update_dict, DocTypeResolver
 from tsar.doctypes.arxiv_doc import ArxivDoc
 from tsar.doctypes.markdown_doc import MarkdownDoc
 from tsar import COLLECTIONS_FOLDER, LOG_FOLDER
-from tsar.lib.record_defs.parse_lib import resolve_path
+from tsar.lib.parse_lib import resolve_path
 from tsar.lib import search
 from tsar.lib.search import return_index_name
-from tsar.lib.record_def import RecordDef
 import datetime
 from requests import HTTPError
 
