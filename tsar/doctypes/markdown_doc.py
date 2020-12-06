@@ -6,7 +6,7 @@ import os
 # from tsar import LOG_FOLDER
 from tsar import LOG_FOLDER
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
-from tsar.lib.record_defs import parse_lib
+from tsar.lib import parse_lib
 from logging import FileHandler
 
 handler = FileHandler(os.path.join(LOG_FOLDER, "markdown_doc.log"), mode="w+")
