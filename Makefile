@@ -7,7 +7,6 @@ SYSTEM = $(shell uname)
 
 build:
 	docker build \
-		--quiet \
 		--network=host \
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
@@ -31,7 +30,7 @@ run: build
 		tsar \
 		python "$(shell pwd)/tsar/app/app.py"
 
-shell: build 
+shell: build
 	docker run \
 		-p 8138:8138 \
 		--name tsar_shell \
@@ -69,7 +68,7 @@ run: build
 		tsar \
 		python "$(shell pwd)/tsar/app/app.py"
 
-shell: build 
+shell: build
 	docker run \
 		-p 8137:8137 \
 		--name tsar \
@@ -90,8 +89,8 @@ shell: build
 else
 # TARGETS WHEN OS IS UNDETERMINED
 
-shell: 
+shell:
 	echo "unable to determine system in Makefile"
-run: 
+run:
 	echo "unable to determine system in Makefile"
 endif

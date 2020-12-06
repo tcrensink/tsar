@@ -1,9 +1,14 @@
+apscheduler
 arxiv
+bs4
 elasticsearch
 flask
 flask-restful
+fuzzywuzzy
 ipdb
 ipython
+mistune==2.0.0a4
+networkx
 nltk
 numpy
 pandas
@@ -12,5 +17,6 @@ prompt_toolkit
 pygments
 pygments-style-solarized
 pytest
+# python-Levenshtein
 requests
 tldextract
