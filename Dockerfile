@@ -45,3 +45,7 @@ RUN ln -s $APP_PATH/tsar/app/app.py /usr/bin/tsar
 RUN mkdir -p /root/.ssh && \
     chmod 0700 /root/.ssh && \
     ssh-keyscan host.docker.internal >> /root/.ssh/known_hosts
+
+CMD service elasticsearch start && /bin/bash
+# RUN mkdir -p /Users/trensink/move_files_no_data/git/my_repos/tsar/resources/elasticsearch/logs
+# RUN service elasticsearch start
