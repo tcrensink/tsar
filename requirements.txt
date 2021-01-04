@@ -20,3 +20,4 @@ pytest
 # python-Levenshtein
 requests
 tldextract
+youtube_transcript_api
