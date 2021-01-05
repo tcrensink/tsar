@@ -117,9 +117,8 @@ def test_data_update_record(arxiv_record1, arxiv_record2):
     data.update_record(arxiv_record2)
     assert arxiv_record2["document_id"] in data.df.index
 
-
 def test_data_return_record(arxiv_record1, data):
-    doc_id = arxiv_record1.pop("document_id")
+    doc_id = arxiv_record1["document_id"]
     record = data.return_record(doc_id)
     assert arxiv_record1 == record
 
