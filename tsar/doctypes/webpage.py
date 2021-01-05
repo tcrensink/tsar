@@ -1,59 +1,39 @@
+"""Generic webpage.  Defer to custom webpage/url doctypes if they exist."""
 from bs4 import BeautifulSoup
 from datetime import datetime
+import html2text
 import requests
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import (
-    NoTranscriptAvailable,
-    NoTranscriptFound,
-    TranscriptsDisabled,
-)
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
 from tsar.lib import parse_lib
 
 
-class YoutubeDoc(DocType):
-    """Doc type for youtube videos."""
-
-    schema = {
-        "publish_date": float,
-    }
-    schema = update_dict(schema, BASE_SCHEMA)
-
-    index_mapping = {
-        "mappings": {
-            "properties": {
-                "publish_date": {
-                    "type": "date",
-                    "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_second",
-                },
-            }
-        }
-    }
-    index_mapping = update_dict(index_mapping, BASE_MAPPING)
+class WebpageDoc(DocType):
+    """Generic url/html document type."""
+    schema = BASE_SCHEMA
+    index_mapping = BASE_MAPPING
 
     @staticmethod
     def gen_record(document_id, primary_doc, gen_links):
-        """Generate record from youtube url.
+        """Generate record from url.
 
-        # example document_id: https://www.youtube.com/watch?v=3LtQWxhqjqI
+        # example document_id: https://www.bookbub.com/blog/free-short-stories-online
         """
-        video_id = document_id.split("v=")[-1]
-        try:
-            transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
-            text = " ".join([d["text"] for d in data])
-        except (NoTranscriptAvailable, NoTranscriptFound, TranscriptsDisabled) as err:
-            text = "(no transcript available)"
+        h = html2text.HTML2Text()
+        res = requests.get(document_id)
+        text = h.handle(res.content.decode())
 
         # get title:
-        res = requests.get(document_id)
         soup = BeautifulSoup(markup=res.text, features="html.parser")
-        title = soup.find("title").text
+        try:
+            title = soup.find("title").text
+        except Exception:
+            title = "(no title available)"
         links = []
         record = {
             "document_id": document_id,
             "document_name": title,
             "primary_doc": primary_doc,
-            "document_type": YoutubeDoc,
+            "document_type": WebpageDoc,
             "content": text,
             "links": links,
         }
@@ -71,7 +51,7 @@ class YoutubeDoc(DocType):
 
     @staticmethod
     def gen_links(text):
-        """Return citations found in text."""
+        """Return links found in text."""
         return []
 
     @staticmethod
@@ -90,8 +70,9 @@ class YoutubeDoc(DocType):
     @staticmethod
     def is_valid(document_id):
         url = requests.urllib3.util.parse_url(document_id)
-        cond = bool(url.host == "www.youtube.com")
-        if cond:
+        cond1 = bool(url.host != None)
+        cond2 = bool(url.scheme != None)
+        if cond1 and cond2:
             return True
         else:
             return False
