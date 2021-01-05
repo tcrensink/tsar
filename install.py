@@ -38,6 +38,7 @@ ES_LOG_PATH = os.path.join(ES_FOLDER, "logs")
 ES_DATA_PATH = os.path.join(ES_FOLDER, "data")
 ES_CONFIG_TEMPLATE = os.path.join(ES_FOLDER, "elasticsearch.yml_template")
 ES_CONFIG_PATH = os.path.join(ES_FOLDER, "elasticsearch.yml")
+BASH_HISTORY_FILE = os.path.join(APP_DIR, "resources/dev_config/.bash_history")
 
 
 def install_macos():
@@ -76,14 +77,17 @@ def install_macos():
                 print("replaced {} with {}".format(repr(line), repr(new_line)))
         fp.writelines(lines)
 
+    print("\nupdating dev files in {}".format(DEV_CONFIG_FOLDER))
+    subprocess.call(f"touch {BASH_HISTORY_FILE}", shell=True)
+
 def install_linux():
     pass
 
 if __name__ == "__main__":
 
     if PLATFORM.lower() == "darwin":
-        install_macos()        
-    
+        install_macos()
+
     else:
         raise NotImplementedError("Installation not currently supported for platform: {}".format(PLATFORM))
 
