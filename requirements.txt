@@ -5,6 +5,7 @@ elasticsearch
 flask
 flask-restful
 fuzzywuzzy
+html2text
 ipdb
 ipython
 mistune==2.0.0a4

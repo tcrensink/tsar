@@ -43,8 +43,8 @@ shell: build
 		-it \
 		--volume="${HOME}:${HOME}:cached" \
 		--volume="${shell pwd}/.ipython:/root/.ipython:cached" \
-		--mount type=bind,src="${shell pwd}/.bash_history",target="/root/.bash_history" \
-		--mount type=bind,src="${HOME}/.inputrc",target="/root/.inputrc" \
+		--mount type=bind,src="${shell pwd}/resources/bash_files/.bash_history",target="/root/.bash_history" \
+		--mount type=bind,src="${shell pwd}/resources/bash_files/.inputrc",target="/root/.inputrc" \
 		--memory="2g" \
 		--detach-keys="ctrl-q" \
 		tsar \
