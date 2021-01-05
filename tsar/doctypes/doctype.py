@@ -18,7 +18,7 @@ BASE_MAPPING = {
         "properties": {
             "document_name": {"type": "text", "analyzer": "english"},
             "content": {"type": "text", "analyzer": "english"},
-            "link_content": {"type": "text", "boost": 0.3, "analyzer": "english"},
+            "link_content": {"type": "text", "boost": 0.2, "analyzer": "english"},
         }
     }
 }

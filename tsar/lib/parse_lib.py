@@ -1,5 +1,5 @@
 """
-library of parsing functions and utilities used by record_defs.
+library of parsing functions and utilities.
 
 All file handling should be done from host machine via ssh.
 Environment variables $HOME, $USER defined to match host in tsar/__init__.py

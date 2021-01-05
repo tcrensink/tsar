@@ -2,7 +2,6 @@
 # use `host.docker.internal` to connect from container -> host on mac
 # rm: clean up docker image on exit
 # -it creates interactive (pseudo) tty shell
-# see also: reattach_shell.sh in ./resources
 SYSTEM = $(shell uname)
 
 build:
@@ -42,7 +41,9 @@ shell: build
 		--rm \
 		-it \
 		--volume="${HOME}:${HOME}:cached" \
-		--volume="${shell pwd}/.ipython:/root/.ipython:cached" \
+		--volume="${shell pwd}/resources/dev_config/.ipython:/root/.ipython:cached" \
+		--mount type=bind,src="${shell pwd}/resources/dev_config/.bash_history",target="/root/.bash_history" \
+		--mount type=bind,src="${shell pwd}/resources/dev_config/.inputrc",target="/root/.inputrc" \
 		--memory="2g" \
 		--detach-keys="ctrl-q" \
 		tsar \

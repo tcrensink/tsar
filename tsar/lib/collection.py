@@ -84,7 +84,7 @@ class Data(object):
     def update_record(self, record):
         """Add or update a record in the df."""
         document_id = record["document_id"]
-        self.df.loc[document_id] = record
+        self.df.loc[document_id] = pd.Series(record)
 
     def return_record(self, document_id):
         """Return record associated with doc_id."""
