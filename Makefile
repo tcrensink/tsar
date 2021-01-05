@@ -42,7 +42,7 @@ shell: build
 		--rm \
 		-it \
 		--volume="${HOME}:${HOME}:cached" \
-		--volume="${HOME}/.ipython:/root/.ipython:cached" \
+		--volume="${shell pwd}/.ipython:/root/.ipython:cached" \
 		--memory="2g" \
 		--detach-keys="ctrl-q" \
 		tsar \
