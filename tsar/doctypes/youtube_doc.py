@@ -2,6 +2,11 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
 from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import (
+    NoTranscriptAvailable,
+    NoTranscriptFound,
+    TranscriptsDisabled,
+)
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
 from tsar.lib import parse_lib
 
@@ -33,8 +38,12 @@ class YoutubeDoc(DocType):
         # example document_id: https://www.youtube.com/watch?v=3LtQWxhqjqI
         """
         video_id = document_id.split("v=")[-1]
-        data = YouTubeTranscriptApi.get_transcript(video_id)
-        text = " ".join([d["text"] for d in data])
+        try:
+            transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+            text = " ".join([d["text"] for d in data])
+        except (NoTranscriptAvailable, NoTranscriptFound, TranscriptsDisabled) as err:
+            text = "(no transcript available)"
+
         # get title:
         res = requests.get(document_id)
         soup = BeautifulSoup(markup=res.text, features="html.parser")
