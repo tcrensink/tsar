@@ -40,7 +40,7 @@ class YoutubeDoc(DocType):
         video_id = document_id.split("v=")[-1]
         try:
             transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
-            text = " ".join([d["text"] for d in data])
+            text = " ".join([d["text"] for d in transcript_data])
         except (NoTranscriptAvailable, NoTranscriptFound, TranscriptsDisabled) as err:
             text = "(no transcript available)"
 
