@@ -88,7 +88,7 @@ class DocType(ABC):
     @staticmethod
     @abstractmethod
     def is_valid(document_id):
-        """Returns True if document_id is valid for doc type."""
+        """Returns True if document_id is valid for doc type; expected to be performant."""
         pass
 
     @staticmethod
@@ -98,17 +98,42 @@ class DocType(ABC):
         pass
 
 
-class DocTypeResolver(object):
-    """Class for doctype inference/management."""
-
-    def __init__(self, doctype_list):
-        self.doctypes = doctype_list
+class DocTypeManager(object):
+    """Define record generation and link management when multiple doc types are present."""
+    def __init__(self, doctypes):
+        self.doctypes = doctypes
 
     def return_doctype(self, document_id):
         """Return best doctype for document_id."""
         if not isinstance(document_id, str):
             raise Exception(f"document_id not a string")
-        for doctype in self.doctypes:
+        for doctype in self.doctypes.values():
             if doctype.is_valid(document_id):
                 return doctype
         raise Exception("No associated doctype")
+
+    def gen_record(self, document_id, primary_doc, gen_links):
+        """Source the correct doctype, generate a record for document_id."""
+        doctype = self.return_doctype(document_id)
+        record = doctype.gen_record(document_id, primary_doc, gen_links)
+
+        # discard links with no valid doctype
+        if gen_links:
+            valid_links = set()
+            for link_id in record["links"]:
+                try:
+                    doc_type = self.return_doctype(link_id)
+                    resolved_link = self.resolve_document_id(link_id, doc_type=doc_type)
+                    valid_links.add(resolved_link)
+                except Exception:
+                    # no associated doctype; discard link
+                    pass
+            record["links"] = list(valid_links)
+        return record
+
+    def resolve_document_id(self, link_id, doc_type=None):
+        """Resolve document_id using doctype_resolver for link ids."""
+        if doc_type is None:
+            doctype = self.return_doctype(document_id)
+        resolved_doc_id = doc_type.resolve_id(link_id)
+        return resolved_doc_id

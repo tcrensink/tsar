@@ -11,7 +11,7 @@ import pandas as pd
 from pickle import UnpicklingError
 from requests.exceptions import HTTPError
 from tsar.doctypes import DOCTYPES
-from tsar.doctypes.doctype import update_dict, DocTypeResolver
+from tsar.doctypes.doctype import update_dict, DocTypeManager
 from tsar.doctypes.arxiv_doc import ArxivDoc
 from tsar.doctypes.markdown_doc import MarkdownDoc
 from tsar import COLLECTIONS_FOLDER, LOG_FOLDER
@@ -185,7 +185,8 @@ class Collection(object):
         Note:
         - init assigns attributes; use `Collection.new` etc. for collection creation.
         """
-        self.doctype_resolver = DocTypeResolver(doc_types)
+        doctype_dict = {k:v for k,v in DOCTYPES.items() if v in doc_types}
+        self.doctype_mgr = DocTypeManager(doctype_dict)
         self.collection_id = collection_id
         self.doc_types = doc_types
         self.records_db = records_db
@@ -369,21 +370,6 @@ class Collection(object):
             except Exception:
                 logger.exception(f"warning: unable to remove {index_id}")
 
-    def _resolve_link_id(self, link_id, doc_type=None):
-        """Resolve document_id using doctype_resolver for link ids."""
-        if doc_type is None:
-            try:
-                doc_type = self.doctype_resolver.return_doctype(link_id)
-            except Exception:
-                logger.exception(f"unable to determine doctype of {link_id}")
-        try:
-            link_id = doc_type.resolve_id(link_id)
-        except Exception:
-            logger.exception(
-                f"tried to resolve link_id: {link_id} using doctype: {doc_type}"
-            )
-        return link_id
-
     def gen_link_content(self, document_id):
         """Append content from linked docs."""
         df = self.records_db.df
@@ -415,31 +401,21 @@ class Collection(object):
         """
         if doc_type is None:
             try:
-                doc_type = self.doctype_resolver.return_doctype(document_id)
+                doc_type = self.doctype_mgr.return_doctype(document_id=document_id)
             except Exception:
                 logger.exception(f"unable to determine doc_type for {document_id}")
                 return
-        record = doc_type.gen_record(
-            document_id, primary_doc=primary_doc, gen_links=True
-        )
-        # resolve link_ids
-        resolved_links = [self._resolve_link_id(link) for link in record["links"]]
-        record["links"] = resolved_links
+        try:
+            record = self.doctype_mgr.gen_record(document_id=document_id, primary_doc=primary_doc, gen_links=True)
+        except Exception:
+            logger.exception(f"Collection.gen_record failed for: document_id: {document_id}, doc_type: {doc_type}")
 
-        # generate records for linked docs that aren't primary
         if gen_link_records:
-            link_only_ids = [
-                link for link in resolved_links if link not in self.primary_documents()
-            ]
-            for link_id in link_only_ids:
-                self.add_document(
-                    document_id=link_id,
-                    primary_doc=False,
-                    doc_type=None,
-                    gen_link_records=False,
-                    index_linked_content=False,
-                )
-            self.add_record(record, index_linked_content=False, write=False)
+            # don't overwrite primary documents as secondary
+            link_id_set = set(record["links"]) - set(self.primary_documents())
+            for link_id in list(link_id_set):
+                link_record = self.doctype_mgr.gen_record(document_id=link_id, primary_doc=False, gen_links=True)
+                self.add_record(link_record, index_linked_content=False, write=False)
         self.add_record(record, index_linked_content=True, write=write)
 
     def add_record(self, record, index_linked_content, write=True):
