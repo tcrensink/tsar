@@ -16,6 +16,8 @@ def test_subclass():
 def test_gen_record():
     """Verify record generation matches expected output."""
     record = MarkdownDoc.gen_record(SOURCE_DOC1, primary_doc=True, gen_links=True)
+    record["links"].sort()
+    SOURCE1_MARKDOWN_DOC_RECORD["links"].sort()
     assert SOURCE1_MARKDOWN_DOC_RECORD == record
 
 

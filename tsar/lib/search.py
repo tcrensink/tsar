@@ -82,7 +82,7 @@ class Client(object):
         columns = table_values[0][:]
         data = table_values[1::]
         df = pd.DataFrame(data=data, columns=columns)
-        df = df.set_index("index", drop=True)
+        df = df.set_index("index", drop=True).sort_index()
         return df
 
     def index_record(self, document_id, record_index, index_name):
