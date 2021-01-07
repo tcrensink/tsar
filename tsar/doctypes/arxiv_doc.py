@@ -1,6 +1,7 @@
 import arxiv
-import pandas as pd
 from datetime import datetime
+import pandas as pd
+import re
 import requests
 from tsar.doctypes.doctype import DocType, update_dict, BASE_SCHEMA, BASE_MAPPING
 from tsar.lib import parse_lib
@@ -74,13 +75,8 @@ class ArxivDoc(DocType):
 
     @staticmethod
     def is_valid(document_id):
-        url = requests.urllib3.util.parse_url(document_id)
-        cond1 = bool(url.host == "arxiv.org")
-        cond2 = bool(url.path.startswith("/abs"))
-        if cond1 and cond2:
-            return True
-        else:
-            return False
+        match_str = re.match(r"https?://arxiv.org/abs/\d+\.\d+v?\d\Z", document_id)
+        return bool(match_str)
 
     @staticmethod
     def preview(record):

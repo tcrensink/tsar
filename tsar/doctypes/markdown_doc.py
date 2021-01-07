@@ -63,7 +63,7 @@ class MarkdownDoc(DocType):
         """Return links from markdown text."""
         html = mistune.html(text)
         soup = BeautifulSoup(html, features="html.parser")
-        links = [link.get("href") for link in soup.findAll("a")]
+        links = list(set([link.get("href") for link in soup.findAll("a")]))
         return links
 
     @staticmethod
@@ -83,11 +83,9 @@ class MarkdownDoc(DocType):
 
     @staticmethod
     def is_valid(document_id, extensions=[".md"]):
-        valid = (
-            os.path.exists(document_id)
-            and os.path.splitext(document_id)[-1] in extensions
-        )
-        return valid
+        cond1 = os.path.exists(document_id)
+        cond2 =  os.path.splitext(document_id)[-1] in extensions
+        return bool(cond1 and cond2)
 
     @staticmethod
     def preview(record):

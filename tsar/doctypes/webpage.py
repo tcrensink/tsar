@@ -1,5 +1,6 @@
 """Generic webpage.  Defer to custom webpage/url doctypes if they exist."""
 from bs4 import BeautifulSoup
+import mistune
 from datetime import datetime
 import html2text
 import requests
@@ -28,7 +29,11 @@ class WebpageDoc(DocType):
             title = soup.find("title").text
         except Exception:
             title = "(no title available)"
-        links = []
+
+        if gen_links:
+            links = WebpageDoc.gen_links(text)
+        else:
+            links = []
         record = {
             "document_id": document_id,
             "document_name": title,
@@ -52,7 +57,10 @@ class WebpageDoc(DocType):
     @staticmethod
     def gen_links(text):
         """Return links found in text."""
-        return []
+        html = mistune.html(text)
+        soup = BeautifulSoup(html, features="html.parser")
+        links = list(set([link.get("href") for link in soup.findAll("a")]))
+        return links
 
     @staticmethod
     def gen_from_source(source_id, *source_args, **source_kwargs):
@@ -72,10 +80,7 @@ class WebpageDoc(DocType):
         url = requests.urllib3.util.parse_url(document_id)
         cond1 = bool(url.host != None)
         cond2 = bool(url.scheme != None)
-        if cond1 and cond2:
-            return True
-        else:
-            return False
+        return bool(cond1 and cond2)
 
     @staticmethod
     def preview(record):
