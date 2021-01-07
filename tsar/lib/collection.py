@@ -185,8 +185,7 @@ class Collection(object):
         Note:
         - init assigns attributes; use `Collection.new` etc. for collection creation.
         """
-        doctype_dict = {k:v for k,v in DOCTYPES.items() if v in doc_types}
-        self.doctype_mgr = DocTypeManager(doctype_dict)
+        self.doctype_mgr = DocTypeManager({k:v for k,v in DOCTYPES.items() if v in doc_types})
         self.collection_id = collection_id
         self.doc_types = doc_types
         self.records_db = records_db

@@ -84,7 +84,7 @@ class MarkdownDoc(DocType):
     @staticmethod
     def is_valid(document_id, extensions=[".md"]):
         cond1 = os.path.exists(document_id)
-        cond2 =  os.path.splitext(document_id)[-1] in extensions
+        cond2 = os.path.splitext(document_id)[-1] in extensions
         return bool(cond1 and cond2)
 
     @staticmethod
