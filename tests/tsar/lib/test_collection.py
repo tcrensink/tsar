@@ -271,7 +271,7 @@ def test_add_document_remove_record(Collection, register, arxiv_record1, arxiv_r
 
     doc_id = "https://arxiv.org/abs/1810.04805"
     coll = Collection.new("test", doc_types=list(DOCTYPES.values()))
-    doc_type = coll.doctype_resolver.return_doctype(doc_id)
+    doc_type = coll.doctype_mgr.return_doctype(doc_id)
     resolved_id = doc_type.resolve_id(doc_id)
 
     coll.add_document(resolved_id)

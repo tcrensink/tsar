@@ -42,5 +42,5 @@ PARSED_WEBPAGE_DOC = {
     'primary_doc': True,
     'document_type': tsar.doctypes.webpage.WebpageDoc,
     'content': '# arXiv.org - Non-exclusive license to distribute\n\nThe URI `<http://arxiv.org/licenses/nonexclusive-distrib/1.0/>` is used to\nrecord the fact that the submitter granted the following license to arXiv.org\non submission of an article:\n\n  * I grant arXiv.org a perpetual, non-exclusive license to distribute this article.\n  * I certify that I have the right to grant this license.\n  * I understand that submissions cannot be completely removed once accepted.\n  * I understand that arXiv.org reserves the right to reclassify or reject any submission.\n\n### Revision history\n\n2004-01-16 - License above introduced as part of arXiv submission process  \n2007-06-21 - This HTML page created\n\n[Contact](/help/contact)\n\n',
-    'links': []
+    'links': ['/help/contact']
 }

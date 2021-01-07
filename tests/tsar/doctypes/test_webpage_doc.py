@@ -16,4 +16,6 @@ def test_subclass():
 def test_gen_record():
     """Verify record generation matches expected output."""
     record = WebpageDoc.gen_record(WEBPAGE_DOC_ID, primary_doc=True, gen_links=True)
+    record["links"].sort()
+    PARSED_WEBPAGE_DOC["links"].sort()
     assert PARSED_WEBPAGE_DOC == record
