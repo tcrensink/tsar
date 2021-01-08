@@ -18,6 +18,7 @@ prompt_toolkit
 pygments
 pygments-style-solarized
 pytest
+pyvis
 # python-Levenshtein
 requests
 tldextract

@@ -7,6 +7,9 @@
 import logging
 import os
 import json
+import networkx as nx
+fromp pyvis import network
+import numpy as np
 import pandas as pd
 from pickle import UnpicklingError
 from requests.exceptions import HTTPError
@@ -101,6 +104,32 @@ class Data(object):
             self.df.drop(document_id, inplace=True)
         except KeyError:
             logger.exception("warning: no record to remove at {}".format(document_id))
+
+    def gen_graph(self, secondary_links=False):
+        """Generate a networkx graph from the documents."""
+        if secondary_links:
+            df = self.df.copy()
+        else:
+            df = self.df[self.df.primary_doc].copy()
+
+        df["source"] = df.index
+        df = df.explode("links")
+        graph = nx.from_pandas_edgelist(
+            df,
+            source="source",
+            target="links",
+            create_using=nx.DiGraph,
+        )
+        graph.remove_node(np.nan)
+        return graph
+
+    def plot_graph(self, secondary_links=False, output_file="test.html"):
+        """Plot a link graph of the current records."""
+        graph = self.gen_graph(secondary_links=secondary_links)
+        nt = pyvis.network.Network("700px", "700px")
+        nt.from_nx(graph)
+        nt.show_buttons(filter_=['interaction', 'physics'])
+        nt.show(name=output_file)
 
 
 class Register(object):
