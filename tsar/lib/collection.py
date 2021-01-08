@@ -8,10 +8,10 @@ import logging
 import os
 import json
 import networkx as nx
-fromp pyvis import network
 import numpy as np
 import pandas as pd
 from pickle import UnpicklingError
+from pyvis import network
 from requests.exceptions import HTTPError
 from tsar.doctypes import DOCTYPES
 from tsar.doctypes.doctype import update_dict, DocTypeManager
