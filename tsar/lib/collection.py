@@ -8,6 +8,7 @@ import logging
 import os
 import json
 import pandas as pd
+from io import StringIO
 from pickle import UnpicklingError
 from requests.exceptions import HTTPError
 from tsar.doctypes import DOCTYPES
@@ -37,8 +38,9 @@ class Data(object):
         self.df = df
 
     def __repr__(self):
-        value = "data:\n" + self.df.__repr__()
-        return value
+        buff = StringIO()
+        self.df.info(buf=buff)
+        return buff.getvalue()
 
     @classmethod
     def new(cls, record_schema, index_field="document_id"):
@@ -189,8 +191,20 @@ class Collection(object):
         self.collection_id = collection_id
         self.doc_types = doc_types
         self.records_db = records_db
+        self.df = records_db.df
         self.configd = configd
         self.registered = self._register.exists(collection_id)
+
+    def __repr__(self):
+
+        doctype_str = self.df.document_type.value_counts()
+        # doctype_str = " ".join([k for k, v in DOCTYPES.items() if v in self.doc_types])
+        str_value = (
+            f"registered:\t{self.registered}\n"
+            f"records ({self.df.shape[0]}):\n{doctype_str}\n"
+            f"\n{self.records_db}"
+        )
+        return str_value
 
     @property
     def _collection_id(self):
@@ -371,7 +385,7 @@ class Collection(object):
 
     def gen_link_content(self, document_id):
         """Append content from linked docs."""
-        df = self.records_db.df
+        df = self.df
         links = df.loc[document_id].links
         # link content series for link records in df:
         content_series = df[df.index.isin(links)].content
@@ -380,7 +394,7 @@ class Collection(object):
 
     def primary_documents(self):
         """Return index of primary document_ids."""
-        df = self.records_db.df
+        df = self.df
         return df[df.primary_doc].index
 
     def add_document(
@@ -490,7 +504,7 @@ class Collection(object):
         prompt-toolkit won't recognize '\t', so this string is manually formatted.
         Consider improving with str.format() with args.
         """
-        df = self.records_db.df
+        df = self.df
         fields = sorted(df.columns)
         _doc_count = df.document_type.value_counts().reset_index(name="counts")
         _link_df = df.links.apply(lambda x: len(x))
@@ -529,7 +543,7 @@ class Collection(object):
                 self.client.drop_index(index_name)
             self.client.new_index(index_name=index_name, mapping=doc_type.index_mapping)
 
-        records_dict = self.records_db.df.index
+        records_dict = self.df.index
         for document_id in records_dict:
             record = self.return_record(document_id)
             doc_type = record["document_type"]
