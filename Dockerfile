@@ -24,7 +24,8 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.7.
     rm elasticsearch-7.7.1-amd64.deb elasticsearch-7.7.1-amd64.deb.sha512
 
 # link specific python version to "python"
-RUN ln -s /usr/bin/python3.7 /usr/bin/python
+RUN ln -s /usr/bin/python3.7 /usr/bin/python && python -m pip install --upgrade pip && python -m pip install --upgrade setuptools
+
 
 # cd to tsar directory, install python deps, copy
 ARG tsar_folder
