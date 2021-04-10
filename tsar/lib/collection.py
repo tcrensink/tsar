@@ -205,6 +205,9 @@ class Collection(object):
 
         Until registered, collection assets are in-memory/overwritable.
         """
+        if cls._register.exists(collection_id):
+            raise KeyError(f"collection name {collection_id} already taken.")
+
         # create records db
         collection_schema = {}
         for doc_type in doc_types:

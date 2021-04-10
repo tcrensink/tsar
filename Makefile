@@ -6,7 +6,6 @@ SYSTEM = $(shell uname)
 
 build:
 	docker build \
-		--network=host \
 		-t tsar . \
 		--build-arg tsar_folder=$(shell pwd)
 
@@ -15,7 +14,7 @@ ifeq (${SYSTEM}, Darwin)
 
 run: build
 	docker run \
-		-p 8137:8137 \
+		-p 9200:9200 \
 		--name tsar \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
@@ -31,7 +30,7 @@ run: build
 
 shell: build
 	docker run \
-		-p 8138:8138 \
+		-p 9200:9200 \
 		--name tsar_shell \
 		-e HOST_USER=${USER} \
 		-e HOST_DIR=$(shell pwd) \
