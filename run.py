@@ -50,11 +50,11 @@ def attach_to_shell():
 def start_container(timeout=STARTUP_TIMEOUT):
     """Start the app docker container."""
     proc = subprocess.run(
-        f'cd {RUN_DIR} && make run', 
+        f'cd {RUN_DIR} && make run',
         shell=True,
         capture_output=True,
-    )  
-    err_msg = proc.stderr.decode()  
+    )
+    err_msg = proc.stderr.decode()
     if err_msg:
         raise ValueError(err_msg)
     time.sleep(timeout)
@@ -62,7 +62,7 @@ def start_container(timeout=STARTUP_TIMEOUT):
 def kill_container():
     """kill the docker container."""
     proc = subprocess.run(
-        KILL_CMD, 
+        KILL_CMD,
         shell=True,
         capture_output=True,
     )
@@ -72,7 +72,7 @@ def restart_container():
     print('killing tsar...')
     kill_container()
     print('restarting tsar...')
-    start_container()    
+    start_container()
 
 def gen_collection_parser(
     collection_name,
@@ -82,7 +82,7 @@ def gen_collection_parser(
 
     collection_parser = sub_parsers.add_parser(collection_name)
     coll_cmd_parser = collection_parser.add_subparsers(
-        title="collection commands", 
+        title="collection commands",
         dest="sub_command",
     )
     name = collection_name
@@ -141,17 +141,18 @@ if __name__ == '__main__':
     elif args.command == "info":
         # show basic collections info
         res = requests.get(f"{BASE_URL}/info")
-        print(res.json())        
+        print(res.json())
     elif args.command == "kill":
         # kill the running container
         kill_container()
+        print('killed tsar.')
     elif args.command == "restart":
         # restart the container
         restart_container()
     elif args.command == "new":
         # create a new collection
         res = requests.post(
-            f"{BASE_URL}/Collections", 
+            f"{BASE_URL}/Collections",
             json={"collection_name": args.name, "RecordDef": args.record_def},
         )
         print("created new collection.")
@@ -162,11 +163,11 @@ if __name__ == '__main__':
         if args.name not in collections:
             coll_str = "\n".join(collections)
             print(f"`{args.name}` not found in:\n\n{coll_str}")
-            sys.exit(0)        
+            sys.exit(0)
         usr_input = input(f"permanently drop collection: `{args.name}`? (y/N)")
         if usr_input.lower() == "y":
             res = requests.delete(
-                f"{BASE_URL}/Collections", 
+                f"{BASE_URL}/Collections",
                 json={"collection_name": args.name},
             )
             print(f"dropped collection: {args.name}")
@@ -177,14 +178,14 @@ if __name__ == '__main__':
     elif args.command in collections and args.sub_command == "add":
         # add record to a collection
         res = requests.post(
-            f"{BASE_URL}/Collections/{args.command}", 
+            f"{BASE_URL}/Collections/{args.command}",
             json={"record_id": args.record_id},
         )
         print(f"added {args.record_id} to Collection: {args.command}")
     elif args.command in collections and args.sub_command == "rm":
         # rm record from a collection
         res = requests.delete(
-            f"{BASE_URL}/Collections/arxiv", 
+            f"{BASE_URL}/Collections/arxiv",
             json={"record_id": args.record_id}
         )
         print(f"Removed {args.record_id} from Collection:{args.command}.")

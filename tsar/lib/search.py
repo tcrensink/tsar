@@ -2,6 +2,7 @@
 Elasticsearch server, client classes.
 """
 import subprocess
+import time
 import os
 import requests
 import pandas as pd
@@ -41,8 +42,12 @@ class Server(object):
     ):
         self.server_file = server_file
 
-    def start(self):
-        """Start elasticsearch server if not running."""
+    def start(self, timeout=5):
+        """Start elasticsearch server if not running.
+
+        timeout is used for when a connection but hasn't finished initializing the indexes.  It would
+        be preferable to check the health of the nodes.
+        """
         client = Client()
         if client.test_connection():
             return
@@ -53,6 +58,7 @@ class Server(object):
             while True:
                 res = client.test_connection()
                 if res:
+                    time.sleep(timeout)
                     return
 
     def stop(self):

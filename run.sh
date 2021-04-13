@@ -6,12 +6,13 @@ container='tsar'
 nargs="$#"
 
 # if tsar is not running, start it
-if ! [ "$(docker ps -f "name=$container" --format '{{.Names}}')" = "$container" ]; then 
+if ! [ "$(docker ps -f "name=$container" --format '{{.Names}}')" = "$container" ]; then
 # echo "starting tsar..."
-(cd $tsar_folder && make run)
+# (cd $tsar_folder && make run)
+(cd $tsar_folder && docker-compose up -d app)
 fi
 
-# if tsar already running, no args provided, attach to container
+# if tsar already running, no args provided, attach to container here for speed
 if [ $nargs -eq 0 ]; then
 # echo "attaching to tsar; clear screen after detaching..."
 docker attach "$container" --detach-keys="ctrl-c"

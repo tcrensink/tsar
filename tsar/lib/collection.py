@@ -483,7 +483,10 @@ class Collection(object):
             source_id, *source_args, **source_kwargs
         )
         for document_id in document_ids:
-            self.add_document(document_id=document_id, doc_type=doc_type, write=False)
+            try:
+                self.add_document(document_id=document_id, doc_type=doc_type, write=False)
+            except Exception as e:
+                print(f"error processing {document_id} as type {doc_type}:", e)
         if self.registered:
             self.write()
 

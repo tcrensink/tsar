@@ -77,7 +77,7 @@ def install_macos():
                 print("replaced {} with {}".format(repr(line), repr(new_line)))
         fp.writelines(lines)
 
-    print("\nupdating dev files in {}".format(DEV_CONFIG_FOLDER))
+    # print("\nupdating dev files in {}".format(DEV_CONFIG_FOLDER))
     subprocess.call(f"touch {BASH_HISTORY_FILE}", shell=True)
 
 def install_linux():
