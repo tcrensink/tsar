@@ -25,7 +25,7 @@ RECORD_DEF_DICT = DOCTYPES
 
 def return_active_screen_name(tsar_app):
     for k, v in tsar_app.screens.items():
-        if v == tsar_app.shared_state["active_screen"]:
+        if v == tsar_app.state["active_screen"]:
             return k
 
 
@@ -35,8 +35,11 @@ def return_flask_app(tsar_app):
     Wrapped in a function for resources to access to (in-memory) tsar_app.
     """
     app = Flask(__name__)
-    api = Api(app)
+    @app.route('/')
+    def ping():
+        return 'successful tsar cli client ping.'
 
+    api = Api(app)
     class CollectionsInfo(Resource):
         def get(self):
             """Return summary info of collections.
@@ -46,7 +49,7 @@ def return_flask_app(tsar_app):
                 "http://0.0.0.0:8137/info",
             )
             """
-            df = tsar_app.shared_state["Collection"].db_meta()
+            tsar_app.state["collections"]
             df["creation_date"] = df["creation_date"].dt.normalize()
             return df.to_string()
 
@@ -63,7 +66,7 @@ def return_flask_app(tsar_app):
                 "http://0.0.0.0:8137/Collections",
             )
             """
-            df = tsar_app.shared_state["Collection"].db_meta()
+            df = tsar_app.state["Collection"]
             return list(df.index)
 
         def post(self):

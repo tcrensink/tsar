@@ -13,8 +13,7 @@ RUN apt-get update && \
     python3.7 \
     python3-pip \
     sudo \
-    wget \
-    xdotool
+    wget
 
 # install, start elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html#install-deb
 RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.7.1-amd64.deb && \
@@ -26,12 +25,12 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.7.
 # link specific python version to "python"
 RUN ln -s /usr/bin/python3.7 /usr/bin/python && python -m pip install --upgrade pip && python -m pip install --upgrade setuptools
 
+# expose cli client, es ports:
+EXPOSE 8137
+EXPOSE 9200
 
-# cd to tsar directory, install python deps, copy
-ARG tsar_folder
-ENV APP_PATH=$tsar_folder
+# copy requirements, creat python path
 WORKDIR $APP_PATH
-
 COPY requirements.txt requirements.txt
 RUN python -m pip install -r requirements.txt
 ENV PYTHONPATH=$APP_PATH
