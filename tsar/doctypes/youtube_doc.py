@@ -65,6 +65,7 @@ class YoutubeDoc(DocType):
         document_id = record["document_id"]
         record_index = {
             "document_name": record["document_name"],
+            "document_type": record["document_type"].__name__,
             "content": record["content"],
         }
         return (document_id, record_index)

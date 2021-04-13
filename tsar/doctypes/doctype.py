@@ -17,6 +17,7 @@ BASE_MAPPING = {
     "mappings": {
         "properties": {
             "document_name": {"type": "text", "analyzer": "english"},
+            "document_type": {"type": "keyword"},
             "content": {"type": "text", "analyzer": "english"},
             "link_content": {"type": "text", "boost": 0.2, "analyzer": "english"},
         }

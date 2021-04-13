@@ -53,6 +53,7 @@ class MarkdownDoc(DocType):
         document_id = record["document_id"]
         record_index = {
             "document_name": record["document_id"],
+            "document_type": record["document_type"].__name__,
             "content": record["content"],
             "link_content": link_content,
         }

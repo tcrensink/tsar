@@ -411,6 +411,7 @@ class Collection(object):
             record = self.doctype_mgr.gen_record(document_id=document_id, primary_doc=primary_doc, gen_links=True)
         except Exception:
             logger.exception(f"Collection.gen_record failed for: document_id: {document_id}, doc_type: {doc_type}")
+            return
 
         if gen_link_records:
             # don't overwrite primary documents as secondary
