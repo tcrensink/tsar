@@ -26,4 +26,6 @@ services:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
       - ${HOME}:${HOME}
       - .:/tsar
+
+    command: service elasticsearch start
     command: python "/tsar/tsar/app/app.py"
