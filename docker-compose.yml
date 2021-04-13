@@ -1,0 +1,29 @@
+version: "3.9"
+
+# rebuild: docker-compose build --no-cache app
+# start: docker-compose up -d app
+# shutdown: docker-compose down app
+# reattach: docker attach "$container" --detach-keys="ctrl-c"
+# shell, when running: docker exec -it tsar /bin/bash
+
+services:
+  app:
+    environment:
+      - APP_PATH=/tsar
+      - PYTHONPATH=/tsar
+      - HOST_USER=${USER}
+      - HOST_DIR=.
+      - HOST_HOME=${HOME}
+      - SSH_AUTH_SOCK="/run/host-services/ssh-auth.sock"
+    container_name: tsar
+    build: .
+    stdin_open: true
+    tty: true
+    ports:
+      - "9200:9200" # es
+      - "8137:8137" # tsar cli client
+    volumes:
+      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+      - ${HOME}:${HOME}
+      - .:/tsar
+    command: python "/tsar/tsar/app/app.py"
