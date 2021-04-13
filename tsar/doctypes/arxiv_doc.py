@@ -37,8 +37,9 @@ class ArxivDoc(DocType):
         # api url = 'http://export.arxiv.org/api/query?id_list=1311.5600'
         """
         paper_id = document_id.split("abs/")[-1]
-        record_dict = arxiv.query(id_list=[paper_id])[-1]
-        record = gen_record_from_arxiv_dict(record_dict, primary_doc=primary_doc)
+        search = arxiv.Search(id_list=[paper_id])
+        result = next(search.get())
+        record = gen_arxiv_record_from_result(result, primary_doc=primary_doc)
         return record
 
     @staticmethod
@@ -47,6 +48,7 @@ class ArxivDoc(DocType):
         document_id = record["document_id"]
         record_index = {
             "document_name": record["document_name"],
+            "document_type": record["document_type"].__name__,
             "content": record["content"],
             "authors": record["authors"],
             "publish_date": record["publish_date"],
@@ -93,20 +95,20 @@ class ArxivDoc(DocType):
         return preview
 
 
-def gen_record_from_arxiv_dict(arxiv_dict, primary_doc):
+def gen_arxiv_record_from_result(result, primary_doc):
     """Parse arxiv package result into a record."""
-    abstract = arxiv_dict["summary"].replace("\n", " ")
-    title = arxiv_dict["title"].replace("\n", "")
-    publish_date = int(datetime(*arxiv_dict["published_parsed"][:6]).timestamp())
+    abstract = result.summary.replace("\n", " ")
+    title = result.title.replace("\n", "")
+    publish_date = int(datetime(*result.published[:6]).timestamp())
     links = ArxivDoc.gen_links(abstract)
-
+    authors = [author.name for author in result.authors]
     record = {
-        "document_id": arxiv_dict["id"],
+        "document_id": result.entry_id,
         "document_name": title,
         "document_type": ArxivDoc,
         "primary_doc": primary_doc,
         "content": abstract,
-        "authors": arxiv_dict["authors"],
+        "authors": authors,
         "publish_date": publish_date,
         "links": links,
     }
