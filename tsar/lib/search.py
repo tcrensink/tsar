@@ -11,7 +11,7 @@ from pandas.io.json import json_normalize
 from tsar import MODULE_PATH, REPO_PATH
 from urllib.parse import quote_plus, unquote_plus
 
-ELASTICSEARCH_PORT = 9200
+ELASTICSEARCH_PORT = 8138
 HOST = "localhost"
 BASE_URL = f"http://{HOST}:{ELASTICSEARCH_PORT}"
 
