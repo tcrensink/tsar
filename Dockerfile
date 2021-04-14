@@ -27,7 +27,7 @@ RUN ln -s /usr/bin/python3.7 /usr/bin/python && python -m pip install --upgrade 
 
 # expose cli client, es ports:
 EXPOSE 8137
-EXPOSE 9200
+EXPOSE 8138
 
 # copy requirements, creat python path
 WORKDIR $APP_PATH

@@ -25,8 +25,8 @@ services:
     stdin_open: true
     tty: true
     ports:
-      - "9200:9200" # es
       - "8137:8137" # tsar cli client
+      - "8138:8138" # es
     volumes:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
       - ${HOME}:${HOME}
@@ -37,5 +37,5 @@ services:
 
     command: service elasticsearch start
 
-    command: /bin/bash
-    # command: python "/tsar/tsar/app/app.py"
+    # command: /bin/bash
+    command: python "/tsar/tsar/app/app.py"
