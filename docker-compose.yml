@@ -29,13 +29,11 @@ services:
       - "8138:8138" # es
     volumes:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
-      - ${HOME}:${HOME}
       - .:/tsar
       - ./resources/dev_config/.bash_history:/root/.bash_history
       - ./resources/dev_config/.inputrc:/root/.inputrc
       - ./resources/dev_config/.ipython:/root/.ipython
 
-    command: service elasticsearch start
-
     # command: /bin/bash
+    command: service elasticsearch start
     command: python "/tsar/tsar/app/app.py"
