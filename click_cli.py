@@ -47,8 +47,11 @@ def ls(collection_id):
         res = requests.get(url=f"http://0.0.0.0:{PORT}/collection_info/{collection_id}")
     else:
         res = requests.get(url=f"http://0.0.0.0:{PORT}/collection_info")
-    click.echo(res.json())
-    click.echo()
+
+    for info in res.json():
+        title, body = info.split("\n", 1)
+        click.secho(title, bold=True, fg="red")
+        click.secho(body)
 
 
 @cli.command(help="List of recognized document types")

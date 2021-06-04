@@ -36,8 +36,9 @@ def return_flask_app(tsar_app):
         ex:
         res = requests.get(url="http://0.0.0.0:8137/collection_info")
         """
-        register = Register()
-        coll_info = register.read_df().to_string()
+        coll_info = []
+        for name, coll in tsar_app.state["collections"].items():
+            coll_info.append(coll.preview())
         response = jsonify(coll_info)
         return response
 
