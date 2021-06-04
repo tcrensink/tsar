@@ -2,6 +2,7 @@
 """
 host-side terminal client for handling tsar requests.
 
+(outdated)
 CLI summary:
 - tsar ls                         # prints collection, record_type summaries, current collection
 
@@ -14,8 +15,6 @@ CLI summary:
 - tsar <coll> rm <record_id>      # rm record_id from collection
 - tsar kill                       # kill tsar
 - tsar restart                    # restart tsar
-
-
 """
 import requests
 import click
