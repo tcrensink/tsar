@@ -2,34 +2,23 @@
 """
 host-side terminal client for handling tsar requests.
 
-(outdated)
-CLI summary:
-- tsar ls                         # prints collection, record_type summaries, current collection
+# TODO
+- attach to running shell (debugging)
 
-- tsar new --name --record_type   # create a new collection with record type
-- tsar record_types               # print available record types
-- tsar <coll>                     # open app search interface for that collection
-- tsar <coll> info                # prints summary info of collection
-- tsar <coll> drop                # drops the collection
-- tsar <coll> add <record_id>     # add record_id to collection
-- tsar <coll> rm <record_id>      # rm record_id from collection
-- tsar kill                       # kill tsar
-- tsar restart                    # restart tsar
 """
 import requests
 import click
 import os
+from subprocess import run
 
 PORT = 8137
-BASE_URL = f"http://0.0.0.0:{PORT}"
-
 RUN_PATH = os.path.realpath(__file__)
 RUN_DIR = os.path.dirname(RUN_PATH)
 
 
-# this group allows for sub-commands
 @click.group()
 def cli():
+    # this group allows for sub-commands
     pass
 
 
@@ -109,15 +98,42 @@ def new(collection_id, doctypes):
     click.echo()
 
 
+# https://click.palletsprojects.com/en/8.0.x/options/#yes-parameters
+def abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
+
+
 @cli.command(help="Permanently drop a collection")
 @click.argument("collection_id")
+@click.option(
+    "--yes",
+    is_flag=True,
+    callback=abort_if_false,
+    expose_value=False,
+    prompt="Permanently delete collection?",
+)
 def drop(collection_id):
-
     res = requests.post(
-        url="http://0.0.0.0:{PORT}/drop", json={"collection_id": collection_id}
+        url=f"http://0.0.0.0:{PORT}/drop", json={"collection_id": collection_id}
     )
     click.echo(res.json())
     click.echo()
+
+
+@cli.command(help="Shut down all processes")
+def shut_down():
+    click.echo("shutting down...")
+    res = run(f"cd {RUN_DIR} && docker compose down -v", shell=True)
+
+
+@cli.command(help="Restart all processes")
+def restart():
+    click.echo("restarting...")
+    res = run(
+        f"cd {RUN_DIR} && docker compose down -v && docker compose up -d app",
+        shell=True,
+    )
 
 
 if __name__ == "__main__":
