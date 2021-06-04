@@ -24,11 +24,7 @@ import os
 PORT = 8137
 BASE_URL = f"http://0.0.0.0:{PORT}"
 
-try:
-    RUN_PATH = os.path.realpath(__file__)
-except Exception:
-    RUN_PATH = "/Users/trensink/git/my_repos/tsar"
-
+RUN_PATH = os.path.realpath(__file__)
 RUN_DIR = os.path.dirname(RUN_PATH)
 
 
