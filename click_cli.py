@@ -32,41 +32,6 @@ except Exception:
 RUN_DIR = os.path.dirname(RUN_PATH)
 
 
-# REQUEST EXAMPLES
-# res = requests.get(url="http://0.0.0.0:8137/collection_info")
-# res = requests.post(
-#     url="http://0.0.0.0:8137/new",
-#     json={
-#         "collection_id": "test_collection",
-#         "doctypes": ["ArxivDoc", "MarkdownDoc", "YoutubeDoc", "WebpageDoc"],
-#     },
-# )
-# res = requests.post(
-#     url="http://0.0.0.0:8137/add_doc/test_collection",
-#     json={"document_id": "https://www.youtube.com/watch?v=0dqX3NjwaQs"},
-# )
-
-
-# res = requests.post(
-#     url="http://0.0.0.0:8137/rm_doc/test_collection",
-#     json={"document_id": "https://www.youtube.com/watch?v=0dqX3NjwaQs"},
-# )
-
-
-# res = requests.post(
-#     url="http://0.0.0.0:8137/drop", json={"collection_id": "test_collection"}
-# )
-
-
-# @click.command()
-# @click.option("--count", default=1, help="Number of greetings.")
-# @click.option("--name", prompt="Your name", help="The person to greet.")
-# def hello(count, name):
-#     """Simple program that greets NAME for a total of COUNT times."""
-#     for x in range(count):
-#         click.echo(f"Hello {name}!")
-
-
 # this group allows for sub-commands
 @click.group()
 def cli():
@@ -75,7 +40,7 @@ def cli():
 
 @cli.command()
 def test():
-    res = requests.get(url=f"{BASE_URL}")
+    res = requests.get(url=f"http://0.0.0.0:{PORT}")
     click.echo(res.text)
 
 
@@ -84,9 +49,9 @@ def test():
 def ls(collection_id):
 
     if collection_id:
-        res = requests.get(url=f"http://0.0.0.0:8137/collection_info/{collection_id}")
+        res = requests.get(url=f"http://0.0.0.0:{PORT}/collection_info/{collection_id}")
     else:
-        res = requests.get(url=f"http://0.0.0.0:8137/collection_info")
+        res = requests.get(url=f"http://0.0.0.0:{PORT}/collection_info")
     click.echo(res.json())
     click.echo()
 
@@ -96,9 +61,9 @@ def ls(collection_id):
 def doctypes(collection_id):
 
     if collection_id:
-        res = requests.get(url=f"http://0.0.0.0:8137/doctypes/{collection_id}")
+        res = requests.get(url=f"http://0.0.0.0:{PORT}/doctypes/{collection_id}")
     else:
-        res = requests.get(url=f"http://0.0.0.0:8137/doctypes")
+        res = requests.get(url=f"http://0.0.0.0:{PORT}/doctypes")
     click.echo(res.json())
     click.echo()
 
@@ -120,7 +85,7 @@ def add(collection_id, document_id):
 @click.argument("document_id")
 def rm(collection_id, document_id):
     res = requests.post(
-        url=f"http://0.0.0.0:8137/rm_doc/{collection_id}",
+        url=f"http://0.0.0.0:{PORT}/rm_doc/{collection_id}",
         json={"document_id": document_id},
     )
     click.echo(res.json())
@@ -133,13 +98,13 @@ def rm(collection_id, document_id):
 def new(collection_id, doctypes):
 
     if not doctypes:
-        res = requests.get(url=f"http://0.0.0.0:8137/doctypes")
+        res = requests.get(url=f"http://0.0.0.0:{PORT}/doctypes")
         doctype_list = res.json()
     else:
         doctype_list = doctypes.split(",")
 
     res = requests.post(
-        url=f"http://0.0.0.0:8137/new/{collection_id}",
+        url=f"http://0.0.0.0:{PORT}/new/{collection_id}",
         json={"collection_id": collection_id, "doctypes": doctype_list},
     )
     click.echo(res.json())
@@ -151,7 +116,7 @@ def new(collection_id, doctypes):
 def drop(collection_id):
 
     res = requests.post(
-        url="http://0.0.0.0:8137/drop", json={"collection_id": collection_id}
+        url="http://0.0.0.0:{PORT}/drop", json={"collection_id": collection_id}
     )
     click.echo(res.json())
     click.echo()
