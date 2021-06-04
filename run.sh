@@ -17,5 +17,5 @@ if [ $nargs -eq 0 ]; then
 docker attach "$container" --detach-keys="ctrl-c"
 printf "\033c"
 else
-python3 "$tsar_folder/click_cli.py" $@
+python3 "$tsar_folder/cli_client.py" $@
 fi
