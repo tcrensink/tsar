@@ -32,22 +32,27 @@ def return_flask_app(tsar_app):
 
     @app.route("/collection_info")
     def infos():
-        """Get summary information for all collections."""
-        register = tsar_app.state["active_collection"]._register
+        """Get summary information for all collections.
+        ex:
+        res = requests.get(url="http://0.0.0.0:8137/collection_info")
+        """
+        register = Register()
         coll_info = register.read_df().to_string()
         response = jsonify(coll_info)
         return response
 
     @app.route("/collection_info/<collection>")
     def info(collection):
-        """Get summary information for one collection."""
+        """Get summary information for one collection.
+        res = requests.get(url="http://0.0.0.0:8137/collection_info/test_collection")
+        """
         coll_info = tsar_app.state["collections"][collection].preview()
         response = jsonify(coll_info)
         return response
 
     @app.route("/doctypes", defaults={"collection": None})
     @app.route("/doctypes/<collection>")
-    def record_types(collection):
+    def get_doctypes(collection):
         """Return record types (optionally for a specific collection)."""
 
         if collection is None:
@@ -93,7 +98,7 @@ def return_flask_app(tsar_app):
         collection = tsar_app.state["collections"][collection]
         try:
             collection.remove_record(document_id)
-            response = f"document {document_id} removed from collection"
+            response = f"removed document: {document_id} from {collection}"
         except Exception as e:
             response = "error removing document from collection"
         return jsonify(response)
@@ -119,7 +124,7 @@ def return_flask_app(tsar_app):
             )
             coll.register()
         except:
-            response = "error adding new collection."
+            response = "error creating new collection."
         else:
             tsar_app.state["collections"][collection_id] = coll
             response = f"created new collection: {collection_id}"

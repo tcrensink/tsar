@@ -33,13 +33,13 @@ def cli():
     pass
 
 
-@cli.command()
+@cli.command(help="Verify connection to app")
 def test():
     res = requests.get(url=f"http://0.0.0.0:{PORT}")
     click.echo(res.text)
 
 
-@cli.command()
+@cli.command(help="Summary of existing collections")
 @click.argument("collection_id", default="")
 def ls(collection_id):
 
@@ -51,7 +51,7 @@ def ls(collection_id):
     click.echo()
 
 
-@cli.command()
+@cli.command(help="List of recognized document types")
 @click.argument("collection_id", default="")
 def doctypes(collection_id):
 
@@ -63,7 +63,7 @@ def doctypes(collection_id):
     click.echo()
 
 
-@cli.command()
+@cli.command(help="Add a new document to a collection")
 @click.argument("collection_id")
 @click.argument("document_id")
 def add(collection_id, document_id):
@@ -75,7 +75,7 @@ def add(collection_id, document_id):
     click.echo()
 
 
-@cli.command()
+@cli.command(help="Remove a document from a collection")
 @click.argument("collection_id")
 @click.argument("document_id")
 def rm(collection_id, document_id):
@@ -87,7 +87,7 @@ def rm(collection_id, document_id):
     click.echo()
 
 
-@cli.command()
+@cli.command(help="Create new collection")
 @click.argument("collection_id")
 @click.option("--doctypes", "-d", help="comma separated list (no spaces)")
 def new(collection_id, doctypes):
@@ -106,7 +106,7 @@ def new(collection_id, doctypes):
     click.echo()
 
 
-@cli.command()
+@cli.command(help="Permanently drop a collection")
 @click.argument("collection_id")
 def drop(collection_id):
 
