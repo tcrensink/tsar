@@ -3,30 +3,20 @@ RESTful server (for terminal commands from client).
 
 The server is run in a thread in the main app process (in app.py).  The CLI
 is exposed on the host machine which makes http requests.
-"""
-from tsar.lib.collection import Collection, DOCTYPES
-from flask import Flask, jsonify, request
-from flask_restful import (
-    abort,
-    Api,
-    Resource,
-)
 
-DEBUG = False
+Debug flow:
+- start shell in docker image
+- run app from cmd line: python tsar/tsar/app/app.py
+- check browser/make requests from host, http://0.0.0.0:8137/
+"""
+from tsar.lib.collection import Collection, Register, DOCTYPES
+from flask import Flask, jsonify, request
+
 FLASK_KWARGS = {
     "port": 8137,
     "host": "0.0.0.0",
-    "debug": DEBUG,
+    "debug": False,
 }
-
-# used for creating new collection; (would be better to have a collection manager)
-RECORD_DEF_DICT = DOCTYPES
-
-
-def return_active_screen_name(tsar_app):
-    for k, v in tsar_app.screens.items():
-        if v == tsar_app.state["active_screen"]:
-            return k
 
 
 def return_flask_app(tsar_app):
@@ -35,111 +25,123 @@ def return_flask_app(tsar_app):
     Wrapped in a function for resources to access to (in-memory) tsar_app.
     """
     app = Flask(__name__)
-    @app.route('/')
+
+    @app.route("/")
     def ping():
-        return 'successful tsar cli client ping.'
+        return "successful connection to tsar cli server."
 
-    api = Api(app)
-    class CollectionsInfo(Resource):
-        def get(self):
-            """Return summary info of collections.
+    @app.route("/collection_info")
+    def infos():
+        """Get summary information for all collections."""
+        register = tsar_app.state["active_collection"]._register
+        coll_info = register.read_df().to_string()
+        response = jsonify(coll_info)
+        return response
 
-            example:
-            res = requests.get(
-                "http://0.0.0.0:8137/info",
+    @app.route("/collection_info/<collection>")
+    def info(collection):
+        """Get summary information for one collection."""
+        coll_info = tsar_app.state["collections"][collection].preview()
+        response = jsonify(coll_info)
+        return response
+
+    @app.route("/doctypes", defaults={"collection": None})
+    @app.route("/doctypes/<collection>")
+    def record_types(collection):
+        """Return record types (optionally for a specific collection)."""
+
+        if collection is None:
+            doctypes = list(DOCTYPES)
+        else:
+            doctype_values = tsar_app.state["collections"][collection].doc_types
+            doctypes = [k for k, v in DOCTYPES.items() if v in doctype_values]
+        return jsonify(doctypes)
+
+    @app.route("/add_doc/<collection>", methods=["POST"])
+    def add_doc(collection):
+        """Add docuemnt to collection.
+
+        ex:
+        requests.post(
+            url="http://0.0.0.0:8137/add_doc/pkb",
+            json={"document_id":"https://www.youtube.com/watch?v=3UAqhSwEZxU"}
+        )
+        """
+        data = request.json
+        print(data)
+        document_id = data["document_id"]
+        collection = tsar_app.state["collections"][collection]
+        try:
+            collection.add_document(document_id)
+            response = f"document {document_id} added to collection"
+        except Exception as e:
+            response = "error adding document to collection"
+        return jsonify(response)
+
+    @app.route("/rm_doc/<collection>", methods=["POST"])
+    def rm_doc(collection):
+        """Remove document from collection.
+
+        ex:
+        requests.post(
+            url="http://0.0.0.0:8137/rm_doc/pkb",
+            json={"document_id":"https://www.youtube.com/watch?v=3UAqhSwEZxU"}
+        )
+        """
+        data = request.json
+        document_id = data["document_id"]
+        collection = tsar_app.state["collections"][collection]
+        try:
+            collection.remove_record(document_id)
+            response = f"document {document_id} removed from collection"
+        except Exception as e:
+            response = "error removing document from collection"
+        return jsonify(response)
+
+    @app.route("/new", methods=["POST"])
+    def new_collection():
+        """Create a new collection and register it.
+        ex:
+        requests.post(
+            url="http://0.0.0.0:8137/new",
+            json={
+                "collection_id": "test_collection",
+                "doctypes": ['ArxivDoc', 'MarkdownDoc', 'YoutubeDoc', 'WebpageDoc']}
+        )
+        """
+        data = request.json
+        collection_id = data["collection_id"]
+        doctypes = data["doctypes"]
+
+        try:
+            coll = Collection.new(
+                collection_id=collection_id, doc_types=[DOCTYPES[dt] for dt in doctypes]
             )
-            """
-            tsar_app.state["collections"]
-            df["creation_date"] = df["creation_date"].dt.normalize()
-            return df.to_string()
+            coll.register()
+        except:
+            response = "error adding new collection."
+        else:
+            tsar_app.state["collections"][collection_id] = coll
+            response = f"created new collection: {collection_id}"
+        return jsonify(response)
 
-    api.add_resource(CollectionsInfo, "/info")
+    @app.route("/drop", methods=["POST"])
+    def drop_collection():
+        """Drop an existing collection.
+        ex:
+        requests.post(url="http://0.0.0.0:8137/drop", json={"collection_id": "test_collection"})
+        """
+        data = request.json
+        collection_id = data["collection_id"]
+        register = Register()
 
-    class RestCollections(Resource):
-        """Resource that handles Collection(s) related requests."""
-
-        def get(self):
-            """Return list of collections.
-
-            example:
-            res = requests.get(
-                "http://0.0.0.0:8137/Collections",
-            )
-            """
-            df = tsar_app.state["Collection"]
-            return list(df.index)
-
-        def post(self):
-            """Create a new collection.
-
-            example:
-            res = requests.post(
-                "http://0.0.0.0:8137/Collections",
-                json={"collection_name": "test", "RecordDef": "ArxivRecord"},
-            )
-            """
-            request.json["RecordDef"] = RECORD_DEF_DICT[request.json["RecordDef"]]
-            coll = Collection.new(**request.json)
-            active_screen_name = return_active_screen_name(tsar_app)
-            tsar_app.update_state(active_screen_name)
-
-        def delete(self):
-            """Drop a collection.
-
-            example:
-            res = requests.delete(
-                "http://0.0.0.0:8137/Collections",
-                json={"collection_name": "test"},
-            )
-            """
-            coll = Collection.drop(**request.json)
-            active_screen_name = return_active_screen_name(tsar_app)
-            tsar_app.update_state(active_screen_name)
-
-    api.add_resource(RestCollections, "/Collections")
-
-    class RestCollection(Resource):
-        """Resource that handles Collection records."""
-
-        def get(self, collection_name):
-            """Return collection summary.
-
-            example:
-            res = requests.get("http://0.0.0.0:8137/Collections/test")
-            """
-            coll = Collection(collection_name=collection_name)
-            return coll.summary
-
-        def post(self, collection_name):
-            """Add a record to the collection.
-
-            example:
-            res = requests.post(
-                "http://0.0.0.0:8137/Collections/test",
-                json={"record_id": "https://arxiv.org/abs/2008.07320"},
-            )
-            """
-            coll = Collection(collection_name=collection_name)
-            coll.add_document(request.json["record_id"])
-            active_screen_name = return_active_screen_name(tsar_app)
-            tsar_app.update_state(active_screen_name)
-
-        def delete(self, collection_name):
-            """Remove a record from the collection.
-
-            example:
-            res = requests.delete(
-                "http://0.0.0.0:8137/Collections/test",
-                json={"record_id": "https://arxiv.org/abs/2008.07320"}
-            )
-            """
-            # request.json includes `record_id`
-            coll = Collection(collection_name=collection_name)
-            coll.remove_record(request.json["record_id"])
-            active_screen_name = return_active_screen_name(tsar_app)
-            tsar_app.update_state(active_screen_name)
-
-    api.add_resource(RestCollection, "/Collections/<collection_name>")
+        try:
+            register.drop(collection_id)
+        except:
+            response = "error dropping collection."
+        else:
+            response = f"collection was permanently dropped: {collection_id}"
+        return jsonify(response)
 
     return app
 
@@ -148,4 +150,6 @@ if __name__ == "__main__":
 
     # used for debugging, but will not have access to main app objects.
     app = return_flask_app(tsar_app=None)
+
+    FLASK_KWARGS["debug"] = True
     app.run(**FLASK_KWARGS)
