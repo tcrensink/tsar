@@ -91,7 +91,7 @@ def new(collection_id, doctypes):
         doctype_list = doctypes.split(",")
 
     res = requests.post(
-        url=f"http://0.0.0.0:{PORT}/new/{collection_id}",
+        url=f"http://0.0.0.0:{PORT}/new",
         json={"collection_id": collection_id, "doctypes": doctype_list},
     )
     click.echo(res.json())
