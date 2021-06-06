@@ -22,8 +22,13 @@ def cli():
     pass
 
 
+@cli.command(help="log into shell to debug")
+def shell():
+    run("docker compose up debug")
+
+
 @cli.command(help="Verify connection to app")
-def test():
+def ping():
     res = requests.get(url=f"http://0.0.0.0:{PORT}")
     click.echo(res.text)
 
@@ -55,13 +60,26 @@ def doctypes(collection_id):
     click.echo()
 
 
-@cli.command(help="Add a new document to a collection")
+@cli.command(help="Add document to a collection")
 @click.argument("collection_id")
 @click.argument("document_id")
 def add(collection_id, document_id):
     res = requests.post(
         url=f"http://0.0.0.0:8137/add_doc/{collection_id}",
         json={"document_id": document_id},
+    )
+    click.echo(res.json())
+    click.echo()
+
+
+@cli.command(help="Add a documents to a collection from a source")
+@click.argument("collection_id")
+@click.argument("doctype")
+@click.argument("source_id")
+def add_source(collection_id, doctype, source_id):
+    res = requests.post(
+        url=f"http://0.0.0.0:8137/add_source/{collection_id}",
+        json={"doctype": doctype, "source_id": source_id},
     )
     click.echo(res.json())
     click.echo()
@@ -91,7 +109,7 @@ def new(collection_id, doctypes):
         doctype_list = doctypes.split(",")
 
     res = requests.post(
-        url=f"http://0.0.0.0:{PORT}/new/{collection_id}",
+        url=f"http://0.0.0.0:{PORT}/new",
         json={"collection_id": collection_id, "doctypes": doctype_list},
     )
     click.echo(res.json())
@@ -122,7 +140,7 @@ def drop(collection_id):
 
 
 @cli.command(help="Shut down all processes")
-def shut_down():
+def shutdown():
     click.echo("shutting down...")
     res = run(f"cd {RUN_DIR} && docker compose down -v", shell=True)
 

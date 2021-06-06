@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# run.sh used for faster connection than run.py
+# run.sh used for fast reconnection
 tsar_folder="$(dirname "$(readlink "$0")")"
 container='tsar'
 nargs="$#"
@@ -15,8 +15,7 @@ fi
 # if tsar already running, no args provided, attach to container
 if [ $nargs -eq 0 ]; then
 # echo "attaching to tsar; clear screen after detaching..."
-docker attach "$container" --detach-keys="ctrl-c"
-printf "\033c"
+docker attach "$container" --detach-keys="ctrl-c"; printf "\033c"
 else
 python3 "$tsar_folder/cli_client.py" $@
 fi
