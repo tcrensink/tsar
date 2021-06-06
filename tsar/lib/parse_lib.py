@@ -1,9 +1,6 @@
 """
 library of parsing functions and utilities.
 
-All file handling should be done from host machine via ssh.
-Environment variables $HOME, $USER defined to match host in tsar/__init__.py
-for pathlib handling.
 """
 import os
 from collections import Counter
@@ -13,7 +10,40 @@ import re
 import sys
 from stat import S_ISDIR, S_ISREG
 from datetime import datetime
-from tsar.lib.ssh_utils import SSHClient
+
+import fsspec
+from requests.utils import urlparse, urlunparse
+from os import path
+
+# host fileserver root
+ROOT_DIR = os.environ.get("HOST_HOME")
+
+FILE_HOST_PORT = 8139
+# file system client; get folder contents at server ROOT_DIR
+fs = fsspec.filesystem(protocol="http")
+
+
+def url_to_host_path(path_url):
+    """Convert url to (absolute) host path"""
+    url_path = urlparse(path_url).path
+    rel_path = url_path.lstrip("/")
+    host_path = os.path.join(ROOT_DIR, rel_path)
+    return host_path
+
+
+def host_path_to_url(host_path):
+    """Formats host (absolute) path to url"""
+    host_path = resolve_path(host_path)
+    rel_path = os.path.relpath(host_path, ROOT_DIR)
+    url = urlunparse(
+        ("http", f"host.docker.internal:{FILE_HOST_PORT}", rel_path, None, None, None)
+    )
+    return url
+
+
+def exists_on_fs(path_url, fs=fs):
+    # does the file/folder path url exist on the (host) file server?
+    return fs.exists(path_url)
 
 
 def return_links(text):
@@ -39,17 +69,50 @@ def resolve_path(path_str, source_path=None):
     return path_str
 
 
-def return_file_contents(path_string):
+def return_file_contents(path_string, fs=fs):
     """Return string of file contents on remote host.
 
     e.g.: path_string = "~/test.py" -> string of file contents.
     """
-    with open(path_string) as fp:
+    file_url = host_path_to_url(path_string)
+    with fs.open(file_url, "r") as fp:
         contents_str = fp.read()
     return contents_str
 
 
-def return_files(path, extensions=[]):
+def return_files(path, fs=fs, extensions=[]):
+    """Return list of files in folder with extension.
+
+    All input/output format as local (host) filepaths, not fs urls.
+    """
+    extensions = set([ex.rsplit(".", 1)[-1] for ex in extensions])
+
+    # recursively walk through folders to get all files with extension
+    path_url = host_path_to_url(path)
+
+    files = []
+    # bug: fs.isfile(url) returns True for dirs
+    isfile = bool(not fs.isdir(path_url) and fs.exists(path_url))
+    if isfile:
+        files.append(path)
+    elif fs.isdir(path_url):
+        for dirpath, dirnames, filenames in fs.walk(path_url):
+            curr_files = [
+                os.path.join(url_to_host_path(dirpath), fn) for fn in filenames
+            ]
+            if extensions:
+                curr_files = [
+                    fn for fn in curr_files if fn.split(".")[-1] in extensions
+                ]
+            else:
+                curr_files = [fn for fn in curr_files if fn.split(".")[-1]]
+            files.extend(curr_files)
+    else:
+        raise ValueError(f"{path} not found; unable to proceed.")
+    return files
+
+
+def return_local_files(path, extensions=[]):
     """Return list of files in folder with extension."""
     extensions = set([ex.rsplit(".", 1)[-1] for ex in extensions])
 
@@ -72,22 +135,6 @@ def return_files(path, extensions=[]):
     else:
         raise ValueError(f"{path} not found; unable to proceed.")
     return files
-
-
-def open_textfile(cmd, file_path, ssh_client=None):
-    """Open text file with editor."""
-    if not ssh_client:
-        ssh_client = SSHClient()
-    cmd = cmd.format(file_path=file_path)
-    ssh_client.exec_command(cmd)
-
-
-def open_url(url, browser, ssh_client=None):
-    """Open url in browser."""
-    if not ssh_client:
-        ssh_client = SSHClient()
-    cmd = f"open -a {browser} {url}"
-    ssh_client.exec_command(cmd)
 
 
 def file_base_features(path, record_type):

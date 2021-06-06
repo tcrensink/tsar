@@ -74,7 +74,6 @@ def return_flask_app(tsar_app):
         )
         """
         data = request.json
-        print(data)
         document_id = data["document_id"]
         collection = tsar_app.state["collections"][collection]
         try:

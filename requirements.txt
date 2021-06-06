@@ -1,9 +1,11 @@
+aiohttp
 apscheduler
 arxiv
 bs4
 elasticsearch
 flask
 flask-restful
+fsspec
 fuzzywuzzy
 html2text
 ipdb

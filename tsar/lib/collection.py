@@ -185,7 +185,9 @@ class Collection(object):
         Note:
         - init assigns attributes; use `Collection.new` etc. for collection creation.
         """
-        self.doctype_mgr = DocTypeManager({k:v for k,v in DOCTYPES.items() if v in doc_types})
+        self.doctype_mgr = DocTypeManager(
+            {k: v for k, v in DOCTYPES.items() if v in doc_types}
+        )
         self.collection_id = collection_id
         self.doc_types = doc_types
         self.records_db = records_db
@@ -408,16 +410,22 @@ class Collection(object):
                 logger.exception(f"unable to determine doc_type for {document_id}")
                 return
         try:
-            record = self.doctype_mgr.gen_record(document_id=document_id, primary_doc=primary_doc, gen_links=True)
+            record = self.doctype_mgr.gen_record(
+                document_id=document_id, primary_doc=primary_doc, gen_links=True
+            )
         except Exception:
-            logger.exception(f"Collection.gen_record failed for: document_id: {document_id}, doc_type: {doc_type}")
+            logger.exception(
+                f"Collection.gen_record failed for: document_id: {document_id}, doc_type: {doc_type}"
+            )
             return
 
         if gen_link_records:
             # don't overwrite primary documents as secondary
             link_id_set = set(record["links"]) - set(self.primary_documents())
             for link_id in list(link_id_set):
-                link_record = self.doctype_mgr.gen_record(document_id=link_id, primary_doc=False, gen_links=True)
+                link_record = self.doctype_mgr.gen_record(
+                    document_id=link_id, primary_doc=False, gen_links=True
+                )
                 self.add_record(link_record, index_linked_content=False, write=False)
         self.add_record(record, index_linked_content=True, write=write)
 
@@ -485,7 +493,9 @@ class Collection(object):
         )
         for document_id in document_ids:
             try:
-                self.add_document(document_id=document_id, doc_type=doc_type, write=False)
+                self.add_document(
+                    document_id=document_id, doc_type=doc_type, write=False
+                )
             except Exception as e:
                 print(f"error processing {document_id} as type {doc_type}:", e)
         if self.registered:
@@ -548,5 +558,7 @@ class Collection(object):
                 self._collection_id, doc_type_str=doc_type.__name__
             )
             self.client.index_record(
-                document_id=document_id, record_index=record_index, index_name=index_name
+                document_id=document_id,
+                record_index=record_index,
+                index_name=index_name,
             )
