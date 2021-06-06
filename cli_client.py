@@ -2,9 +2,7 @@
 """
 host-side terminal client for handling tsar requests.
 
-# TODO
-- attach to running shell (debugging)
-
+for list of commands try, `tsar --help`
 """
 import requests
 import click
@@ -67,13 +65,28 @@ def add(collection_id, document_id):
     click.echo()
 
 
-@cli.command(help="Add a documents to a collection from a source")
+@cli.command(help="Add documents to a collection from a source")
 @click.argument("collection_id")
 @click.argument("doctype")
 @click.argument("source_id")
 def add_source(collection_id, doctype, source_id):
     res = requests.post(
         url=f"http://0.0.0.0:8137/add_source/{collection_id}",
+        json={"doctype": doctype, "source_id": source_id},
+    )
+    click.echo(res.json())
+    click.echo()
+
+
+@cli.command(
+    help="Remove documents associated with a source and doctype from a collection"
+)
+@click.argument("collection_id")
+@click.argument("doctype")
+@click.argument("source_id")
+def rm_source(collection_id, doctype, source_id):
+    res = requests.post(
+        url=f"http://0.0.0.0:8137/rm_source/{collection_id}",
         json={"doctype": doctype, "source_id": source_id},
     )
     click.echo(res.json())

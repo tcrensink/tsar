@@ -1,14 +1,13 @@
 version: "3.9"
 
 # rebuild: docker-compose build --no-cache app
-# start: docker-compose up -d app
-# shutdown: docker-compose down app
-# reattach: docker attach tsar --detach-keys="ctrl-c"
-# shell in running container: docker exec -it tsar /bin/bash
 
-# debug in ipython
-# toggle python, bash commands below
-# `docker-compose run --rm app`
+# DEBUG:
+# `command: /bin/bash` -> only command to run.
+# `docker compose up -d`
+# `docker exec -it tsar /bin/bash` # get shell in container
+# `service elasticsearch start`: doesn't get killed on app restart
+# `python tsar/tsar/app/app.py` starts fast; ctrl-c once to get server shell to debug cli.
 
 services:
   app:
