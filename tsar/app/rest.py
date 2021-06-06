@@ -85,7 +85,7 @@ def return_flask_app(tsar_app):
 
     @app.route("/add_source/<collection>", methods=["POST"])
     def add_source(collection):
-        """Add docuemnts from source to collection.
+        """Add documents from source to collection.
 
         ex:
         requests.post(
@@ -107,9 +107,37 @@ def return_flask_app(tsar_app):
             return jsonify(response)
         try:
             collection.add_from_source(doctype, source_id)
-            response = f"document {source_id} added to collection"
+            response = f"documents from {source_id} added to collection"
         except Exception:
             response = f"error adding docs type {doctype} from source {source_id}"
+        return jsonify(response)
+
+    @app.route("/rm_source/<collection>", methods=["POST"])
+    def rm_source(collection):
+        """Remove documents from collection associated with source_id, doctype.
+
+        requests.post(
+            url="http://0.0.0.0:8137/rm_source/pkb",
+            json={"source_id":"~/my_folder/"}
+        )
+        """
+        data = request.json
+        doctype = data["doctype"]
+        source_id = data["source_id"]
+        collection = tsar_app.state["collections"][collection]
+
+        try:
+            doctype_obj = DOCTYPES[doctype]
+            if doctype_obj not in collection.doc_types:
+                raise ValueError
+        except Exception:
+            response = f"doctype must be one of {collection.doc_types} for {collection}"
+            return jsonify(response)
+        try:
+            collection.remove_from_source(doctype, source_id)
+            response = f"documents from {source_id} removed from collection"
+        except Exception:
+            response = f"error removing docs type {doctype} from source {source_id}"
         return jsonify(response)
 
     @app.route("/rm_doc/<collection>", methods=["POST"])

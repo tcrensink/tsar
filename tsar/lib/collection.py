@@ -501,6 +501,20 @@ class Collection(object):
         if self.registered:
             self.write()
 
+    def remove_from_source(self, doc_type, source_id, *source_args, **source_kwargs):
+        """remove records associated with source_id."""
+        doc_type = DOCTYPES[doc_type]
+        document_ids = doc_type.gen_from_source(
+            source_id, *source_args, **source_kwargs
+        )
+        for document_id in document_ids:
+            try:
+                self.remove_record(document_id=document_id)
+            except Exception as e:
+                print(f"error processing {document_id} as type {doc_type}:", e)
+        if self.registered:
+            self.write()
+
     def preview(self):
         """Return formatted text preview of collection.
 
