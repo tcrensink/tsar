@@ -5,10 +5,11 @@ tsar_folder="$(dirname "$(readlink "$0")")"
 container='tsar'
 nargs="$#"
 
-# if tsar is not running, start it
+# if tsar is not running, start it and local file server
 if ! [ "$(docker ps -f "name=$container" --format '{{.Names}}')" = "$container" ]; then
 echo "starting tsar..."
-(cd $tsar_folder && docker compose up -d app)
+(cd $tsar_folder && docker compose up -d app && \
+python3 -m http.server 8139 --bind 127.0.0.1 --directory $HOME &)
 fi
 
 # if tsar already running, no args provided, attach to container

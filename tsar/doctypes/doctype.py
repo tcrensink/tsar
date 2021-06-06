@@ -100,7 +100,8 @@ class DocType(ABC):
 
 
 class DocTypeManager(object):
-    """Define record generation and link management when multiple doc types are present."""
+    """Resolve document type given document_id."""
+
     def __init__(self, doctypes):
         self.doctypes = doctypes
 
@@ -135,6 +136,6 @@ class DocTypeManager(object):
     def resolve_document_id(self, link_id, doc_type=None):
         """Resolve document_id using doctype_resolver for link ids."""
         if doc_type is None:
-            doctype = self.return_doctype(document_id)
+            doctype = self.return_doctype(link_id)
         resolved_doc_id = doc_type.resolve_id(link_id)
         return resolved_doc_id
