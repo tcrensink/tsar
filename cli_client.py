@@ -22,11 +22,6 @@ def cli():
     pass
 
 
-@cli.command(help="log into shell to debug")
-def shell():
-    run("docker compose up debug")
-
-
 @cli.command(help="Verify connection to app")
 def ping():
     res = requests.get(url=f"http://0.0.0.0:{PORT}")
