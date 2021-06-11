@@ -38,6 +38,7 @@ def arxiv_record1():
     arxiv_record1 = {
         "authors": ["auth1", "auth2"],
         "publish_date": 1539219001,
+        "primary_doc": True,
         "document_id": "http://arxiv.org/abs/2222.2222v2",
         "document_name": "Title of some paper",
         "document_type": tsar.doctypes.arxiv_doc.ArxivDoc,
@@ -52,6 +53,7 @@ def arxiv_record2():
     arxiv_record2 = {
         "authors": ["auth3"],
         "publish_date": 1539219051,
+        "primary_doc": True,
         "document_id": "http://arxiv.org/abs/3333.3333v3",
         "document_name": "Title of next paper",
         "document_type": tsar.doctypes.arxiv_doc.ArxivDoc,
@@ -67,6 +69,13 @@ def records_db_fixture(arxiv_record1):
     df = df.set_index("document_id", drop=True)
     return df
 
+@pytest.fixture
+def data_graph(arxiv_record1, arxiv_record2):
+    df = pd.DataFrame([arxiv_record1, arxiv_record2])
+    df = df.set_index("document_id", drop=True)
+    data = Data(df)
+    graph = data.gen_graph()
+    return graph
 
 @pytest.fixture
 def data(arxiv_record1):
@@ -129,6 +138,36 @@ def test_data_rm_record(data):
     data.rm_record(doc_id)
     n_docs_after_rm = data.df.shape[0]
     assert n_docs_after_rm + 1 == n_docs_init
+
+
+def test_data_gen_graph(arxiv_record1, arxiv_record2):
+    df = pd.DataFrame([arxiv_record1, arxiv_record2])
+    df = df.set_index("document_id", drop=True)
+    data = Data(df)
+    graph = data.gen_graph()
+    graph_node_dict = {
+        'http://arxiv.org/abs/2222.2222v2': {},
+        'http://arxiv.org/abs/3333.3333v3': {},
+    }
+    graph_edge_dict = {
+        ('http://arxiv.org/abs/3333.3333v3',
+        'http://arxiv.org/abs/2222.2222v2'): {},
+    }
+    assert (dict(graph.nodes) == graph_node_dict)
+    assert (dict(graph.edges) == graph_edge_dict)
+
+
+def test_data_gen_graph(data_graph):
+    graph_node_dict = {
+        'http://arxiv.org/abs/2222.2222v2': {},
+        'http://arxiv.org/abs/3333.3333v3': {},
+    }
+    graph_edge_dict = {
+        ('http://arxiv.org/abs/3333.3333v3',
+        'http://arxiv.org/abs/2222.2222v2'): {},
+    }
+    assert (dict(data_graph.nodes) == graph_node_dict)
+    assert (dict(data_graph.edges) == graph_edge_dict)
 
 
 def test_register_init(register_path):
