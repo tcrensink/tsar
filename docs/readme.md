@@ -1,7 +1,7 @@
 
 [![tcrensink](https://circleci.com/gh/tcrensink/tsar.svg?style=shield)](https://app.circleci.com/pipelines/github/tcrensink/tsar/)
 
-(under construction)
+(deprecated)
 
 # What is TSAR?
 Imagine a program that makes your personal digital information *so available* that it becomes a seamless extension of your thought. This was imagined as early as [*memex*](https://en.wikipedia.org/wiki/Memex), a hypothetical device "in which individuals would compress and store all of their [information]... [to be] consulted with exceeding speed and flexibility".
