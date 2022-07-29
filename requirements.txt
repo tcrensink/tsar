@@ -10,7 +10,7 @@ fuzzywuzzy
 html2text
 ipdb
 ipython
-mistune==2.0.0a4
+mistune==2.0.3
 networkx
 nltk
 numpy
